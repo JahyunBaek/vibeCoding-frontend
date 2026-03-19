@@ -147,7 +147,7 @@ export default function BoardWritePage() {
   };
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="mx-auto max-w-3xl space-y-4">
       <div className="text-xl font-semibold">글 작성</div>
 
       <Card>

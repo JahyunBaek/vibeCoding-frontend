@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useAuthStore } from "@/stores/auth";
+import { useAction } from "@/hooks/useAction";
+import { SCREENS, ACTIONS } from "@/config/permissions";
 import { Download, MessageSquare, Paperclip, Send } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -178,26 +181,40 @@ export default function BoardPostPage() {
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
+  const { user } = useAuthStore();
+  const isAdmin = user?.roleKey === "ADMIN";
+  const isAuthor = !!user && !!data && user.userId === data.authorId;
+  const hasEditPerm = useAction(SCREENS.BOARD_POST, ACTIONS.EDIT);
+  const hasDeletePerm = useAction(SCREENS.BOARD_POST, ACTIONS.DELETE);
+  const canEdit = hasEditPerm && (isAdmin || isAuthor);
+  const canDelete = hasDeletePerm && (isAdmin || isAuthor);
+
   const files: any[] = data?.files ?? [];
   const commentList: any[] = comments ?? [];
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="mx-auto max-w-3xl space-y-4">
       <div className="flex items-center justify-between">
         <Link to={`/boards/${boardId}`} className="text-sm text-slate-500 hover:text-slate-800 transition-colors">
           ← 목록으로
         </Link>
-        <div className="flex gap-2">
-          {!edit ? (
-            <Button variant="outline" size="sm" onClick={() => setEdit(true)}>편집</Button>
-          ) : (
-            <>
-              <Button size="sm" onClick={onSave}>저장</Button>
-              <Button variant="outline" size="sm" onClick={() => setEdit(false)}>취소</Button>
-            </>
-          )}
-          <Button variant="outline" size="sm" onClick={onDelete} className="text-red-500 hover:text-red-600 hover:border-red-300">삭제</Button>
-        </div>
+        {(canEdit || canDelete) && (
+          <div className="flex gap-2">
+            {canEdit && (
+              !edit ? (
+                <Button variant="outline" size="sm" onClick={() => setEdit(true)}>편집</Button>
+              ) : (
+                <>
+                  <Button size="sm" onClick={onSave}>저장</Button>
+                  <Button variant="outline" size="sm" onClick={() => setEdit(false)}>취소</Button>
+                </>
+              )
+            )}
+            {canDelete && (
+              <Button variant="outline" size="sm" onClick={onDelete} className="text-red-500 hover:text-red-600 hover:border-red-300">삭제</Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Post */}

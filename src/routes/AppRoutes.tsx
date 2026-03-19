@@ -13,6 +13,7 @@ import AdminOrgsPage from "@/pages/admin/AdminOrgsPage";
 import AdminCodesPage from "@/pages/admin/AdminCodesPage";
 import AdminRolesPage from "@/pages/admin/AdminRolesPage";
 import AdminMenusPage from "@/pages/admin/AdminMenusPage";
+import AdminScreensPage from "@/pages/admin/AdminScreensPage";
 import MyInfoPage from "@/pages/MyInfoPage";
 
 export default function AppRoutes() {
@@ -82,6 +83,14 @@ export default function AppRoutes() {
           element={
             <RequireAdmin>
               <AdminMenusPage />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="admin/screens"
+          element={
+            <RequireAdmin>
+              <AdminScreensPage />
             </RequireAdmin>
           }
         />

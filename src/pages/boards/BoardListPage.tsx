@@ -3,6 +3,8 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { ChevronLeft, ChevronRight, FileText, MessageSquare, Pencil } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { Can } from "@/components/Can";
+import { SCREENS, ACTIONS } from "@/config/permissions";
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -61,12 +63,14 @@ export default function BoardListPage() {
             <p className="mt-0.5 text-sm text-slate-400">전체 {total}개</p>
           )}
         </div>
-        <Link to={`/boards/${boardId}/new`}>
-          <Button size="sm" className="gap-1.5">
-            <Pencil className="h-3.5 w-3.5" />
-            글쓰기
-          </Button>
-        </Link>
+        <Can screen={SCREENS.BOARD_POST} action={ACTIONS.CREATE}>
+          <Link to={`/boards/${boardId}/new`}>
+            <Button size="sm" className="gap-1.5">
+              <Pencil className="h-3.5 w-3.5" />
+              글쓰기
+            </Button>
+          </Link>
+        </Can>
       </div>
 
       {/* List */}
@@ -148,50 +152,48 @@ export default function BoardListPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-1">
-          <button
-            disabled={page <= 1}
-            onClick={() => setSp({ page: String(page - 1) })}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
+      <div className="flex items-center justify-center gap-1">
+        <button
+          disabled={page <= 1}
+          onClick={() => setSp({ page: String(page - 1) })}
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
-            .reduce<(number | "...")[]>((acc, p, i, arr) => {
-              if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-              acc.push(p);
-              return acc;
-            }, [])
-            .map((p, i) =>
-              p === "..." ? (
-                <span key={`ellipsis-${i}`} className="px-1 text-xs text-slate-400">…</span>
-              ) : (
-                <button
-                  key={p}
-                  onClick={() => setSp({ page: String(p) })}
-                  className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                    p === page
-                      ? "bg-slate-800 text-white"
-                      : "border border-slate-200 text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  {p}
-                </button>
-              )
-            )}
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
+          .reduce<(number | "...")[]>((acc, p, i, arr) => {
+            if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
+            acc.push(p);
+            return acc;
+          }, [])
+          .map((p, i) =>
+            p === "..." ? (
+              <span key={`ellipsis-${i}`} className="px-1 text-xs text-slate-400">…</span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => setSp({ page: String(p) })}
+                className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
+                  p === page
+                    ? "bg-slate-800 text-white"
+                    : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                {p}
+              </button>
+            )
+          )}
 
-          <button
-            disabled={page >= totalPages}
-            onClick={() => setSp({ page: String(page + 1) })}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      )}
+        <button
+          disabled={page >= totalPages}
+          onClick={() => setSp({ page: String(page + 1) })}
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   );
 }

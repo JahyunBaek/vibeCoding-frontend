@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { ChevronRight, ChevronDown, Minus, MoreHorizontal, Pencil, Trash2, Plus, X } from "lucide-react";
+import { ChevronRight, ChevronDown, Minus, MoreHorizontal, Pencil, Trash2, Plus, X, Search } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,16 @@ function flattenTree(nodes: OrgNode[], collapsedIds: Set<number>, depth = 0): Fl
   });
 }
 
+function flattenAll(nodes: OrgNode[], depth = 0): FlatOrg[] {
+  return nodes.flatMap((n) => {
+    const hasChildren = (n.children?.length ?? 0) > 0;
+    return [
+      { ...n, depth, hasChildren, isCollapsed: false },
+      ...(hasChildren ? flattenAll(n.children, depth + 1) : []),
+    ];
+  });
+}
+
 function flattenForSelect(nodes: OrgNode[], depth = 0): { orgId: number; label: string }[] {
   return nodes.flatMap((n) => [
     { orgId: n.orgId, label: `${"  ".repeat(depth)}${n.name} (${n.orgId})` },
@@ -54,7 +64,17 @@ export default function AdminOrgsPage() {
       return next;
     });
 
-  const rows: FlatOrg[] = flattenTree(data ?? [], collapsedIds);
+  // --- Search ---
+  const [search, setSearch] = useState("");
+  const isSearching = search.trim() !== "";
+
+  const allFlattened = flattenAll(data ?? []);
+  const normalRows: FlatOrg[] = flattenTree(data ?? [], collapsedIds);
+  const searchRows: FlatOrg[] = allFlattened.filter((row) =>
+    row.name.toLowerCase().includes(search.toLowerCase())
+  );
+  const rows: FlatOrg[] = isSearching ? searchRows : normalRows;
+
   const selectOptions = flattenForSelect(data ?? []);
 
   // --- Create ---
@@ -106,6 +126,20 @@ export default function AdminOrgsPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle>조직 트리</CardTitle>
+          <div className="flex items-center gap-2 ml-auto mr-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Input
+                className="pl-9 w-56"
+                placeholder="조직 이름 검색..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            {isSearching && (
+              <span className="text-xs text-slate-400">검색 결과 {searchRows.length}개</span>
+            )}
+          </div>
           <Button
             variant="outline"
             onClick={() => { setShowCreate((v) => !v); setEditNode(null); }}
@@ -196,7 +230,7 @@ export default function AdminOrgsPage() {
                       {row.depth > 0 && (
                         <span className="text-slate-300 font-mono text-xs select-none mr-0.5">└</span>
                       )}
-                      {row.hasChildren ? (
+                      {!isSearching && row.hasChildren ? (
                         <button
                           onClick={() => toggleCollapse(row.orgId)}
                           className="p-0.5 rounded hover:bg-slate-200 transition-colors"
@@ -244,7 +278,9 @@ export default function AdminOrgsPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-slate-400">조직이 없습니다.</td>
+                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-slate-400">
+                    {isSearching ? "검색 결과가 없습니다." : "조직이 없습니다."}
+                  </td>
                 </tr>
               )}
             </tbody>

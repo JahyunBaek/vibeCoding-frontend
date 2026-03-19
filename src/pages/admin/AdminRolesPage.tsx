@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { MoreHorizontal, Pencil, Trash2, Plus, X } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,11 +14,74 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const PAGE_SIZE = 10;
+
+function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
+  return (
+    <div className="flex items-center justify-center gap-1 border-t px-4 py-3">
+      <button
+        disabled={page <= 1}
+        onClick={() => onChange(page - 1)}
+        className="flex h-7 w-7 items-center justify-center rounded border text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        <ChevronLeft className="h-3.5 w-3.5" />
+      </button>
+      {Array.from({ length: totalPages }, (_, i) => i + 1)
+        .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+        .reduce<(number | "...")[]>((acc, p, i, arr) => {
+          if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
+          acc.push(p);
+          return acc;
+        }, [])
+        .map((p, i) =>
+          p === "..." ? (
+            <span key={`e-${i}`} className="px-1 text-xs text-slate-400">…</span>
+          ) : (
+            <button
+              key={p}
+              onClick={() => onChange(p as number)}
+              className={`flex h-7 w-7 items-center justify-center rounded text-xs font-medium transition-colors ${p === page ? "bg-slate-800 text-white" : "border text-slate-600 hover:bg-slate-50"}`}
+            >
+              {p}
+            </button>
+          )
+        )}
+      <button
+        disabled={page >= totalPages}
+        onClick={() => onChange(page + 1)}
+        className="flex h-7 w-7 items-center justify-center rounded border text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        <ChevronRight className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
+
 export default function AdminRolesPage() {
   const { data, refetch } = useQuery({
     queryKey: ["admin", "roles", "page"],
-    queryFn: () => api.rolesPage(1, 50),
+    queryFn: () => api.rolesPage(1, 200),
   });
+
+  // --- Search & Pagination ---
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+
+  const handleSearch = (val: string) => {
+    setSearch(val);
+    setPage(1);
+  };
+
+  const allItems: any[] = data?.items ?? [];
+  const filtered = allItems.filter((r) => {
+    const q = search.toLowerCase();
+    return (
+      r.roleKey?.toLowerCase().includes(q) ||
+      r.roleName?.toLowerCase().includes(q)
+    );
+  });
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // --- Create ---
   const [showCreate, setShowCreate] = useState(false);
@@ -64,13 +127,25 @@ export default function AdminRolesPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle>역할 목록</CardTitle>
-          <Button
-            variant="outline"
-            onClick={() => { setShowCreate((v) => !v); setEditRole(null); }}
-          >
-            {showCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
-            {showCreate ? "닫기" : "새 역할 추가"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Input
+                className="pl-9 w-52"
+                placeholder="역할 키, 이름 검색..."
+                value={search}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
+            <span className="text-xs text-slate-400">{filtered.length}개</span>
+            <Button
+              variant="outline"
+              onClick={() => { setShowCreate((v) => !v); setEditRole(null); }}
+            >
+              {showCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
+              {showCreate ? "닫기" : "새 역할 추가"}
+            </Button>
+          </div>
         </CardHeader>
 
         {/* Create Form */}
@@ -116,7 +191,7 @@ export default function AdminRolesPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {(data?.items ?? []).map((r: any) => (
+              {paged.map((r: any) => (
                 <tr
                   key={r.roleKey}
                   className={`hover:bg-slate-50/60 transition-colors ${editRole?.roleKey === r.roleKey ? "bg-blue-50/30" : ""}`}
@@ -149,13 +224,16 @@ export default function AdminRolesPage() {
                   </td>
                 </tr>
               ))}
-              {(data?.items ?? []).length === 0 && (
+              {paged.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-400">역할이 없습니다.</td>
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-400">
+                    {search ? "검색 결과가 없습니다." : "역할이 없습니다."}
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
+          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
           <div className="border-t px-4 py-3 text-xs text-slate-400">
             메뉴 접근 권한은 <span className="font-mono">menu_roles</span> 매핑으로 관리합니다. (권한 방식 A)
           </div>

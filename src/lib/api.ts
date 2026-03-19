@@ -192,7 +192,8 @@ export const api = {
   logout: () => apiRequest<void>("POST", "/api/auth/logout"),
 
   me: () => apiRequest<any>("GET", "/api/me"),
-  updateMe: (name: string, newPassword?: string) => apiRequest<void>("PUT", "/api/me", { name, newPassword }),
+  updateMe: (name: string, currentPassword?: string, newPassword?: string) =>
+    apiRequest<void>("PUT", "/api/me", { name, currentPassword, newPassword }),
 
   menusMy: () => apiRequest<any[]>("GET", "/api/menus/my"),
 
@@ -302,4 +303,17 @@ export const api = {
   menuDelete: (menuId: number) => apiRequest<void>("DELETE", `/api/admin/menus/${menuId}`),
   menuSetRoles: (menuId: number, roleKeys: string[]) =>
     apiRequest<void>("PUT", `/api/admin/menus/${menuId}/roles`, { roleKeys }),
+
+  // Permissions
+  permissionsMyList: () => apiRequest<{ screenKey: string; actions: string[] }[]>("GET", "/api/permissions/my"),
+  permScreens: () => apiRequest<any[]>("GET", "/api/admin/permissions/screens"),
+  permCreateScreen: (screenKey: string, screenName: string) => apiRequest<void>("POST", "/api/admin/permissions/screens", { screenKey, screenName }),
+  permUpdateScreen: (screenId: number, screenName: string, useYn: boolean) => apiRequest<void>("PUT", `/api/admin/permissions/screens/${screenId}`, { screenName, useYn }),
+  permDeleteScreen: (screenId: number) => apiRequest<void>("DELETE", `/api/admin/permissions/screens/${screenId}`),
+  permActions: (screenId: number) => apiRequest<any[]>("GET", `/api/admin/permissions/screens/${screenId}/actions`),
+  permCreateAction: (screenId: number, actionKey: string, actionName: string) => apiRequest<void>("POST", `/api/admin/permissions/screens/${screenId}/actions`, { actionKey, actionName }),
+  permUpdateAction: (actionId: number, actionName: string, useYn: boolean) => apiRequest<void>("PUT", `/api/admin/permissions/actions/${actionId}`, { actionName, useYn }),
+  permDeleteAction: (actionId: number) => apiRequest<void>("DELETE", `/api/admin/permissions/actions/${actionId}`),
+  permRolesByAction: (actionId: number) => apiRequest<string[]>("GET", `/api/admin/permissions/actions/${actionId}/roles`),
+  permSetRoles: (actionId: number, roleKeys: string[]) => apiRequest<void>("PUT", `/api/admin/permissions/actions/${actionId}/roles`, { roleKeys }),
 };

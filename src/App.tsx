@@ -4,29 +4,38 @@ import AppRoutes from "@/routes/AppRoutes";
 import { api, apiRequest } from "@/lib/api";
 
 export default function App() {
-  const { initialized, setInitialized, setAuth, clear } = useAuthStore();
+  const { initialized, setInitialized, setAuth, clear, setPermissions } = useAuthStore();
   const bootRanRef = useRef(false);
 
   useEffect(() => {
     if (initialized) return;
     if (bootRanRef.current) return;
     bootRanRef.current = true;
-  
+
     (async () => {
       try {
         const data = await apiRequest<{ accessToken: string; user: UserSummary }>(
           "POST",
           "/api/auth/refresh"
         );
-        if (data?.accessToken) setAuth(data.accessToken, data.user);
-        else clear();
+        if (data?.accessToken) {
+          setAuth(data.accessToken, data.user);
+          try {
+            const perms = await api.permissionsMyList();
+            const permMap: Record<string, string[]> = {};
+            for (const p of perms) permMap[p.screenKey] = p.actions;
+            setPermissions(permMap);
+          } catch { /* ignore, permissions will be empty */ }
+        } else {
+          clear();
+        }
       } catch {
         clear();
       } finally {
         setInitialized(true);
       }
     })();
-  }, [initialized, setInitialized, setAuth, clear]);
+  }, [initialized, setInitialized, setAuth, clear, setPermissions]);
 
   return <AppRoutes />;
 }

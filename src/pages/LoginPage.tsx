@@ -8,7 +8,7 @@ import { api } from "@/lib/api";
 export default function LoginPage() {
   const nav = useNavigate();
   const location = useLocation();
-  const { setAuth, initialized, accessToken } = useAuthStore();
+  const { setAuth, setPermissions, initialized, accessToken } = useAuthStore();
 
   // 새로고침 등으로 refresh가 성공해 이미 로그인된 상태면 대시보드(또는 이전 목적지)로 이동
   useEffect(() => {
@@ -30,6 +30,12 @@ export default function LoginPage() {
     try {
       const data = await api.login(username, password);
       setAuth(data.accessToken, data.user);
+      try {
+        const perms = await api.permissionsMyList();
+        const permMap: Record<string, string[]> = {};
+        for (const p of perms) permMap[p.screenKey] = p.actions;
+        setPermissions(permMap);
+      } catch { /* ignore, permissions will be empty */ }
       nav("/dashboard");
     } catch (err: any) {
       setError(err?.message ?? "Login failed");
@@ -46,7 +52,7 @@ export default function LoginPage() {
 
         <form className="mt-6 space-y-3" onSubmit={onSubmit}>
           <div>
-            <div className="text-xs font-medium text-slate-600 mb-1">Username</div>
+            <div className="text-xs font-medium text-slate-600 mb-1">Login ID</div>
             <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="admin" />
           </div>
           <div>
