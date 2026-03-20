@@ -30,7 +30,7 @@ function MenuItem({ node, depth = 0 }: { node: MenuNode; depth?: number }) {
   if (!node.path && node.children?.length) {
     return (
       <div className="mt-2">
-        <div className={cn("text-xs font-semibold text-slate-500", padding)}>{node.name}</div>
+        <div className={cn("text-xs font-semibold text-muted-fg", padding)}>{node.name}</div>
         <div className="mt-1 space-y-1">
           {node.children.map((c) => (
             <MenuItem key={c.menuId} node={c} depth={depth + 1} />
@@ -46,9 +46,9 @@ function MenuItem({ node, depth = 0 }: { node: MenuNode; depth?: number }) {
     <Link
       to={node.path}
       className={cn(
-        "block rounded-md py-2 text-sm text-slate-700 hover:bg-slate-100",
+        "block rounded-md py-2 text-sm text-foreground hover:bg-accent",
         padding,
-        active && "bg-slate-100 font-medium text-slate-900"
+        active && "bg-accent font-medium"
       )}
     >
       {node.name}
@@ -64,15 +64,15 @@ export default function Sidebar() {
   });
 
   return (
-    <aside className="hidden h-screen w-[280px] shrink-0 border-r bg-white md:block">
+    <aside className="hidden h-screen w-[280px] shrink-0 border-r border-base bg-surface md:block">
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-2 px-4 py-4">
-          <div className="h-7 w-7 rounded-md bg-slate-900" />
-          <div className="text-sm font-semibold">Common System</div>
+          <div className="h-7 w-7 rounded-md bg-foreground" />
+          <div className="text-sm font-semibold text-foreground">Common System</div>
         </div>
 
         <div className="px-2">
-          <div className="text-xs font-semibold text-slate-500 px-3">Navigation</div>
+          <div className="text-xs font-semibold text-muted-fg px-3">Navigation</div>
           <div className="mt-2 space-y-1">
             {(data ?? []).map((n: MenuNode) => (
               <MenuItem key={n.menuId} node={n} />
@@ -81,9 +81,9 @@ export default function Sidebar() {
         </div>
 
         <div className="mt-auto p-4 space-y-3">
-          <div className="rounded-xl border bg-white p-4">
-            <div className="text-sm font-semibold">Download</div>
-            <div className="mt-1 text-xs text-slate-500">
+          <div className="rounded-xl border border-base bg-surface p-4">
+            <div className="text-sm font-semibold text-foreground">Download</div>
+            <div className="mt-1 text-xs text-muted-fg">
               샘플 카드 영역입니다. (예시안 레이아웃 참고)
             </div>
             <Button className="mt-3 w-full" variant="outline">
@@ -91,13 +91,13 @@ export default function Sidebar() {
             </Button>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border bg-white p-3">
+          <div className="flex items-center gap-3 rounded-xl border border-base bg-surface p-3">
             <Avatar>
               <AvatarFallback>{user?.name?.slice(0, 1) ?? "U"}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <div className="truncate text-sm font-medium">{user?.name ?? "User"}</div>
-              <div className="truncate text-xs text-slate-500">{user?.username ?? ""}</div>
+              <div className="truncate text-sm font-medium text-foreground">{user?.name ?? "User"}</div>
+              <div className="truncate text-xs text-muted-fg">{user?.username ?? ""}</div>
             </div>
           </div>
         </div>

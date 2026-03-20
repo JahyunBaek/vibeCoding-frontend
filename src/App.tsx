@@ -1,11 +1,17 @@
 import { useEffect, useRef } from "react";
 import { useAuthStore, UserSummary } from "@/stores/auth";
+import { useThemeStore } from "@/stores/theme";
 import AppRoutes from "@/routes/AppRoutes";
 import { api, apiRequest } from "@/lib/api";
 
 export default function App() {
   const { initialized, setInitialized, setAuth, clear, setPermissions } = useAuthStore();
+  const { isDark } = useThemeStore();
   const bootRanRef = useRef(false);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDark);
+  }, [isDark]);
 
   useEffect(() => {
     if (initialized) return;

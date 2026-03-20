@@ -2,14 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── 라이트 토큰 ──────────────────────────────── */
 :root {
   color-scheme: light;
+  --background:        255 255 255;   /* 페이지 배경     bg-background      */
+  --surface:           255 255 255;   /* 카드/패널 배경  bg-surface         */
+  --muted:             248 250 252;   /* 흐린 배경       bg-muted           */
+  --accent:            241 245 249;   /* 호버/선택 배경  bg-accent          */
+  --foreground:         15  23  42;   /* 기본 텍스트     text-foreground    */
+  --muted-foreground:  100 116 139;   /* 보조 텍스트     text-muted-fg      */
+  --border:            226 232 240;   /* 선              border-base        */
 }
 
+/* ─── 다크 토큰 ────────────────────────────────── */
+.dark {
+  color-scheme: dark;
+  --background:         15  23  42;   /* slate-900 */
+  --surface:            30  41  59;   /* slate-800 */
+  --muted:              15  23  42;   /* slate-900 */
+  --accent:             51  65  85;   /* slate-700 */
+  --foreground:        241 245 249;   /* slate-100 */
+  --muted-foreground:  148 163 184;   /* slate-400 */
+  --border:             51  65  85;   /* slate-700 */
+}
+
+/* ─── 전역 기본값 ──────────────────────────────── */
 body {
-  @apply bg-white text-slate-900;
+  @apply bg-background text-foreground;
 }
 
 * {
-  @apply border-slate-200;
+  @apply border-base;
 }
