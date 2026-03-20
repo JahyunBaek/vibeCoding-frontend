@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+﻿import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ChevronRight, ChevronDown, Minus, MoreHorizontal, Pencil, Trash2, Plus, X, Link2, Search } from "lucide-react";
 import { api } from "@/lib/api";
@@ -169,7 +169,7 @@ export default function AdminMenusPage() {
           <CardTitle>메뉴 트리</CardTitle>
           <div className="flex items-center gap-2 ml-auto mr-2">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input
                 className="pl-9 w-56"
                 placeholder="메뉴 이름 검색..."
@@ -178,7 +178,7 @@ export default function AdminMenusPage() {
               />
             </div>
             {isSearching && (
-              <span className="text-xs text-slate-400">검색 결과 {searchRows.length}개</span>
+              <span className="text-xs text-muted-fg">검색 결과 {searchRows.length}개</span>
             )}
           </div>
           <Button
@@ -192,11 +192,11 @@ export default function AdminMenusPage() {
 
         {/* Create Form */}
         {showCreate && (
-          <div className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 space-y-3">
-            <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">새 메뉴</div>
+          <div className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-4 space-y-3">
+            <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">새 메뉴</div>
             <div className="flex flex-wrap gap-2">
               <select
-                className="h-9 rounded-md border bg-white px-3 text-sm text-slate-700 w-52"
+                className="h-9 rounded-md border bg-surface px-3 text-sm text-foreground w-52"
                 value={cParentId}
                 onChange={(e) => setCParentId(e.target.value)}
               >
@@ -215,7 +215,7 @@ export default function AdminMenusPage() {
                 placeholder="순서"
               />
               <select
-                className="h-9 rounded-md border bg-white px-3 text-sm text-slate-700"
+                className="h-9 rounded-md border bg-surface px-3 text-sm text-foreground"
                 value={cMenuType}
                 onChange={(e) => setCMenuType(e.target.value)}
               >
@@ -224,7 +224,7 @@ export default function AdminMenusPage() {
               </select>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-xs text-slate-500">권한:</span>
+              <span className="text-xs text-muted-fg">권한:</span>
               <div className="flex flex-wrap gap-3">
                 {(roles ?? []).map((r: any) => (
                   <label key={r.roleKey} className="flex items-center gap-1.5 text-xs cursor-pointer">
@@ -241,13 +241,13 @@ export default function AdminMenusPage() {
 
         {/* Edit Panel */}
         {editNode && (
-          <div className="mx-6 mb-4 rounded-lg border border-blue-200 bg-blue-50/50 p-4 space-y-3">
+          <div className="mx-6 mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10/50 p-4 space-y-3">
             <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
               편집 중 — {editNode.name} <span className="text-blue-400">(ID: {editNode.menuId})</span>
             </div>
             <div className="flex flex-wrap gap-2">
               <select
-                className="h-9 rounded-md border bg-white px-3 text-sm text-slate-700 w-52"
+                className="h-9 rounded-md border bg-surface px-3 text-sm text-foreground w-52"
                 value={editParentId}
                 onChange={(e) => setEditParentId(e.target.value)}
               >
@@ -273,7 +273,7 @@ export default function AdminMenusPage() {
               </label>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-xs text-slate-500">권한 재설정 (선택 시 덮어씀):</span>
+              <span className="text-xs text-muted-fg">권한 재설정 (선택 시 덮어씀):</span>
               <div className="flex flex-wrap gap-3">
                 {(roles ?? []).map((r: any) => (
                   <label key={r.roleKey} className="flex items-center gap-1.5 text-xs cursor-pointer">
@@ -294,7 +294,7 @@ export default function AdminMenusPage() {
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-slate-50 text-xs text-slate-500">
+              <tr className="border-b bg-muted text-xs text-muted-fg">
                 <th className="px-4 py-3 text-left font-medium">이름</th>
                 <th className="px-4 py-3 text-left font-medium">경로</th>
                 <th className="px-4 py-3 text-left font-medium">타입</th>
@@ -307,7 +307,7 @@ export default function AdminMenusPage() {
               {rows.map((row) => (
                 <tr
                   key={row.menuId}
-                  className={`hover:bg-slate-50/60 transition-colors ${editNode?.menuId === row.menuId ? "bg-blue-50/30" : ""}`}
+                  className={`hover:bg-muted/60 transition-colors ${editNode?.menuId === row.menuId ? "bg-blue-500/10/30" : ""}`}
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1" style={{ paddingLeft: `${row.depth * 20}px` }}>
@@ -317,24 +317,24 @@ export default function AdminMenusPage() {
                       {!isSearching && row.hasChildren ? (
                         <button
                           onClick={() => toggleCollapse(row.menuId)}
-                          className="p-0.5 rounded hover:bg-slate-200 transition-colors"
+                          className="p-0.5 rounded hover:bg-accent transition-colors"
                         >
                           {row.isCollapsed
-                            ? <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
-                            : <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
+                            ? <ChevronRight className="h-3.5 w-3.5 text-muted-fg" />
+                            : <ChevronDown className="h-3.5 w-3.5 text-muted-fg" />
                           }
                         </button>
                       ) : (
                         <Minus className="h-3 w-3 text-slate-300 mx-0.5" />
                       )}
-                      <span className={`ml-1 ${row.hasChildren ? "font-medium text-slate-800" : "text-slate-700"}`}>
+                      <span className={`ml-1 ${row.hasChildren ? "font-medium text-foreground" : "text-foreground"}`}>
                         {row.name}
                       </span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     {row.path ? (
-                      <div className="flex items-center gap-1 font-mono text-xs text-slate-500">
+                      <div className="flex items-center gap-1 font-mono text-xs text-muted-fg">
                         <Link2 className="h-3 w-3" />{row.path}
                       </div>
                     ) : (
@@ -346,7 +346,7 @@ export default function AdminMenusPage() {
                       {row.menuType}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">{row.sortOrder}</td>
+                  <td className="px-4 py-3 text-xs text-muted-fg">{row.sortOrder}</td>
                   <td className="px-4 py-3">
                     <Badge variant={row.useYn ? "default" : "secondary"}>{row.useYn ? "Y" : "N"}</Badge>
                   </td>
@@ -363,7 +363,7 @@ export default function AdminMenusPage() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                          className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                           onClick={() => onDelete(row)}
                         >
                           <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
@@ -375,14 +375,14 @@ export default function AdminMenusPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">
+                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-fg">
                     {isSearching ? "검색 결과가 없습니다." : "메뉴가 없습니다."}
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
-          <div className="border-t px-4 py-3 text-xs text-slate-400">
+          <div className="border-t px-4 py-3 text-xs text-muted-fg">
             게시판 생성/삭제 시 <span className="font-mono">Boards</span> 하위 메뉴가 자동으로 추가/삭제됩니다.
           </div>
         </CardContent>

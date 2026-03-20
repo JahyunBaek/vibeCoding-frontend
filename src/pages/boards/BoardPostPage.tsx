@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import DOMPurify from "dompurify";
 import { useAuthStore } from "@/stores/auth";
 import { useAction } from "@/hooks/useAction";
 import { SCREENS, ACTIONS } from "@/config/permissions";
@@ -9,6 +10,7 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import RichEditor from "@/components/RichEditor";
 
 function getExt(name: string): string {
   return name.split(".").pop()?.toUpperCase() ?? "FILE";
@@ -16,15 +18,15 @@ function getExt(name: string): string {
 
 function extColor(ext: string): string {
   const map: Record<string, string> = {
-    PDF: "bg-red-100 text-red-600",
-    DOC: "bg-blue-100 text-blue-600", DOCX: "bg-blue-100 text-blue-600",
-    XLS: "bg-emerald-100 text-emerald-600", XLSX: "bg-emerald-100 text-emerald-600",
-    PPT: "bg-orange-100 text-orange-600", PPTX: "bg-orange-100 text-orange-600",
-    JPG: "bg-purple-100 text-purple-600", JPEG: "bg-purple-100 text-purple-600",
-    PNG: "bg-purple-100 text-purple-600", GIF: "bg-purple-100 text-purple-600",
-    ZIP: "bg-yellow-100 text-yellow-600", RAR: "bg-yellow-100 text-yellow-600",
+    PDF: "bg-red-500/20 text-red-400",
+    DOC: "bg-blue-500/20 text-blue-400", DOCX: "bg-blue-500/20 text-blue-400",
+    XLS: "bg-emerald-500/20 text-emerald-400", XLSX: "bg-emerald-500/20 text-emerald-400",
+    PPT: "bg-orange-500/20 text-orange-400", PPTX: "bg-orange-500/20 text-orange-400",
+    JPG: "bg-purple-500/20 text-purple-400", JPEG: "bg-purple-500/20 text-purple-400",
+    PNG: "bg-purple-500/20 text-purple-400", GIF: "bg-purple-500/20 text-purple-400",
+    ZIP: "bg-yellow-500/20 text-yellow-400", RAR: "bg-yellow-500/20 text-yellow-400",
   };
-  return map[ext] ?? "bg-slate-100 text-slate-500";
+  return map[ext] ?? "bg-accent text-muted-fg";
 }
 
 function formatSize(bytes?: number): string | null {
@@ -76,16 +78,16 @@ function FileAttachment({ f }: { f: any }) {
     <button
       onClick={handleDownload}
       disabled={downloading}
-      className="group flex w-full items-center gap-3 rounded-lg border bg-white p-3 text-left shadow-sm transition-all hover:border-slate-300 hover:shadow-md disabled:opacity-60"
+      className="group flex w-full items-center gap-3 rounded-lg border border-base bg-surface p-3 text-left transition-all hover:border-blue-500/40 hover:bg-accent disabled:opacity-60"
     >
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold ${extColor(ext)}`}>
         {ext.slice(0, 4)}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium text-slate-800 group-hover:text-slate-900">{f.originalName}</div>
-        {size && <div className="mt-0.5 text-xs text-slate-400">{size}</div>}
+        <div className="truncate text-sm font-medium text-foreground">{f.originalName}</div>
+        {size && <div className="mt-0.5 text-xs text-muted-fg">{size}</div>}
       </div>
-      <div className={`shrink-0 rounded-md p-1.5 transition-colors ${downloading ? "text-slate-300" : "text-slate-300 group-hover:bg-slate-100 group-hover:text-slate-600"}`}>
+      <div className={`shrink-0 rounded-md p-1.5 transition-colors ${downloading ? "opacity-30" : "text-muted-fg group-hover:bg-accent group-hover:text-foreground"}`}>
         <Download className="h-4 w-4" />
       </div>
     </button>
@@ -95,18 +97,15 @@ function FileAttachment({ f }: { f: any }) {
 function CommentItem({ c }: { c: any }) {
   return (
     <div className="flex gap-3">
-      {/* Avatar */}
       <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${avatarColor(c.authorName ?? "")}`}>
         {getInitials(c.authorName ?? "")}
       </div>
-
-      {/* Bubble */}
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
-          <span className="text-sm font-semibold text-slate-800">{c.authorName}</span>
-          <span className="text-xs text-slate-400">{formatRelativeTime(c.createdAt)}</span>
+          <span className="text-sm font-semibold text-foreground">{c.authorName}</span>
+          <span className="text-xs text-muted-fg">{formatRelativeTime(c.createdAt)}</span>
         </div>
-        <div className="mt-1 rounded-2xl rounded-tl-sm bg-slate-50 px-4 py-2.5 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap border border-slate-100">
+        <div className="mt-1 rounded-2xl rounded-tl-sm bg-accent px-4 py-2.5 text-sm text-foreground leading-relaxed whitespace-pre-wrap border border-base">
           {c.content}
         </div>
       </div>
@@ -174,7 +173,6 @@ export default function BoardPostPage() {
     }
   };
 
-  // 텍스트 입력에 따라 textarea 높이 자동 조절
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setComment(e.target.value);
     e.target.style.height = "auto";
@@ -195,7 +193,7 @@ export default function BoardPostPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <div className="flex items-center justify-between">
-        <Link to={`/boards/${boardId}`} className="text-sm text-slate-500 hover:text-slate-800 transition-colors">
+        <Link to={`/boards/${boardId}`} className="text-sm text-muted-fg hover:text-foreground transition-colors">
           ← 목록으로
         </Link>
         {(canEdit || canDelete) && (
@@ -211,7 +209,7 @@ export default function BoardPostPage() {
               )
             )}
             {canDelete && (
-              <Button variant="outline" size="sm" onClick={onDelete} className="text-red-500 hover:text-red-600 hover:border-red-300">삭제</Button>
+              <Button variant="outline" size="sm" onClick={onDelete} className="text-red-400 hover:text-red-300 hover:border-red-500/40">삭제</Button>
             )}
           </div>
         )}
@@ -231,30 +229,39 @@ export default function BoardPostPage() {
               <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-white ${avatarColor(data.authorName)}`}>
                 {getInitials(data.authorName)}
               </div>
-              <span className="text-sm text-slate-600">{data.authorName}</span>
+              <span className="text-sm text-muted-fg">{data.authorName}</span>
               {data?.createdAt && (
-                <span className="text-xs text-slate-400">{formatRelativeTime(data.createdAt)}</span>
+                <span className="text-xs text-muted-fg">{formatRelativeTime(data.createdAt)}</span>
               )}
             </div>
           )}
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="border-t pt-4">
+          <div className="border-t border-base pt-4">
             {edit ? (
-              <textarea
-                className="min-h-[220px] w-full resize-none rounded-md border bg-white p-3 text-sm outline-none focus:ring-2 focus:ring-slate-400"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-              />
+              <RichEditor value={content} onChange={setContent} />
             ) : (
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{data?.content}</div>
+              <div
+                className="prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(data?.content ?? "", {
+                    ALLOWED_TAGS: [
+                      "p","br","strong","em","u","s","strike",
+                      "h2","h3","ul","ol","li","blockquote","pre","code",
+                      "a","img","hr","span","div",
+                    ],
+                    ALLOWED_ATTR: ["href","src","alt","width","height","class","style","rel","target"],
+                    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|\/images):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))/i,
+                  }),
+                }}
+              />
             )}
           </div>
 
           {/* Attachments */}
           {files.length > 0 && (
-            <div className="border-t pt-4">
-              <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+            <div className="border-t border-base pt-4">
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-fg">
                 <Paperclip className="h-3.5 w-3.5" />
                 첨부파일 {files.length}개
               </div>
@@ -270,11 +277,11 @@ export default function BoardPostPage() {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-slate-500" />
+            <MessageSquare className="h-4 w-4 text-muted-fg" />
             <CardTitle className="text-base">
               댓글
               {commentList.length > 0 && (
-                <span className="ml-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+                <span className="ml-1.5 rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-muted-fg">
                   {commentList.length}
                 </span>
               )}
@@ -283,7 +290,6 @@ export default function BoardPostPage() {
         </CardHeader>
         <CardContent className="space-y-5">
 
-          {/* Comment list */}
           {commentList.length > 0 ? (
             <div className="space-y-4">
               {commentList.map((c: any) => (
@@ -291,22 +297,21 @@ export default function BoardPostPage() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-2 py-8 text-slate-400">
+            <div className="flex flex-col items-center gap-2 py-8 text-muted-fg">
               <MessageSquare className="h-8 w-8 opacity-30" />
               <span className="text-sm">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</span>
             </div>
           )}
 
-          {/* Divider */}
-          {commentList.length > 0 && <div className="border-t" />}
+          {commentList.length > 0 && <div className="border-t border-base" />}
 
           {/* Comment input */}
           <div className="flex gap-3">
-            <div className="shrink-0 h-9 w-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 text-xs font-semibold">
+            <div className="shrink-0 h-9 w-9 rounded-full bg-accent flex items-center justify-center text-muted-fg text-xs font-semibold">
               나
             </div>
             <div className="flex-1 min-w-0">
-              <div className="relative rounded-2xl border border-slate-200 bg-slate-50 focus-within:border-slate-400 focus-within:bg-white transition-colors">
+              <div className="relative rounded-2xl border border-base bg-accent focus-within:border-blue-500/50 focus-within:bg-surface transition-colors">
                 <textarea
                   ref={textareaRef}
                   rows={1}
@@ -315,17 +320,17 @@ export default function BoardPostPage() {
                   onKeyDown={handleCommentKeyDown}
                   placeholder="댓글을 입력하세요... (Ctrl+Enter로 등록)"
                   disabled={submittingComment}
-                  className="w-full resize-none bg-transparent px-4 py-2.5 pr-12 text-sm text-slate-700 placeholder:text-slate-400 outline-none disabled:opacity-60 max-h-40 overflow-y-auto"
+                  className="w-full resize-none bg-transparent px-4 py-2.5 pr-12 text-sm text-foreground placeholder:text-muted-fg outline-none disabled:opacity-60 max-h-40 overflow-y-auto"
                 />
                 <button
                   onClick={onAddComment}
                   disabled={!comment.trim() || submittingComment}
-                  className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-slate-800 text-white transition-all hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white transition-all hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <Send className="h-3.5 w-3.5" />
                 </button>
               </div>
-              <div className="mt-1 text-right text-[11px] text-slate-400">Ctrl+Enter로 등록</div>
+              <div className="mt-1 text-right text-[11px] text-muted-fg">Ctrl+Enter로 등록</div>
             </div>
           </div>
 

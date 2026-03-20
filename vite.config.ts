@@ -16,6 +16,10 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       host: true,
       proxy: {
+        "/images": {
+          target,
+          changeOrigin: true,
+        },
         "/api": {
           target,
           changeOrigin: true,

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+﻿import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { AlertCircle, CheckCircle2, KeyRound, User as UserIcon } from "lucide-react";
 import { api } from "@/lib/api";
@@ -70,13 +70,13 @@ export default function MyInfoPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <h1 className="text-xl font-bold text-slate-800">내 정보</h1>
+      <h1 className="text-xl font-bold text-foreground">내 정보</h1>
 
       {/* Profile card */}
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
-            <UserIcon className="h-4 w-4 text-slate-500" />
+            <UserIcon className="h-4 w-4 text-muted-fg" />
             프로필
           </CardTitle>
         </CardHeader>
@@ -88,15 +88,15 @@ export default function MyInfoPage() {
               {initials}
             </div>
             <div>
-              <div className="text-xs text-slate-400">Login ID</div>
-              <div className="mt-0.5 font-mono text-sm font-semibold text-slate-700">{data?.username}</div>
-              <div className="mt-1 text-xs text-slate-400">Role: {data?.roleKey}</div>
+              <div className="text-xs text-muted-fg">Login ID</div>
+              <div className="mt-0.5 font-mono text-sm font-semibold text-foreground">{data?.username}</div>
+              <div className="mt-1 text-xs text-muted-fg">Role: {data?.roleKey}</div>
             </div>
           </div>
 
           {/* Name */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-slate-600">이름</label>
+            <label className="text-xs font-medium text-muted-fg">이름</label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -112,7 +112,7 @@ export default function MyInfoPage() {
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
-            <KeyRound className="h-4 w-4 text-slate-500" />
+            <KeyRound className="h-4 w-4 text-muted-fg" />
             비밀번호
           </CardTitle>
         </CardHeader>
@@ -134,16 +134,16 @@ export default function MyInfoPage() {
                 }}
                 disabled={saving}
               />
-              <div className={`h-5 w-9 rounded-full transition-colors ${changePassword ? "bg-slate-800" : "bg-slate-200"}`} />
-              <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${changePassword ? "translate-x-4" : "translate-x-0.5"}`} />
+              <div className={`h-5 w-9 rounded-full transition-colors ${changePassword ? "bg-slate-800" : "bg-accent"}`} />
+              <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-surface shadow transition-transform ${changePassword ? "translate-x-4" : "translate-x-0.5"}`} />
             </div>
-            <span className="text-sm font-medium text-slate-700">비밀번호 변경</span>
+            <span className="text-sm font-medium text-foreground">비밀번호 변경</span>
           </label>
 
           {changePassword && (
-            <div className="space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
+            <div className="space-y-3 rounded-xl border border-dashed border-slate-300 bg-muted p-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-600">현재 비밀번호</label>
+                <label className="text-xs font-medium text-muted-fg">현재 비밀번호</label>
                 <Input
                   type="password"
                   value={currentPassword}
@@ -154,7 +154,7 @@ export default function MyInfoPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-600">새 비밀번호</label>
+                <label className="text-xs font-medium text-muted-fg">새 비밀번호</label>
                 <Input
                   type="password"
                   value={newPassword}
@@ -165,7 +165,7 @@ export default function MyInfoPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-600">새 비밀번호 확인</label>
+                <label className="text-xs font-medium text-muted-fg">새 비밀번호 확인</label>
                 <Input
                   type="password"
                   value={confirmPassword}
@@ -175,7 +175,7 @@ export default function MyInfoPage() {
                   autoComplete="new-password"
                 />
                 {confirmPassword && newPassword !== confirmPassword && (
-                  <p className="text-xs text-red-500">비밀번호가 일치하지 않습니다.</p>
+                  <p className="text-xs text-red-400">비밀번호가 일치하지 않습니다.</p>
                 )}
                 {confirmPassword && newPassword === confirmPassword && newPassword.length >= 8 && (
                   <p className="flex items-center gap-1 text-xs text-emerald-600">
@@ -191,7 +191,7 @@ export default function MyInfoPage() {
 
       {/* Feedback */}
       {error && (
-        <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+        <div className="flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           {error}
         </div>

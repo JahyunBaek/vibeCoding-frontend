@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+﻿import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "@/lib/api";
@@ -22,7 +22,7 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
       <button
         disabled={page <= 1}
         onClick={() => onChange(page - 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
       >
         <ChevronLeft className="h-3.5 w-3.5" />
       </button>
@@ -35,12 +35,12 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
         }, [])
         .map((p, i) =>
           p === "..." ? (
-            <span key={`e-${i}`} className="px-1 text-xs text-slate-400">…</span>
+            <span key={`e-${i}`} className="px-1 text-xs text-muted-fg">…</span>
           ) : (
             <button
               key={p}
               onClick={() => onChange(p as number)}
-              className={`flex h-7 w-7 items-center justify-center rounded text-xs font-medium transition-colors ${p === page ? "bg-slate-800 text-white" : "border text-slate-600 hover:bg-slate-50"}`}
+              className={`flex h-7 w-7 items-center justify-center rounded text-xs font-medium transition-colors ${p === page ? "bg-blue-600 text-white" : "border text-muted-fg hover:bg-muted"}`}
             >
               {p}
             </button>
@@ -49,7 +49,7 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
       <button
         disabled={page >= totalPages}
         onClick={() => onChange(page + 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
       >
         <ChevronRight className="h-3.5 w-3.5" />
       </button>
@@ -150,7 +150,7 @@ export default function AdminUsersPage() {
           <CardTitle>사용자 목록</CardTitle>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input
                 className="pl-9 w-52"
                 placeholder="이름, ID, 역할 검색..."
@@ -158,7 +158,7 @@ export default function AdminUsersPage() {
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
-            <span className="text-xs text-slate-400">{filtered.length}명</span>
+            <span className="text-xs text-muted-fg">{filtered.length}명</span>
             <Button
               variant="outline"
               onClick={() => { setShowCreate((v) => !v); setEditUser(null); }}
@@ -171,14 +171,14 @@ export default function AdminUsersPage() {
 
         {/* Create Form */}
         {showCreate && (
-          <div className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 space-y-3">
-            <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">새 사용자</div>
+          <div className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-4 space-y-3">
+            <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">새 사용자</div>
             <div className="grid gap-2 md:grid-cols-2">
               <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username" />
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="이름" />
               <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호" />
               <select
-                className="h-9 rounded-md border bg-white px-3 text-sm"
+                className="h-9 rounded-md border bg-surface px-3 text-sm"
                 value={roleKey}
                 onChange={(e) => setRoleKey(e.target.value)}
               >
@@ -187,7 +187,7 @@ export default function AdminUsersPage() {
                 ))}
               </select>
               <select
-                className="h-9 rounded-md border bg-white px-3 text-sm"
+                className="h-9 rounded-md border bg-surface px-3 text-sm"
                 value={orgId}
                 onChange={(e) => setOrgId(e.target.value)}
               >
@@ -206,14 +206,14 @@ export default function AdminUsersPage() {
 
         {/* Edit Panel */}
         {editUser && (
-          <div className="mx-6 mb-4 rounded-lg border border-blue-200 bg-blue-50/50 p-4 space-y-3">
+          <div className="mx-6 mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10/50 p-4 space-y-3">
             <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
               편집 중 — {editUser.username} <span className="text-blue-400">(ID: {editUser.userId})</span>
             </div>
             <div className="grid gap-2 md:grid-cols-3">
               <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="이름" />
               <select
-                className="h-9 rounded-md border bg-white px-3 text-sm"
+                className="h-9 rounded-md border bg-surface px-3 text-sm"
                 value={editRoleKey}
                 onChange={(e) => setEditRoleKey(e.target.value)}
               >
@@ -222,7 +222,7 @@ export default function AdminUsersPage() {
                 ))}
               </select>
               <select
-                className="h-9 rounded-md border bg-white px-3 text-sm"
+                className="h-9 rounded-md border bg-surface px-3 text-sm"
                 value={editOrgId}
                 onChange={(e) => setEditOrgId(e.target.value)}
               >
@@ -243,7 +243,7 @@ export default function AdminUsersPage() {
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-slate-50 text-xs text-slate-500">
+              <tr className="border-b bg-muted text-xs text-muted-fg">
                 <th className="px-4 py-3 text-left font-medium">ID</th>
                 <th className="px-4 py-3 text-left font-medium">Login ID</th>
                 <th className="px-4 py-3 text-left font-medium">이름</th>
@@ -256,15 +256,15 @@ export default function AdminUsersPage() {
               {paged.map((u: any) => (
                 <tr
                   key={u.userId}
-                  className={`hover:bg-slate-50/60 transition-colors ${editUser?.userId === u.userId ? "bg-blue-50/30" : ""}`}
+                  className={`hover:bg-muted/60 transition-colors ${editUser?.userId === u.userId ? "bg-blue-500/10/30" : ""}`}
                 >
-                  <td className="px-4 py-3 text-xs text-slate-400 font-mono">{u.userId}</td>
+                  <td className="px-4 py-3 text-xs text-muted-fg font-mono">{u.userId}</td>
                   <td className="px-4 py-3 font-mono font-medium">{u.username}</td>
                   <td className="px-4 py-3">{u.name}</td>
                   <td className="px-4 py-3">
                     <Badge variant="secondary">{u.roleKey}</Badge>
                   </td>
-                  <td className="px-4 py-3 text-slate-500 text-xs">
+                  <td className="px-4 py-3 text-muted-fg text-xs">
                     {u.orgId != null ? (orgNameMap.get(u.orgId) ?? u.orgId) : "—"}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -280,7 +280,7 @@ export default function AdminUsersPage() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                          className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                           onClick={() => onDelete(u)}
                         >
                           <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
@@ -292,7 +292,7 @@ export default function AdminUsersPage() {
               ))}
               {paged.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-400">
+                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-fg">
                     {search ? "검색 결과가 없습니다." : "사용자가 없습니다."}
                   </td>
                 </tr>

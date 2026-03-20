@@ -9,13 +9,13 @@ type ThemeState = {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
-      isDark: false,
+      isDark: true,
       toggle: () => {
         const next = !get().isDark;
         set({ isDark: next });
         document.documentElement.classList.toggle("dark", next);
       },
     }),
-    { name: "theme" }
+    { name: "theme-v2" }
   )
 );

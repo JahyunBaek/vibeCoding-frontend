@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+﻿import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ChevronRight, ChevronDown, Minus, MoreHorizontal, Pencil, Trash2, Plus, X, Search } from "lucide-react";
 import { api } from "@/lib/api";
@@ -128,7 +128,7 @@ export default function AdminOrgsPage() {
           <CardTitle>조직 트리</CardTitle>
           <div className="flex items-center gap-2 ml-auto mr-2">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input
                 className="pl-9 w-56"
                 placeholder="조직 이름 검색..."
@@ -137,7 +137,7 @@ export default function AdminOrgsPage() {
               />
             </div>
             {isSearching && (
-              <span className="text-xs text-slate-400">검색 결과 {searchRows.length}개</span>
+              <span className="text-xs text-muted-fg">검색 결과 {searchRows.length}개</span>
             )}
           </div>
           <Button
@@ -151,11 +151,11 @@ export default function AdminOrgsPage() {
 
         {/* Create Form */}
         {showCreate && (
-          <div className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 space-y-3">
-            <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">새 조직</div>
+          <div className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-4 space-y-3">
+            <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">새 조직</div>
             <div className="flex gap-2">
               <select
-                className="h-9 rounded-md border bg-white px-3 text-sm text-slate-700 w-52"
+                className="h-9 rounded-md border bg-surface px-3 text-sm text-foreground w-52"
                 value={parentId}
                 onChange={(e) => setParentId(e.target.value)}
               >
@@ -178,13 +178,13 @@ export default function AdminOrgsPage() {
 
         {/* Edit Panel */}
         {editNode && (
-          <div className="mx-6 mb-4 rounded-lg border border-blue-200 bg-blue-50/50 p-4 space-y-3">
+          <div className="mx-6 mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10/50 p-4 space-y-3">
             <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
               편집 중 — {editNode.name} <span className="text-blue-400">(ID: {editNode.orgId})</span>
             </div>
             <div className="flex gap-2">
               <select
-                className="h-9 rounded-md border bg-white px-3 text-sm text-slate-700 w-52"
+                className="h-9 rounded-md border bg-surface px-3 text-sm text-foreground w-52"
                 value={editParentId}
                 onChange={(e) => setEditParentId(e.target.value)}
               >
@@ -211,7 +211,7 @@ export default function AdminOrgsPage() {
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-slate-50 text-xs text-slate-500">
+              <tr className="border-b bg-muted text-xs text-muted-fg">
                 <th className="px-4 py-3 text-left font-medium">이름</th>
                 <th className="px-4 py-3 text-left font-medium">ID</th>
                 <th className="px-4 py-3 text-left font-medium">상위 ID</th>
@@ -223,7 +223,7 @@ export default function AdminOrgsPage() {
               {rows.map((row) => (
                 <tr
                   key={row.orgId}
-                  className={`hover:bg-slate-50/60 transition-colors ${editNode?.orgId === row.orgId ? "bg-blue-50/30" : ""}`}
+                  className={`hover:bg-muted/60 transition-colors ${editNode?.orgId === row.orgId ? "bg-blue-500/10/30" : ""}`}
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1" style={{ paddingLeft: `${row.depth * 20}px` }}>
@@ -233,23 +233,23 @@ export default function AdminOrgsPage() {
                       {!isSearching && row.hasChildren ? (
                         <button
                           onClick={() => toggleCollapse(row.orgId)}
-                          className="p-0.5 rounded hover:bg-slate-200 transition-colors"
+                          className="p-0.5 rounded hover:bg-accent transition-colors"
                         >
                           {row.isCollapsed
-                            ? <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
-                            : <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
+                            ? <ChevronRight className="h-3.5 w-3.5 text-muted-fg" />
+                            : <ChevronDown className="h-3.5 w-3.5 text-muted-fg" />
                           }
                         </button>
                       ) : (
                         <Minus className="h-3 w-3 text-slate-300 mx-0.5" />
                       )}
-                      <span className={`ml-1 ${row.hasChildren ? "font-medium text-slate-800" : "text-slate-700"}`}>
+                      <span className={`ml-1 ${row.hasChildren ? "font-medium text-foreground" : "text-foreground"}`}>
                         {row.name}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-mono text-slate-500 text-xs">{row.orgId}</td>
-                  <td className="px-4 py-3 font-mono text-slate-400 text-xs">{row.parentId ?? "—"}</td>
+                  <td className="px-4 py-3 font-mono text-muted-fg text-xs">{row.orgId}</td>
+                  <td className="px-4 py-3 font-mono text-muted-fg text-xs">{row.parentId ?? "—"}</td>
                   <td className="px-4 py-3">
                     <Badge variant={row.useYn ? "default" : "secondary"}>{row.useYn ? "Y" : "N"}</Badge>
                   </td>
@@ -266,7 +266,7 @@ export default function AdminOrgsPage() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                          className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                           onClick={() => onDelete(row)}
                         >
                           <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
@@ -278,7 +278,7 @@ export default function AdminOrgsPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-slate-400">
+                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-fg">
                     {isSearching ? "검색 결과가 없습니다." : "조직이 없습니다."}
                   </td>
                 </tr>

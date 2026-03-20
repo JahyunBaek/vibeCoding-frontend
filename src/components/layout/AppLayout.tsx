@@ -4,15 +4,13 @@ import Topbar from "./Topbar";
 
 export default function AppLayout() {
   return (
-    <div className="min-h-screen bg-muted">
-      <div className="flex">
-        <Sidebar />
-        <div className="flex-1">
-          <Topbar />
-          <main className="p-6">
-            <Outlet />
-          </main>
-        </div>
+    <div className="flex h-screen overflow-hidden bg-muted">
+      <Sidebar />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Topbar />
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

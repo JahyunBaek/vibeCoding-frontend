@@ -208,8 +208,17 @@ export const api = {
     apiRequest<void>("PUT", `/api/admin/boards/${boardId}`, { name, description, useYn }),
   boardsAdminDelete: (boardId: number) => apiRequest<void>("DELETE", `/api/admin/boards/${boardId}`),
 
-  postsList: (boardId: string, page = 1, size = 10) =>
-    apiRequest<any>("GET", `/api/boards/${boardId}/posts?page=${page}&size=${size}`),
+  fileUploadInlineImage: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return apiRequest<{ url: string }>("POST", "/api/files/image", formData, { isFormData: true });
+  },
+
+  postsList: (boardId: string, page = 1, size = 10, search?: string) => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (search) params.set("search", search);
+    return apiRequest<any>("GET", `/api/boards/${boardId}/posts?${params}`);
+  },
   postDetail: (boardId: string, postId: string) => apiRequest<any>("GET", `/api/boards/${boardId}/posts/${postId}`),
   postCreate: (boardId: string, title: string, content: string, fileIds: number[], idempotencyKey?: string) =>
     apiRequest<number>("POST", `/api/boards/${boardId}/posts`, { title, content, fileIds },

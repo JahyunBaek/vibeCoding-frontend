@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+﻿import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { MoreHorizontal, Pencil, Trash2, Plus, X } from "lucide-react";
 import { api } from "@/lib/api";
@@ -131,8 +131,8 @@ export default function AdminCodesPage() {
           </CardHeader>
 
           {showGroupCreate && (
-            <div className="mx-4 mb-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 space-y-2">
-              <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">새 그룹</div>
+            <div className="mx-4 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-3 space-y-2">
+              <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">새 그룹</div>
               <div className="flex gap-2">
                 <Input value={gKey} onChange={(e) => setGKey(e.target.value)} placeholder="GROUP_KEY" />
                 <Input value={gName} onChange={(e) => setGName(e.target.value)} placeholder="그룹 이름" />
@@ -143,7 +143,7 @@ export default function AdminCodesPage() {
           )}
 
           {editGroup && (
-            <div className="mx-4 mb-4 rounded-lg border border-blue-200 bg-blue-50/50 p-3 space-y-2">
+            <div className="mx-4 mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10/50 p-3 space-y-2">
               <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
                 편집 중 — <span className="font-mono">{editGroup.groupKey}</span>
               </div>
@@ -162,7 +162,7 @@ export default function AdminCodesPage() {
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b bg-slate-50 text-xs text-slate-500">
+                <tr className="border-b bg-muted text-xs text-muted-fg">
                   <th className="px-4 py-2.5 text-left font-medium">Key</th>
                   <th className="px-4 py-2.5 text-left font-medium">이름</th>
                   <th className="px-4 py-2.5 text-left font-medium">사용</th>
@@ -174,12 +174,12 @@ export default function AdminCodesPage() {
                   <tr
                     key={g.groupKey}
                     onClick={() => selectGroup(g.groupKey)}
-                    className={`cursor-pointer hover:bg-slate-50/60 transition-colors ${
-                      selected === g.groupKey ? "bg-slate-100" : ""
-                    } ${editGroup?.groupKey === g.groupKey ? "bg-blue-50/30" : ""}`}
+                    className={`cursor-pointer hover:bg-muted/60 transition-colors ${
+                      selected === g.groupKey ? "bg-accent" : ""
+                    } ${editGroup?.groupKey === g.groupKey ? "bg-blue-500/10/30" : ""}`}
                   >
                     <td className="px-4 py-2.5 font-mono font-medium text-xs">{g.groupKey}</td>
-                    <td className="px-4 py-2.5 text-slate-600">{g.groupName}</td>
+                    <td className="px-4 py-2.5 text-muted-fg">{g.groupName}</td>
                     <td className="px-4 py-2.5">
                       <Badge variant={g.useYn ? "default" : "secondary"}>{g.useYn ? "Y" : "N"}</Badge>
                     </td>
@@ -196,7 +196,7 @@ export default function AdminCodesPage() {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                            className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                             onClick={() => onDeleteGroup(g)}
                           >
                             <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
@@ -208,7 +208,7 @@ export default function AdminCodesPage() {
                 ))}
                 {(groups?.items ?? []).length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-sm text-slate-400">그룹이 없습니다.</td>
+                    <td colSpan={4} className="px-4 py-6 text-center text-sm text-muted-fg">그룹이 없습니다.</td>
                   </tr>
                 )}
               </tbody>
@@ -221,7 +221,7 @@ export default function AdminCodesPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle>
               항목
-              {selected && <span className="ml-2 text-xs font-mono text-slate-400">({selected})</span>}
+              {selected && <span className="ml-2 text-xs font-mono text-muted-fg">({selected})</span>}
             </CardTitle>
             {selected && (
               <Button
@@ -235,8 +235,8 @@ export default function AdminCodesPage() {
           </CardHeader>
 
           {selected && showItemCreate && (
-            <div className="mx-4 mb-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3 space-y-2">
-              <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">새 항목</div>
+            <div className="mx-4 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-3 space-y-2">
+              <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">새 항목</div>
               <div className="flex gap-2">
                 <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="CODE" />
                 <Input value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="이름" />
@@ -248,7 +248,7 @@ export default function AdminCodesPage() {
           )}
 
           {editItem && (
-            <div className="mx-4 mb-4 rounded-lg border border-blue-200 bg-blue-50/50 p-3 space-y-2">
+            <div className="mx-4 mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10/50 p-3 space-y-2">
               <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
                 편집 중 — <span className="font-mono">{editItem.code}</span>
               </div>
@@ -274,12 +274,12 @@ export default function AdminCodesPage() {
 
           <CardContent className="p-0">
             {!selected ? (
-              <div className="px-4 py-8 text-center text-sm text-slate-400">왼쪽에서 그룹을 선택하세요.</div>
+              <div className="px-4 py-8 text-center text-sm text-muted-fg">왼쪽에서 그룹을 선택하세요.</div>
             ) : (
               <>
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b bg-slate-50 text-xs text-slate-500">
+                    <tr className="border-b bg-muted text-xs text-muted-fg">
                       <th className="px-4 py-2.5 text-left font-medium">Code</th>
                       <th className="px-4 py-2.5 text-left font-medium">이름</th>
                       <th className="px-4 py-2.5 text-left font-medium">값</th>
@@ -291,11 +291,11 @@ export default function AdminCodesPage() {
                     {(items ?? []).map((it: any) => (
                       <tr
                         key={it.code}
-                        className={`hover:bg-slate-50/60 transition-colors ${editItem?.code === it.code ? "bg-blue-50/30" : ""}`}
+                        className={`hover:bg-muted/60 transition-colors ${editItem?.code === it.code ? "bg-blue-500/10/30" : ""}`}
                       >
                         <td className="px-4 py-2.5 font-mono text-xs font-medium">{it.code}</td>
-                        <td className="px-4 py-2.5 text-slate-600">{it.name}</td>
-                        <td className="px-4 py-2.5 text-slate-400 text-xs">{it.value || "—"}</td>
+                        <td className="px-4 py-2.5 text-muted-fg">{it.name}</td>
+                        <td className="px-4 py-2.5 text-muted-fg text-xs">{it.value || "—"}</td>
                         <td className="px-4 py-2.5">
                           <Badge variant={it.useYn ? "default" : "secondary"}>{it.useYn ? "Y" : "N"}</Badge>
                         </td>
@@ -312,7 +312,7 @@ export default function AdminCodesPage() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                                 onClick={() => onDeleteItem(it)}
                               >
                                 <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
@@ -324,12 +324,12 @@ export default function AdminCodesPage() {
                     ))}
                     {(items ?? []).length === 0 && (
                       <tr>
-                        <td colSpan={5} className="px-4 py-6 text-center text-sm text-slate-400">항목이 없습니다.</td>
+                        <td colSpan={5} className="px-4 py-6 text-center text-sm text-muted-fg">항목이 없습니다.</td>
                       </tr>
                     )}
                   </tbody>
                 </table>
-                <div className="border-t px-4 py-3 text-xs text-slate-400">
+                <div className="border-t px-4 py-3 text-xs text-muted-fg">
                   <span className="font-mono">GET /api/common-codes/{selected}</span> 로 캐시된 목록 조회
                 </div>
               </>

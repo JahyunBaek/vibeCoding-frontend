@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+﻿import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "@/lib/api";
@@ -21,7 +21,7 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
       <button
         disabled={page <= 1}
         onClick={() => onChange(page - 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
       >
         <ChevronLeft className="h-3.5 w-3.5" />
       </button>
@@ -34,12 +34,12 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
         }, [])
         .map((p, i) =>
           p === "..." ? (
-            <span key={`e-${i}`} className="px-1 text-xs text-slate-400">…</span>
+            <span key={`e-${i}`} className="px-1 text-xs text-muted-fg">…</span>
           ) : (
             <button
               key={p}
               onClick={() => onChange(p as number)}
-              className={`flex h-7 w-7 items-center justify-center rounded text-xs font-medium transition-colors ${p === page ? "bg-slate-800 text-white" : "border text-slate-600 hover:bg-slate-50"}`}
+              className={`flex h-7 w-7 items-center justify-center rounded text-xs font-medium transition-colors ${p === page ? "bg-blue-600 text-white" : "border text-muted-fg hover:bg-muted"}`}
             >
               {p}
             </button>
@@ -48,7 +48,7 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
       <button
         disabled={page >= totalPages}
         onClick={() => onChange(page + 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
       >
         <ChevronRight className="h-3.5 w-3.5" />
       </button>
@@ -134,7 +134,7 @@ export default function AdminBoardsPage() {
           <CardTitle>게시판 목록</CardTitle>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input
                 className="pl-9 w-52"
                 placeholder="이름, 설명 검색..."
@@ -142,7 +142,7 @@ export default function AdminBoardsPage() {
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
-            <span className="text-xs text-slate-400">{filtered.length}개</span>
+            <span className="text-xs text-muted-fg">{filtered.length}개</span>
             <Button
               variant="outline"
               onClick={() => { setShowCreate((v) => !v); setEditBoard(null); }}
@@ -155,21 +155,21 @@ export default function AdminBoardsPage() {
 
         {/* Create Form */}
         {showCreate && (
-          <div className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 space-y-3">
-            <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">새 게시판</div>
+          <div className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-4 space-y-3">
+            <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">새 게시판</div>
             <div className="flex gap-2">
               <Input className="w-48" value={name} onChange={(e) => setName(e.target.value)} placeholder="게시판 이름" />
               <Input className="flex-1" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="설명" />
               <Button onClick={onCreate} disabled={!name.trim()}>추가</Button>
               <Button variant="outline" onClick={() => setShowCreate(false)}>취소</Button>
             </div>
-            <div className="text-xs text-slate-400">게시판 생성 시 메뉴 트리(Boards 하위)에 자동 반영됩니다.</div>
+            <div className="text-xs text-muted-fg">게시판 생성 시 메뉴 트리(Boards 하위)에 자동 반영됩니다.</div>
           </div>
         )}
 
         {/* Edit Panel */}
         {editBoard && (
-          <div className="mx-6 mb-4 rounded-lg border border-blue-200 bg-blue-50/50 p-4 space-y-3">
+          <div className="mx-6 mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10/50 p-4 space-y-3">
             <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
               편집 중 — {editBoard.name} <span className="text-blue-400">(ID: {editBoard.boardId})</span>
             </div>
@@ -186,7 +186,7 @@ export default function AdminBoardsPage() {
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-slate-50 text-xs text-slate-500">
+              <tr className="border-b bg-muted text-xs text-muted-fg">
                 <th className="px-4 py-3 text-left font-medium">ID</th>
                 <th className="px-4 py-3 text-left font-medium">이름</th>
                 <th className="px-4 py-3 text-left font-medium">설명</th>
@@ -197,11 +197,11 @@ export default function AdminBoardsPage() {
               {paged.map((b: any) => (
                 <tr
                   key={b.boardId}
-                  className={`hover:bg-slate-50/60 transition-colors ${editBoard?.boardId === b.boardId ? "bg-blue-50/30" : ""}`}
+                  className={`hover:bg-muted/60 transition-colors ${editBoard?.boardId === b.boardId ? "bg-blue-500/10/30" : ""}`}
                 >
-                  <td className="px-4 py-3 text-xs text-slate-400 font-mono">{b.boardId}</td>
+                  <td className="px-4 py-3 text-xs text-muted-fg font-mono">{b.boardId}</td>
                   <td className="px-4 py-3 font-medium">{b.name}</td>
-                  <td className="px-4 py-3 text-slate-500 text-xs">{b.description ?? "—"}</td>
+                  <td className="px-4 py-3 text-muted-fg text-xs">{b.description ?? "—"}</td>
                   <td className="px-4 py-3 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -215,7 +215,7 @@ export default function AdminBoardsPage() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                          className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                           onClick={() => onDelete(b)}
                         >
                           <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
@@ -227,7 +227,7 @@ export default function AdminBoardsPage() {
               ))}
               {paged.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-400">
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-fg">
                     {search ? "검색 결과가 없습니다." : "게시판이 없습니다."}
                   </td>
                 </tr>
