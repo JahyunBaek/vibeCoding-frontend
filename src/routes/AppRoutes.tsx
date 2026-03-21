@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { RequireAdmin, RequireAuth } from "./guards";
+import { RequireAdmin, RequireAuth, RequireSuperAdmin } from "./guards";
 
 import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
@@ -14,7 +14,10 @@ import AdminCodesPage from "@/pages/admin/AdminCodesPage";
 import AdminRolesPage from "@/pages/admin/AdminRolesPage";
 import AdminMenusPage from "@/pages/admin/AdminMenusPage";
 import AdminScreensPage from "@/pages/admin/AdminScreensPage";
+import AdminSettingsPage from "@/pages/admin/AdminSettingsPage";
+import AdminAuditPage from "@/pages/admin/AdminAuditPage";
 import MyInfoPage from "@/pages/MyInfoPage";
+import SuperAdminTenantsPage from "@/pages/super-admin/SuperAdminTenantsPage";
 
 export default function AppRoutes() {
   return (
@@ -92,6 +95,32 @@ export default function AppRoutes() {
             <RequireAdmin>
               <AdminScreensPage />
             </RequireAdmin>
+          }
+        />
+
+        <Route
+          path="admin/settings"
+          element={
+            <RequireAdmin>
+              <AdminSettingsPage />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="admin/audit"
+          element={
+            <RequireAdmin>
+              <AdminAuditPage />
+            </RequireAdmin>
+          }
+        />
+
+        <Route
+          path="super-admin/tenants"
+          element={
+            <RequireSuperAdmin>
+              <SuperAdminTenantsPage />
+            </RequireSuperAdmin>
           }
         />
       </Route>

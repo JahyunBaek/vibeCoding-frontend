@@ -13,6 +13,14 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 export function RequireAdmin({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
   if (!user) return null;
-  if (user.roleKey !== "ADMIN") return <div className="p-6 text-sm">403 (Admin only)</div>;
+  if (user.roleKey !== "ADMIN" && user.roleKey !== "SUPER_ADMIN")
+    return <div className="p-6 text-sm">403 (Admin only)</div>;
+  return <>{children}</>;
+}
+
+export function RequireSuperAdmin({ children }: { children: React.ReactNode }) {
+  const { user } = useAuthStore();
+  if (!user) return null;
+  if (user.roleKey !== "SUPER_ADMIN") return <div className="p-6 text-sm">403 (Super Admin only)</div>;
   return <>{children}</>;
 }

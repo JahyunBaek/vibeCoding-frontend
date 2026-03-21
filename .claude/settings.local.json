@@ -6,7 +6,13 @@
       "Bash(npx tsc:*)",
       "Bash(powershell -Command \"\\(Get-Content 'C:/Git/vibeCoding-frontend/src/components/RichEditor.tsx' -Raw\\) -replace 'class: \\\\\"prose prose-sm max-w-none min-h-\\\\[220px\\\\] px-4 py-3 outline-none\\\\\"', 'class: \\\\\"prose prose-sm max-w-none min-h-[220px] px-4 py-3 outline-none bg-transparent\\\\\"' | Set-Content 'C:/Git/vibeCoding-frontend/src/components/RichEditor.tsx' -NoNewline\")",
       "Bash(powershell -ExecutionPolicy Bypass -File /tmp/dark_replace.ps1)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(node -e \":*)",
+      "Bash(node -e \"const bcrypt = require\\(''bcryptjs''\\); console.log\\(bcrypt.hashSync\\(''Admin1234!'', 10\\)\\);\")",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(sed -i 's/@PreAuthorize\\(\"\"hasRole\\(''''ADMIN''''\\)\"\"\\)/@PreAuthorize\\(\"\"hasRole\\(''''ADMIN''''\\) or hasRole\\(''''SUPER_ADMIN''''\\)\"\"\\)/' \"$f\")",
+      "Bash(done)"
     ]
   }
 }

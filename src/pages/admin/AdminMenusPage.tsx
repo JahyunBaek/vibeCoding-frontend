@@ -1,5 +1,7 @@
 ﻿import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useAuthStore } from "@/stores/auth";
+import TenantSelector from "@/components/TenantSelector";
 import { ChevronRight, ChevronDown, Minus, MoreHorizontal, Pencil, Trash2, Plus, X, Link2, Search } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -13,21 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-type MenuNode = {
-  menuId: number;
-  parentId: number | null;
-  name: string;
-  path: string | null;
-  icon: string | null;
-  sortOrder: number;
-  useYn: boolean;
-  menuType: string;
-  boardId: number | null;
-  children: MenuNode[];
-};
-
-type FlatMenu = MenuNode & { depth: number; hasChildren: boolean; isCollapsed: boolean };
+import type { MenuNode, FlatMenu } from "@/types/menu";
 
 function flattenTree(nodes: MenuNode[], collapsedIds: Set<number>, depth = 0): FlatMenu[] {
   return nodes.flatMap((n) => {
@@ -58,8 +46,16 @@ function flattenForSelect(nodes: MenuNode[], depth = 0): { menuId: number; label
 }
 
 export default function AdminMenusPage() {
+  const { user: currentUser } = useAuthStore();
+  const isSuperAdmin = currentUser?.roleKey === "SUPER_ADMIN";
+
   const { data: roles } = useQuery({ queryKey: ["admin", "roles", "all"], queryFn: api.rolesAll });
-  const { data, refetch } = useQuery({ queryKey: ["admin", "menus", "tree"], queryFn: api.menusAdminTree });
+  const assignableRoles = (roles ?? []).filter((r: any) => isSuperAdmin || r.roleKey !== "SUPER_ADMIN");
+  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
+  const { data, refetch } = useQuery({
+    queryKey: ["admin", "menus", "tree", selectedTenantId],
+    queryFn: () => api.menusAdminTree(selectedTenantId),
+  });
 
   const [collapsedIds, setCollapsedIds] = useState<Set<number>>(new Set());
   const toggleCollapse = (id: number) =>
@@ -105,6 +101,7 @@ export default function AdminMenusPage() {
       menuType: cMenuType,
       boardId: null,
       roleKeys: cRoleKeys,
+      tenantId: selectedTenantId,
     });
     setCName("");
     setCPath("");
@@ -168,6 +165,7 @@ export default function AdminMenusPage() {
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle>메뉴 트리</CardTitle>
           <div className="flex items-center gap-2 ml-auto mr-2">
+            <TenantSelector value={selectedTenantId} onChange={setSelectedTenantId} />
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input
@@ -226,7 +224,7 @@ export default function AdminMenusPage() {
             <div className="flex items-center gap-4">
               <span className="text-xs text-muted-fg">권한:</span>
               <div className="flex flex-wrap gap-3">
-                {(roles ?? []).map((r: any) => (
+                {assignableRoles.map((r: any) => (
                   <label key={r.roleKey} className="flex items-center gap-1.5 text-xs cursor-pointer">
                     <input type="checkbox" checked={cRoleKeys.includes(r.roleKey)} onChange={() => toggleCRole(r.roleKey)} />
                     {r.roleKey}
@@ -275,7 +273,7 @@ export default function AdminMenusPage() {
             <div className="flex items-center gap-4">
               <span className="text-xs text-muted-fg">권한 재설정 (선택 시 덮어씀):</span>
               <div className="flex flex-wrap gap-3">
-                {(roles ?? []).map((r: any) => (
+                {assignableRoles.map((r: any) => (
                   <label key={r.roleKey} className="flex items-center gap-1.5 text-xs cursor-pointer">
                     <input type="checkbox" checked={editRoleKeys.includes(r.roleKey)} onChange={() => toggleEditRole(r.roleKey)} />
                     {r.roleKey}

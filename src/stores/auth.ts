@@ -1,12 +1,7 @@
 import { create } from "zustand";
+import type { UserSummary } from "@/types/auth";
 
-export type UserSummary = {
-  userId: number;
-  username: string;
-  name: string;
-  roleKey: "ADMIN" | "USER" | string;
-  orgId: number | null;
-};
+export type { UserSummary } from "@/types/auth";
 
 type AuthState = {
   accessToken: string | null;

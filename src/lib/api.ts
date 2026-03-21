@@ -1,9 +1,8 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { useAuthStore } from "@/stores/auth";
+import type { ApiResponse } from "@/types/api";
 
-// 서버 응답 타입(당신 프로젝트 ApiResponse와 맞춰둠)
-export type ApiError = { code: string; message: string };
-export type ApiResponse<T> = { success: boolean; data: T; error?: ApiError };
+export type { ApiError, ApiResponse } from "@/types/api";
 
 // --------------------------------------------
 // axios instance
@@ -197,13 +196,20 @@ export const api = {
 
   menusMy: () => apiRequest<any[]>("GET", "/api/menus/my"),
 
-  menusAdminTree: () => apiRequest<any[]>("GET", "/api/admin/menus/tree"),
+  menusAdminTree: (tenantId?: number | null) => {
+    const q = tenantId ? `?tenantId=${tenantId}` : "";
+    return apiRequest<any[]>("GET", `/api/admin/menus/tree${q}`);
+  },
 
   dashboard: () => apiRequest<any>("GET", "/api/dashboard/summary"),
 
-  boardsAdminList: (page = 1, size = 20) => apiRequest<any>("GET", `/api/admin/boards?page=${page}&size=${size}`),
-  boardsAdminCreate: (name: string, description?: string, useYn = true) =>
-    apiRequest<number>("POST", "/api/admin/boards", { name, description, useYn }),
+  boardsAdminList: (page = 1, size = 20, tenantId?: number | null) => {
+    const q = new URLSearchParams({ page: String(page), size: String(size) });
+    if (tenantId) q.set("tenantId", String(tenantId));
+    return apiRequest<any>("GET", `/api/admin/boards?${q}`);
+  },
+  boardsAdminCreate: (name: string, description?: string, useYn = true, tenantId?: number | null) =>
+    apiRequest<number>("POST", "/api/admin/boards", { name, description, useYn, tenantId }),
   boardsAdminUpdate: (boardId: number, name: string, description?: string, useYn = true) =>
     apiRequest<void>("PUT", `/api/admin/boards/${boardId}`, { name, description, useYn }),
   boardsAdminDelete: (boardId: number) => apiRequest<void>("DELETE", `/api/admin/boards/${boardId}`),
@@ -268,20 +274,30 @@ export const api = {
     URL.revokeObjectURL(url);
   },
 
-  orgTree: () => apiRequest<any[]>("GET", "/api/admin/orgs/tree"),
-  orgList: (page = 1, size = 20) => apiRequest<any>("GET", `/api/admin/orgs?page=${page}&size=${size}`),
-  orgCreate: (parentId: number | null, name: string, sortOrder = 0, useYn = true) =>
-    apiRequest<void>("POST", "/api/admin/orgs", { parentId, name, sortOrder, useYn }),
+  orgTree: (tenantId?: number | null) => {
+    const q = tenantId ? `?tenantId=${tenantId}` : "";
+    return apiRequest<any[]>("GET", `/api/admin/orgs/tree${q}`);
+  },
+  orgList: (page = 1, size = 20, tenantId?: number | null) => {
+    const q = new URLSearchParams({ page: String(page), size: String(size) });
+    if (tenantId) q.set("tenantId", String(tenantId));
+    return apiRequest<any>("GET", `/api/admin/orgs?${q}`);
+  },
+  orgCreate: (parentId: number | null, name: string, sortOrder = 0, useYn = true, tenantId?: number | null) =>
+    apiRequest<void>("POST", "/api/admin/orgs", { parentId, name, sortOrder, useYn, tenantId }),
   orgUpdate: (orgId: number, payload: any) => apiRequest<void>("PUT", `/api/admin/orgs/${orgId}`, payload),
   orgDelete: (orgId: number) => apiRequest<void>("DELETE", `/api/admin/orgs/${orgId}`),
 
-  usersList: (orgId?: number, page = 1, size = 20) => {
+  usersList: (orgId?: number, page = 1, size = 20, tenantId?: number | null) => {
     const q = new URLSearchParams({ page: String(page), size: String(size) });
     if (orgId) q.set("orgId", String(orgId));
+    if (tenantId) q.set("tenantId", String(tenantId));
     return apiRequest<any>("GET", `/api/admin/users?${q.toString()}`);
   },
   userCreate: (payload: any) => apiRequest<void>("POST", "/api/admin/users", payload),
   userUpdate: (userId: number, payload: any) => apiRequest<void>("PUT", `/api/admin/users/${userId}`, payload),
+  userResetPassword: (userId: number, newPassword: string) =>
+    apiRequest<void>("PATCH", `/api/admin/users/${userId}/password`, { newPassword }),
   userDelete: (userId: number) => apiRequest<void>("DELETE", `/api/admin/users/${userId}`),
 
   codesGroups: (page = 1, size = 20) => apiRequest<any>("GET", `/api/admin/codes/groups?page=${page}&size=${size}`),
@@ -313,6 +329,16 @@ export const api = {
   menuSetRoles: (menuId: number, roleKeys: string[]) =>
     apiRequest<void>("PUT", `/api/admin/menus/${menuId}/roles`, { roleKeys }),
 
+  // Super-Admin: Tenant management
+  superAdminTenants: (page = 1, size = 20) =>
+    apiRequest<any>("GET", `/api/super-admin/tenants?page=${page}&size=${size}`),
+  superAdminTenantCreate: (payload: { tenantKey: string; tenantName: string; planType?: string; adminUsername: string; adminPassword: string }) =>
+    apiRequest<{ tenantId: number; adminUsername: string; adminPassword: string }>("POST", "/api/super-admin/tenants", payload),
+  superAdminTenantUpdate: (tenantId: number, payload: { tenantName: string; planType: string; active: boolean }) =>
+    apiRequest<void>("PUT", `/api/super-admin/tenants/${tenantId}`, payload),
+  superAdminTenantDelete: (tenantId: number) =>
+    apiRequest<void>("DELETE", `/api/super-admin/tenants/${tenantId}`),
+
   // Permissions
   permissionsMyList: () => apiRequest<{ screenKey: string; actions: string[] }[]>("GET", "/api/permissions/my"),
   permScreens: () => apiRequest<any[]>("GET", "/api/admin/permissions/screens"),
@@ -325,4 +351,25 @@ export const api = {
   permDeleteAction: (actionId: number) => apiRequest<void>("DELETE", `/api/admin/permissions/actions/${actionId}`),
   permRolesByAction: (actionId: number) => apiRequest<string[]>("GET", `/api/admin/permissions/actions/${actionId}/roles`),
   permSetRoles: (actionId: number, roleKeys: string[]) => apiRequest<void>("PUT", `/api/admin/permissions/actions/${actionId}/roles`, { roleKeys }),
+
+  // Settings (Tenant Config)
+  settingsGet: (tenantId?: number | null) => {
+    const q = tenantId != null ? `?tenantId=${tenantId}` : "";
+    return apiRequest<{ tenantId: number; configKey: string; configValue: string }[]>("GET", `/api/admin/settings${q}`);
+  },
+  settingsSave: (configs: Record<string, string>, tenantId?: number | null) => {
+    const q = tenantId != null ? `?tenantId=${tenantId}` : "";
+    return apiRequest<void>("PUT", `/api/admin/settings${q}`, configs);
+  },
+
+  // Audit Log
+  auditList: (params: { tenantId?: number | null; action?: string; targetType?: string; page?: number; size?: number }) => {
+    const q = new URLSearchParams();
+    if (params.tenantId != null) q.set("tenantId", String(params.tenantId));
+    if (params.action) q.set("action", params.action);
+    if (params.targetType) q.set("targetType", params.targetType);
+    if (params.page) q.set("page", String(params.page));
+    if (params.size) q.set("size", String(params.size));
+    return apiRequest<any>("GET", `/api/admin/audit?${q.toString()}`);
+  },
 };

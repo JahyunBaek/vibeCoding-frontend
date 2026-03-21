@@ -6,19 +6,7 @@ import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuthStore } from "@/stores/auth";
-
-type MenuNode = {
-  menuId: number;
-  parentId: number | null;
-  name: string;
-  path: string | null;
-  icon: string | null;
-  sortOrder: number;
-  useYn: boolean;
-  menuType: string;
-  boardId: number | null;
-  children: MenuNode[];
-};
+import type { MenuNode } from "@/types/menu";
 
 function MenuItem({
   node,

@@ -1,5 +1,6 @@
 ﻿import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useAuthStore } from "@/stores/auth";
 import {
   Shield,
   Plus,
@@ -26,9 +27,11 @@ import {
 function ActionRoleRow({
   action,
   allRoles,
+  isSuperAdmin,
 }: {
   action: any;
   allRoles: any[];
+  isSuperAdmin: boolean;
 }) {
   const { data: assignedRoles = [], refetch } = useQuery<string[]>({
     queryKey: ["perm", "action", action.actionId, "roles"],
@@ -43,9 +46,11 @@ function ActionRoleRow({
     await refetch();
   };
 
+  const visibleRoles = allRoles.filter((r: any) => isSuperAdmin || r.roleKey !== "SUPER_ADMIN");
+
   return (
     <div className="flex flex-wrap gap-2 mt-1">
-      {allRoles.map((role: any) => {
+      {visibleRoles.map((role: any) => {
         const checked = assignedRoles.includes(role.roleKey);
         return (
           <label
@@ -64,7 +69,7 @@ function ActionRoleRow({
           </label>
         );
       })}
-      {allRoles.length === 0 && (
+      {visibleRoles.length === 0 && (
         <span className="text-xs text-muted-fg">역할 없음</span>
       )}
     </div>
@@ -75,10 +80,12 @@ function ActionRoleRow({
 function ActionsPanel({
   screen,
   allRoles,
+  isSuperAdmin,
   onClose,
 }: {
   screen: any;
   allRoles: any[];
+  isSuperAdmin: boolean;
   onClose: () => void;
 }) {
   const { data: actions = [], refetch } = useQuery<any[]>({
@@ -221,7 +228,7 @@ function ActionsPanel({
                     </div>
                     <div className="mt-2">
                       <div className="text-[10px] text-muted-fg mb-1 uppercase tracking-wide">역할 배정</div>
-                      <ActionRoleRow action={a} allRoles={allRoles} />
+                      <ActionRoleRow action={a} allRoles={allRoles} isSuperAdmin={isSuperAdmin} />
                     </div>
                   </div>
                   <DropdownMenu>
@@ -255,6 +262,9 @@ function ActionsPanel({
 
 // ------------- Main page -------------
 export default function AdminScreensPage() {
+  const { user: currentUser } = useAuthStore();
+  const isSuperAdmin = currentUser?.roleKey === "SUPER_ADMIN";
+
   const { data: screens = [], refetch: refetchScreens } = useQuery<any[]>({
     queryKey: ["admin", "perm", "screens"],
     queryFn: () => api.permScreens(),
@@ -459,6 +469,7 @@ export default function AdminScreensPage() {
             <ActionsPanel
               screen={selectedScreen}
               allRoles={allRoles}
+              isSuperAdmin={isSuperAdmin}
               onClose={() => setSelectedScreen(null)}
             />
           ) : (

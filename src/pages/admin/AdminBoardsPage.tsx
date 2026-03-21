@@ -1,5 +1,6 @@
 ﻿import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import TenantSelector from "@/components/TenantSelector";
 import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -58,9 +59,11 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
 
 export default function AdminBoardsPage() {
   const qc = useQueryClient();
+  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
+
   const { data, refetch } = useQuery({
-    queryKey: ["admin", "boards"],
-    queryFn: () => api.boardsAdminList(1, 200),
+    queryKey: ["admin", "boards", selectedTenantId],
+    queryFn: () => api.boardsAdminList(1, 200, selectedTenantId),
   });
 
   const invalidateMenus = () => qc.invalidateQueries({ queryKey: ["menus", "my"] });
@@ -91,7 +94,7 @@ export default function AdminBoardsPage() {
   const [description, setDescription] = useState("");
 
   const onCreate = async () => {
-    await api.boardsAdminCreate(name, description, true);
+    await api.boardsAdminCreate(name, description, true, selectedTenantId);
     setName("");
     setDescription("");
     setShowCreate(false);
@@ -133,6 +136,7 @@ export default function AdminBoardsPage() {
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle>게시판 목록</CardTitle>
           <div className="flex items-center gap-2">
+            <TenantSelector value={selectedTenantId} onChange={(id) => { setSelectedTenantId(id); setPage(1); }} />
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input

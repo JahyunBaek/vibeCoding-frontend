@@ -1,5 +1,6 @@
 ﻿import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import TenantSelector from "@/components/TenantSelector";
 import { ChevronRight, ChevronDown, Minus, MoreHorizontal, Pencil, Trash2, Plus, X, Search } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -13,17 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-type OrgNode = {
-  orgId: number;
-  parentId: number | null;
-  name: string;
-  sortOrder: number;
-  useYn: boolean;
-  children: OrgNode[];
-};
-
-type FlatOrg = OrgNode & { depth: number; hasChildren: boolean; isCollapsed: boolean };
+import type { OrgNode, FlatOrg } from "@/types/org";
 
 function flattenTree(nodes: OrgNode[], collapsedIds: Set<number>, depth = 0): FlatOrg[] {
   return nodes.flatMap((n) => {
@@ -54,7 +45,11 @@ function flattenForSelect(nodes: OrgNode[], depth = 0): { orgId: number; label: 
 }
 
 export default function AdminOrgsPage() {
-  const { data, refetch } = useQuery({ queryKey: ["admin", "orgs", "tree"], queryFn: api.orgTree });
+  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
+  const { data, refetch } = useQuery({
+    queryKey: ["admin", "orgs", "tree", selectedTenantId],
+    queryFn: () => api.orgTree(selectedTenantId),
+  });
 
   const [collapsedIds, setCollapsedIds] = useState<Set<number>>(new Set());
   const toggleCollapse = (id: number) =>
@@ -83,7 +78,7 @@ export default function AdminOrgsPage() {
   const [name, setName] = useState("");
 
   const onCreate = async () => {
-    await api.orgCreate(parentId ? Number(parentId) : null, name, 0, true);
+    await api.orgCreate(parentId ? Number(parentId) : null, name, 0, true, selectedTenantId);
     setName("");
     setShowCreate(false);
     await refetch();
@@ -127,6 +122,7 @@ export default function AdminOrgsPage() {
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle>조직 트리</CardTitle>
           <div className="flex items-center gap-2 ml-auto mr-2">
+            <TenantSelector value={selectedTenantId} onChange={setSelectedTenantId} />
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input

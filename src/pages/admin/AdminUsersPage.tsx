@@ -1,7 +1,9 @@
 ﻿import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, ChevronLeft, ChevronRight, KeyRound } from "lucide-react";
 import { api } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth";
+import TenantSelector from "@/components/TenantSelector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -65,12 +67,18 @@ function flattenOrgs(nodes: any[], depth = 0): { orgId: number; label: string; n
 }
 
 export default function AdminUsersPage() {
+  const { user: currentUser } = useAuthStore();
+  const isSuperAdmin = currentUser?.roleKey === "SUPER_ADMIN";
+  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
+
   const { data, refetch } = useQuery({
-    queryKey: ["admin", "users"],
-    queryFn: () => api.usersList(undefined, 1, 500),
+    queryKey: ["admin", "users", selectedTenantId],
+    queryFn: () => api.usersList(undefined, 1, 500, selectedTenantId),
   });
-  const { data: roles } = useQuery({ queryKey: ["admin", "roles", "all"], queryFn: api.rolesAll });
-  const { data: orgTree } = useQuery({ queryKey: ["admin", "orgs", "tree"], queryFn: api.orgTree });
+  const { data: roles } = useQuery({ queryKey: ["admin", "roles", "all"], queryFn: () => api.rolesAll() });
+  // SUPER_ADMIN이 아니면 역할 목록에서 SUPER_ADMIN 제거
+  const assignableRoles = (roles ?? []).filter((r: any) => isSuperAdmin || r.roleKey !== "SUPER_ADMIN");
+  const { data: orgTree } = useQuery({ queryKey: ["admin", "orgs", "tree"], queryFn: () => api.orgTree() });
   const flatOrgs = flattenOrgs(orgTree ?? []);
   const orgNameMap = new Map(flatOrgs.map((o) => [o.orgId, o.name]));
 
@@ -104,7 +112,7 @@ export default function AdminUsersPage() {
   const [orgId, setOrgId] = useState<string>("1");
 
   const onCreate = async () => {
-    await api.userCreate({ username, password, name, roleKey, orgId: orgId ? Number(orgId) : null, enabled: true });
+    await api.userCreate({ username, password, name, roleKey, orgId: orgId ? Number(orgId) : null, enabled: true, tenantId: selectedTenantId });
     setUsername("");
     setName("");
     setShowCreate(false);
@@ -141,6 +149,29 @@ export default function AdminUsersPage() {
     await refetch();
   };
 
+  // --- Password Reset ---
+  const [resetUser, setResetUser] = useState<any>(null);
+  const [resetPassword, setResetPassword] = useState("User1234!");
+  const [resetError, setResetError] = useState<string | null>(null);
+
+  const startReset = (u: any) => {
+    setResetUser(u);
+    setResetPassword("User1234!");
+    setResetError(null);
+    setShowCreate(false);
+    setEditUser(null);
+  };
+
+  const onResetPassword = async () => {
+    if (resetPassword.length < 8) { setResetError("8자 이상 입력해주세요."); return; }
+    try {
+      await api.userResetPassword(resetUser.userId, resetPassword);
+      setResetUser(null);
+    } catch (e: any) {
+      setResetError(e.message ?? "초기화에 실패했습니다.");
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="text-xl font-semibold">Admin · Users</div>
@@ -149,6 +180,7 @@ export default function AdminUsersPage() {
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle>사용자 목록</CardTitle>
           <div className="flex items-center gap-2">
+            <TenantSelector value={selectedTenantId} onChange={(id) => { setSelectedTenantId(id); setPage(1); }} />
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input
@@ -182,7 +214,7 @@ export default function AdminUsersPage() {
                 value={roleKey}
                 onChange={(e) => setRoleKey(e.target.value)}
               >
-                {(roles ?? []).map((r: any) => (
+                {assignableRoles.map((r: any) => (
                   <option key={r.roleKey} value={r.roleKey}>{r.roleKey}</option>
                 ))}
               </select>
@@ -217,7 +249,7 @@ export default function AdminUsersPage() {
                 value={editRoleKey}
                 onChange={(e) => setEditRoleKey(e.target.value)}
               >
-                {(roles ?? []).map((r: any) => (
+                {assignableRoles.map((r: any) => (
                   <option key={r.roleKey} value={r.roleKey}>{r.roleKey}</option>
                 ))}
               </select>
@@ -236,6 +268,27 @@ export default function AdminUsersPage() {
               <Button onClick={onSave} disabled={!editName.trim()}>저장</Button>
               <Button variant="outline" onClick={() => setEditUser(null)}>취소</Button>
             </div>
+          </div>
+        )}
+
+        {/* Password Reset Panel */}
+        {resetUser && (
+          <div className="mx-6 mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
+            <div className="text-xs font-medium text-amber-600 uppercase tracking-wide">
+              비밀번호 초기화 — {resetUser.username} <span className="text-amber-400">(ID: {resetUser.userId})</span>
+            </div>
+            <div className="flex gap-2 items-center">
+              <Input
+                className="w-56"
+                type="password"
+                value={resetPassword}
+                onChange={(e) => { setResetPassword(e.target.value); setResetError(null); }}
+                placeholder="새 비밀번호 (8자 이상)"
+              />
+              <Button onClick={onResetPassword}>초기화</Button>
+              <Button variant="outline" onClick={() => setResetUser(null)}>취소</Button>
+            </div>
+            {resetError && <p className="text-xs text-red-400">{resetError}</p>}
           </div>
         )}
 
@@ -268,25 +321,32 @@ export default function AdminUsersPage() {
                     {u.orgId != null ? (orgNameMap.get(u.orgId) ?? u.orgId) : "—"}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="h-7 w-7 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => startEdit(u)}>
-                          <Pencil className="mr-2 h-3.5 w-3.5" />편집
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
-                          onClick={() => onDelete(u)}
-                        >
-                          <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {(!isSuperAdmin && u.roleKey === "SUPER_ADMIN") ? (
+                      <span className="text-xs text-muted-fg">—</span>
+                    ) : (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="h-7 w-7 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => startEdit(u)}>
+                            <Pencil className="mr-2 h-3.5 w-3.5" />편집
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => startReset(u)}>
+                            <KeyRound className="mr-2 h-3.5 w-3.5" />비밀번호 초기화
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
+                            onClick={() => onDelete(u)}
+                          >
+                            <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </td>
                 </tr>
               ))}
