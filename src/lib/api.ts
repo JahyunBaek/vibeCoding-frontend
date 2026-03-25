@@ -87,8 +87,7 @@ export async function refresh(): Promise<boolean> {
       useAuthStore.getState().setAuth(res.data.data.accessToken, res.data.data.user);
       return true;
     } catch {
-      // 필요하면 여기서 clearAuth() 같은 로그아웃 처리
-      // useAuthStore.getState().clearAuth?.();
+      useAuthStore.getState().clear();
       return false;
     } finally {
       refreshPromise = null;
@@ -164,7 +163,6 @@ export async function apiRequest<T>(
         ? opts?.headers
         : { "Content-Type": "application/json", ...opts?.headers },
     });
-    console.log("res", res);
     const json = res.data;
     if (!json?.success) {
       const msg = json?.error?.message || "Request failed";
@@ -189,6 +187,9 @@ export const api = {
     apiRequest<{ accessToken: string; user: any }>("POST", "/api/auth/login", { username, password }),
 
   logout: () => apiRequest<void>("POST", "/api/auth/logout"),
+
+  resetPassword: (token: string, newPassword: string) =>
+    apiRequest<void>("POST", "/api/auth/reset-password", { token, newPassword }),
 
   me: () => apiRequest<any>("GET", "/api/me"),
   updateMe: (name: string, currentPassword?: string, newPassword?: string) =>
@@ -235,6 +236,10 @@ export const api = {
 
   commentsList: (postId: string) => apiRequest<any[]>("GET", `/api/posts/${postId}/comments`),
   commentCreate: (postId: string, content: string) => apiRequest<void>("POST", `/api/posts/${postId}/comments`, { content }),
+  commentUpdate: (postId: string, commentId: number, content: string) =>
+    apiRequest<void>("PUT", `/api/posts/${postId}/comments/${commentId}`, { content }),
+  commentDelete: (postId: string, commentId: number) =>
+    apiRequest<void>("DELETE", `/api/posts/${postId}/comments/${commentId}`),
 
   fileUpload: async (file: File) => {
     const fd = new FormData();
@@ -299,6 +304,8 @@ export const api = {
   userResetPassword: (userId: number, newPassword: string) =>
     apiRequest<void>("PATCH", `/api/admin/users/${userId}/password`, { newPassword }),
   userDelete: (userId: number) => apiRequest<void>("DELETE", `/api/admin/users/${userId}`),
+  userResetToken: (userId: number) =>
+    apiRequest<{ token: string; expiresInMinutes: number }>("POST", `/api/admin/users/${userId}/reset-token`),
 
   codesGroups: (page = 1, size = 20) => apiRequest<any>("GET", `/api/admin/codes/groups?page=${page}&size=${size}`),
   codesItems: (groupKey: string) => apiRequest<any[]>("GET", `/api/admin/codes/groups/${groupKey}/items`),
@@ -352,6 +359,9 @@ export const api = {
   permRolesByAction: (actionId: number) => apiRequest<string[]>("GET", `/api/admin/permissions/actions/${actionId}/roles`),
   permSetRoles: (actionId: number, roleKeys: string[]) => apiRequest<void>("PUT", `/api/admin/permissions/actions/${actionId}/roles`, { roleKeys }),
 
+  // Tenant Branding (any authenticated user)
+  tenantBranding: () => apiRequest<{ companyName: string; logoUrl: string }>("GET", "/api/tenant/branding"),
+
   // Settings (Tenant Config)
   settingsGet: (tenantId?: number | null) => {
     const q = tenantId != null ? `?tenantId=${tenantId}` : "";
@@ -371,5 +381,31 @@ export const api = {
     if (params.page) q.set("page", String(params.page));
     if (params.size) q.set("size", String(params.size));
     return apiRequest<any>("GET", `/api/admin/audit?${q.toString()}`);
+  },
+
+  // CSV Export
+  usersExport: async (tenantId?: number | null) => {
+    const q = new URLSearchParams();
+    if (tenantId) q.set("tenantId", String(tenantId));
+    const res = await client.get(`/api/admin/users/export?${q}`, { responseType: "blob" });
+    const url = URL.createObjectURL(res.data);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "users.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+  auditExport: async (params: { tenantId?: number | null; action?: string; targetType?: string }) => {
+    const q = new URLSearchParams();
+    if (params.tenantId != null) q.set("tenantId", String(params.tenantId));
+    if (params.action) q.set("action", params.action);
+    if (params.targetType) q.set("targetType", params.targetType);
+    const res = await client.get(`/api/admin/audit/export?${q}`, { responseType: "blob" });
+    const url = URL.createObjectURL(res.data);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "audit-log.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   },
 };

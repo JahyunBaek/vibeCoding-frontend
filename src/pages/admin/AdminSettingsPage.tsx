@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { CheckCircle2, AlertCircle, Save, Sliders } from "lucide-react";
 import TenantSelector from "@/components/TenantSelector";
 import { api } from "@/lib/api";
@@ -23,7 +24,6 @@ export default function AdminSettingsPage() {
   });
 
   const [form, setForm] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,20 +36,23 @@ export default function AdminSettingsPage() {
     setSuccess(false);
   }, [data]);
 
-  const onSave = async () => {
-    setSaving(true);
-    setError(null);
-    setSuccess(false);
-    try {
-      await api.settingsSave(form, selectedTenantId);
+  const saveMut = useMutation({
+    mutationFn: () => api.settingsSave(form, selectedTenantId),
+    onSuccess: () => {
       setSuccess(true);
-      await refetch();
-    } catch (e: any) {
+      setError(null);
+      refetch();
+      toast.success("저장되었습니다.");
+    },
+    onError: (e: Error) => {
       setError(e.message ?? "저장에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
-  };
+      toast.error(e.message ?? "저장에 실패했습니다.");
+    },
+    onMutate: () => {
+      setError(null);
+      setSuccess(false);
+    },
+  });
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
@@ -73,7 +76,7 @@ export default function AdminSettingsPage() {
                 value={form[key] ?? ""}
                 onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
                 placeholder={placeholder}
-                disabled={saving}
+                disabled={saveMut.isPending}
               />
             </div>
           ))}
@@ -94,9 +97,9 @@ export default function AdminSettingsPage() {
       )}
 
       <div className="flex justify-end">
-        <Button onClick={onSave} disabled={saving} className="gap-1.5">
+        <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending} className="gap-1.5">
           <Save className="h-4 w-4" />
-          {saving ? "저장 중..." : "저장"}
+          {saveMut.isPending ? "저장 중..." : "저장"}
         </Button>
       </div>
     </div>

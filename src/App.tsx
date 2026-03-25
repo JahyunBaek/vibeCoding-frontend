@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { Toaster } from "sonner";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { useAuthStore, UserSummary } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
 import AppRoutes from "@/routes/AppRoutes";
@@ -43,5 +45,10 @@ export default function App() {
     })();
   }, [initialized, setInitialized, setAuth, clear, setPermissions]);
 
-  return <AppRoutes />;
+  return (
+    <ErrorBoundary>
+      <AppRoutes />
+      <Toaster richColors position="top-right" theme={isDark ? "dark" : "light"} />
+    </ErrorBoundary>
+  );
 }

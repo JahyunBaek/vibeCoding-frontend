@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback, DragEvent } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { Upload, X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -50,7 +52,6 @@ export default function BoardWritePage() {
   const [content, setContent] = useState("");
   const [fileItems, setFileItems] = useState<FileItem[]>([]);
   const [dragging, setDragging] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
 
@@ -74,70 +75,76 @@ export default function BoardWritePage() {
     if (dropped.length) addFiles(dropped);
   };
 
-  const onSubmit = async () => {
-    setSubmitError(null);
-    setSubmitting(true);
-
-    setFileItems((prev) =>
-      prev.map((f) => ({ ...f, status: "staged" as FileStatus, progress: 0, errorMsg: undefined }))
-    );
-
-    const uploadedIds: number[] = [];
-
-    try {
-      const currentItems = fileItems;
-      for (const item of currentItems) {
-        setFileItems((prev) =>
-          prev.map((f) => f.uid === item.uid ? { ...f, status: "uploading", progress: 0 } : f)
-        );
-
-        try {
-          const result = await api.fileUploadWithProgress(item.file, (pct) => {
-            setFileItems((prev) =>
-              prev.map((f) => f.uid === item.uid ? { ...f, progress: pct } : f)
-            );
-          });
-
-          uploadedIds.push(result.fileId);
-          setFileItems((prev) =>
-            prev.map((f) =>
-              f.uid === item.uid ? { ...f, status: "done", progress: 100, fileId: result.fileId } : f
-            )
-          );
-        } catch (e: any) {
-          setFileItems((prev) =>
-            prev.map((f) =>
-              f.uid === item.uid ? { ...f, status: "error", errorMsg: e.message ?? "업로드 실패" } : f
-            )
-          );
-          throw new Error(`"${item.file.name}" 업로드 실패: ${e.message ?? "알 수 없는 오류"}`);
-        }
-      }
-
-      try {
-        const postId = await api.postCreate(boardId, title, content, uploadedIds, idempotencyKey);
-        nav(`/boards/${boardId}/posts/${postId}`);
-      } catch (e: any) {
-        throw new Error(`게시글 저장 실패: ${e.message ?? "알 수 없는 오류"}`);
-      }
-
-    } catch (e: any) {
-      await Promise.allSettled(uploadedIds.map((id) => api.fileDelete(id)));
+  const submitMut = useMutation({
+    mutationFn: async () => {
+      setSubmitError(null);
 
       setFileItems((prev) =>
-        prev.map((f) =>
-          f.fileId && uploadedIds.includes(f.fileId)
-            ? { ...f, status: "staged", progress: 0, fileId: undefined }
-            : f
-        )
+        prev.map((f) => ({ ...f, status: "staged" as FileStatus, progress: 0, errorMsg: undefined }))
       );
 
-      setIdempotencyKey(crypto.randomUUID());
+      const uploadedIds: number[] = [];
+
+      try {
+        const currentItems = fileItems;
+        for (const item of currentItems) {
+          setFileItems((prev) =>
+            prev.map((f) => f.uid === item.uid ? { ...f, status: "uploading", progress: 0 } : f)
+          );
+
+          try {
+            const result = await api.fileUploadWithProgress(item.file, (pct) => {
+              setFileItems((prev) =>
+                prev.map((f) => f.uid === item.uid ? { ...f, progress: pct } : f)
+              );
+            });
+
+            uploadedIds.push(result.fileId);
+            setFileItems((prev) =>
+              prev.map((f) =>
+                f.uid === item.uid ? { ...f, status: "done", progress: 100, fileId: result.fileId } : f
+              )
+            );
+          } catch (e: any) {
+            setFileItems((prev) =>
+              prev.map((f) =>
+                f.uid === item.uid ? { ...f, status: "error", errorMsg: e.message ?? "업로드 실패" } : f
+              )
+            );
+            throw new Error(`"${item.file.name}" 업로드 실패: ${e.message ?? "알 수 없는 오류"}`);
+          }
+        }
+
+        try {
+          const postId = await api.postCreate(boardId, title, content, uploadedIds, idempotencyKey);
+          return postId;
+        } catch (e: any) {
+          throw new Error(`게시글 저장 실패: ${e.message ?? "알 수 없는 오류"}`);
+        }
+      } catch (e: any) {
+        await Promise.allSettled(uploadedIds.map((id) => api.fileDelete(id)));
+
+        setFileItems((prev) =>
+          prev.map((f) =>
+            f.fileId && uploadedIds.includes(f.fileId)
+              ? { ...f, status: "staged", progress: 0, fileId: undefined }
+              : f
+          )
+        );
+
+        setIdempotencyKey(crypto.randomUUID());
+        throw e;
+      }
+    },
+    onSuccess: (postId) => {
+      toast.success("게시글이 작성되었습니다.");
+      nav(`/boards/${boardId}/posts/${postId}`);
+    },
+    onError: (e: Error) => {
       setSubmitError(e.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+      toast.error(e.message ?? "게시글 저장에 실패했습니다.");
+    },
+  });
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
@@ -156,7 +163,7 @@ export default function BoardWritePage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="제목을 입력하세요"
-              disabled={submitting}
+              disabled={submitMut.isPending}
             />
           </div>
 
@@ -167,7 +174,7 @@ export default function BoardWritePage() {
               value={content}
               onChange={setContent}
               placeholder="내용을 입력하세요. 이미지는 Ctrl+V로 붙여넣을 수 있습니다."
-              disabled={submitting}
+              disabled={submitMut.isPending}
             />
           </div>
 
@@ -177,12 +184,12 @@ export default function BoardWritePage() {
 
             {/* Drop Zone */}
             <div
-              onClick={() => !submitting && inputRef.current?.click()}
-              onDragOver={(e) => { e.preventDefault(); if (!submitting) setDragging(true); }}
+              onClick={() => !submitMut.isPending && inputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); if (!submitMut.isPending) setDragging(true); }}
               onDragLeave={() => setDragging(false)}
-              onDrop={(e) => { if (!submitting) handleDrop(e); else e.preventDefault(); }}
+              onDrop={(e) => { if (!submitMut.isPending) handleDrop(e); else e.preventDefault(); }}
               className={`flex flex-col items-center justify-center gap-2.5 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-all ${
-                submitting
+                submitMut.isPending
                   ? "cursor-not-allowed opacity-50 border-base"
                   : dragging
                   ? "cursor-pointer border-blue-500/50 bg-blue-500/5 scale-[1.01]"
@@ -266,7 +273,7 @@ export default function BoardWritePage() {
 
                       <button
                         onClick={() => removeFile(item.uid)}
-                        disabled={submitting}
+                        disabled={submitMut.isPending}
                         className="shrink-0 rounded-md p-1.5 text-muted-fg hover:bg-accent hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                         title="제거"
                       >
@@ -297,17 +304,17 @@ export default function BoardWritePage() {
           {/* Actions */}
           <div className="flex gap-2 border-t border-base pt-4">
             <Button
-              onClick={onSubmit}
-              disabled={submitting || !title.trim() || content === "" || content === "<p></p>"}
+              onClick={() => submitMut.mutate()}
+              disabled={submitMut.isPending || !title.trim() || content === "" || content === "<p></p>"}
             >
-              {submitting ? (
+              {submitMut.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   저장 중...
                 </>
               ) : "저장"}
             </Button>
-            <Button variant="outline" onClick={() => nav(-1)} disabled={submitting}>
+            <Button variant="outline" onClick={() => nav(-1)} disabled={submitMut.isPending}>
               취소
             </Button>
           </div>

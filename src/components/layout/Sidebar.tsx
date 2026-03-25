@@ -4,7 +4,7 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthStore } from "@/stores/auth";
 import type { MenuNode } from "@/types/menu";
 
@@ -88,6 +88,15 @@ export default function Sidebar() {
     queryFn: api.menusMy,
   });
 
+  const { data: branding } = useQuery({
+    queryKey: ["tenant", "branding"],
+    queryFn: () => api.tenantBranding(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const companyName = branding?.companyName || "Common System";
+  const logoUrl = branding?.logoUrl || "";
+
   return (
     <aside
       className={cn(
@@ -97,9 +106,17 @@ export default function Sidebar() {
     >
       {/* 로고 + 토글 */}
       <div className={cn("flex items-center gap-2 px-4 py-4", collapsed && "justify-center px-0")}>
-        <div className="h-7 w-7 shrink-0 rounded-md bg-foreground" />
+        {logoUrl ? (
+          <img src={logoUrl} alt={companyName} className="h-7 w-7 shrink-0 rounded-md object-cover" />
+        ) : (
+          <Avatar className="h-7 w-7 shrink-0 rounded-md">
+            <AvatarFallback className="rounded-md text-xs font-bold">
+              {companyName.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+        )}
         {!collapsed && (
-          <div className="flex-1 text-sm font-semibold text-foreground">Common System</div>
+          <div className="flex-1 text-sm font-semibold text-foreground">{companyName}</div>
         )}
         <button
           onClick={() => setCollapsed((v) => !v)}

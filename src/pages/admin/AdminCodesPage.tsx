@@ -1,5 +1,7 @@
-﻿import { useQuery } from "@tanstack/react-query";
+﻿import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { toast } from "sonner";
 import { MoreHorizontal, Pencil, Trash2, Plus, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -33,12 +35,16 @@ export default function AdminCodesPage() {
   const [gKey, setGKey] = useState("");
   const [gName, setGName] = useState("");
 
-  const onCreateGroup = async () => {
-    await api.codesCreateGroup({ groupKey: gKey, groupName: gName, useYn: true });
-    setGKey(""); setGName("");
-    setShowGroupCreate(false);
-    await refetchGroups();
-  };
+  const createGroupMut = useMutation({
+    mutationFn: () => api.codesCreateGroup({ groupKey: gKey, groupName: gName, useYn: true }),
+    onSuccess: () => {
+      setGKey(""); setGName("");
+      setShowGroupCreate(false);
+      refetchGroups();
+      toast.success("그룹이 생성되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   // --- Group Edit ---
   const [editGroup, setEditGroup] = useState<any>(null);
@@ -52,18 +58,31 @@ export default function AdminCodesPage() {
     setShowGroupCreate(false);
   };
 
-  const onSaveGroup = async () => {
-    await api.codesUpdateGroup(editGroup.groupKey, editGroupName, editGroupUseYn);
-    setEditGroup(null);
-    await refetchGroups();
-  };
+  const saveGroupMut = useMutation({
+    mutationFn: () => api.codesUpdateGroup(editGroup.groupKey, editGroupName, editGroupUseYn),
+    onSuccess: () => {
+      setEditGroup(null);
+      refetchGroups();
+      toast.success("그룹이 수정되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
-  const onDeleteGroup = async (g: any) => {
-    if (!confirm(`"${g.groupKey}" 그룹을 삭제할까요?`)) return;
-    await api.codesDeleteGroup(g.groupKey);
-    if (selected === g.groupKey) setSelected("");
-    await refetchGroups();
-  };
+  const [deleteGroupTarget, setDeleteGroupTarget] = useState<any>(null);
+
+  const deleteGroupMut = useMutation({
+    mutationFn: () => api.codesDeleteGroup(deleteGroupTarget.groupKey),
+    onSuccess: () => {
+      if (selected === deleteGroupTarget.groupKey) setSelected("");
+      refetchGroups();
+      toast.success("그룹이 삭제되었습니다.");
+      setDeleteGroupTarget(null);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      setDeleteGroupTarget(null);
+    },
+  });
 
   // --- Item Create ---
   const [showItemCreate, setShowItemCreate] = useState(false);
@@ -71,12 +90,16 @@ export default function AdminCodesPage() {
   const [itemName, setItemName] = useState("");
   const [itemValue, setItemValue] = useState("");
 
-  const onCreateItem = async () => {
-    await api.codesCreateItem(selected, { groupKey: selected, code, name: itemName, value: itemValue, sortOrder: 0, useYn: true });
-    setCode(""); setItemName(""); setItemValue("");
-    setShowItemCreate(false);
-    await refetchItems();
-  };
+  const createItemMut = useMutation({
+    mutationFn: () => api.codesCreateItem(selected, { groupKey: selected, code, name: itemName, value: itemValue, sortOrder: 0, useYn: true }),
+    onSuccess: () => {
+      setCode(""); setItemName(""); setItemValue("");
+      setShowItemCreate(false);
+      refetchItems();
+      toast.success("항목이 생성되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   // --- Item Edit ---
   const [editItem, setEditItem] = useState<any>(null);
@@ -94,17 +117,30 @@ export default function AdminCodesPage() {
     setShowItemCreate(false);
   };
 
-  const onSaveItem = async () => {
-    await api.codesUpdateItem(selected, editItem.code, editItemName, editItemValue, editItemSortOrder, editItemUseYn);
-    setEditItem(null);
-    await refetchItems();
-  };
+  const saveItemMut = useMutation({
+    mutationFn: () => api.codesUpdateItem(selected, editItem.code, editItemName, editItemValue, editItemSortOrder, editItemUseYn),
+    onSuccess: () => {
+      setEditItem(null);
+      refetchItems();
+      toast.success("항목이 수정되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
-  const onDeleteItem = async (it: any) => {
-    if (!confirm(`"${it.code}" 항목을 삭제할까요?`)) return;
-    await api.codesDeleteItem(selected, it.code);
-    await refetchItems();
-  };
+  const [deleteItemTarget, setDeleteItemTarget] = useState<any>(null);
+
+  const deleteItemMut = useMutation({
+    mutationFn: () => api.codesDeleteItem(selected, deleteItemTarget.code),
+    onSuccess: () => {
+      refetchItems();
+      toast.success("항목이 삭제되었습니다.");
+      setDeleteItemTarget(null);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      setDeleteItemTarget(null);
+    },
+  });
 
   const selectGroup = (key: string) => {
     setSelected(key);
@@ -136,7 +172,7 @@ export default function AdminCodesPage() {
               <div className="flex gap-2">
                 <Input value={gKey} onChange={(e) => setGKey(e.target.value)} placeholder="GROUP_KEY" />
                 <Input value={gName} onChange={(e) => setGName(e.target.value)} placeholder="그룹 이름" />
-                <Button onClick={onCreateGroup} disabled={!gKey || !gName}>추가</Button>
+                <Button onClick={() => createGroupMut.mutate()} disabled={!gKey || !gName || createGroupMut.isPending}>추가</Button>
                 <Button variant="outline" onClick={() => setShowGroupCreate(false)}>취소</Button>
               </div>
             </div>
@@ -153,7 +189,7 @@ export default function AdminCodesPage() {
                   <input type="checkbox" checked={editGroupUseYn} onChange={(e) => setEditGroupUseYn(e.target.checked)} />
                   사용
                 </label>
-                <Button onClick={onSaveGroup} disabled={!editGroupName.trim()}>저장</Button>
+                <Button onClick={() => saveGroupMut.mutate()} disabled={!editGroupName.trim() || saveGroupMut.isPending}>저장</Button>
                 <Button variant="outline" onClick={() => setEditGroup(null)}>취소</Button>
               </div>
             </div>
@@ -197,7 +233,7 @@ export default function AdminCodesPage() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
-                            onClick={() => onDeleteGroup(g)}
+                            onClick={() => setDeleteGroupTarget(g)}
                           >
                             <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
                           </DropdownMenuItem>
@@ -241,7 +277,7 @@ export default function AdminCodesPage() {
                 <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="CODE" />
                 <Input value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="이름" />
                 <Input value={itemValue} onChange={(e) => setItemValue(e.target.value)} placeholder="값" />
-                <Button onClick={onCreateItem} disabled={!code || !itemName}>추가</Button>
+                <Button onClick={() => createItemMut.mutate()} disabled={!code || !itemName || createItemMut.isPending}>추가</Button>
                 <Button variant="outline" onClick={() => setShowItemCreate(false)}>취소</Button>
               </div>
             </div>
@@ -266,7 +302,7 @@ export default function AdminCodesPage() {
                   <input type="checkbox" checked={editItemUseYn} onChange={(e) => setEditItemUseYn(e.target.checked)} />
                   사용
                 </label>
-                <Button onClick={onSaveItem} disabled={!editItemName.trim()}>저장</Button>
+                <Button onClick={() => saveItemMut.mutate()} disabled={!editItemName.trim() || saveItemMut.isPending}>저장</Button>
                 <Button variant="outline" onClick={() => setEditItem(null)}>취소</Button>
               </div>
             </div>
@@ -313,7 +349,7 @@ export default function AdminCodesPage() {
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
-                                onClick={() => onDeleteItem(it)}
+                                onClick={() => setDeleteItemTarget(it)}
                               >
                                 <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
                               </DropdownMenuItem>
@@ -337,6 +373,24 @@ export default function AdminCodesPage() {
           </CardContent>
         </Card>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteGroupTarget}
+        onOpenChange={(open) => { if (!open) setDeleteGroupTarget(null); }}
+        title="그룹 삭제"
+        description={`"${deleteGroupTarget?.groupKey}" 그룹을 삭제할까요?`}
+        confirmLabel="삭제"
+        onConfirm={() => deleteGroupMut.mutate()}
+      />
+
+      <ConfirmDialog
+        open={!!deleteItemTarget}
+        onOpenChange={(open) => { if (!open) setDeleteItemTarget(null); }}
+        title="항목 삭제"
+        description={`"${deleteItemTarget?.code}" 항목을 삭제할까요?`}
+        confirmLabel="삭제"
+        onConfirm={() => deleteItemMut.mutate()}
+      />
     </div>
   );
 }

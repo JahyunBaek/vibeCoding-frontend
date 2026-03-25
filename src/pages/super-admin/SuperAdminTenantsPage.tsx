@@ -1,7 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { MoreHorizontal, Pencil, Trash2, Plus, X, ChevronLeft, ChevronRight, Copy, CheckCircle2 } from "lucide-react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { toast } from "sonner";
+import { MoreHorizontal, Pencil, Trash2, Plus, X, Copy, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
+import Pagination from "@/components/Pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,47 +19,6 @@ import {
 import type { TenantListRow } from "@/types/tenant";
 
 const PAGE_SIZE = 10;
-
-function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
-  return (
-    <div className="flex items-center justify-center gap-1 border-t px-4 py-3">
-      <button
-        disabled={page <= 1}
-        onClick={() => onChange(page - 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <ChevronLeft className="h-3.5 w-3.5" />
-      </button>
-      {Array.from({ length: totalPages }, (_, i) => i + 1)
-        .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-        .reduce<(number | "...")[]>((acc, p, i, arr) => {
-          if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-          acc.push(p);
-          return acc;
-        }, [])
-        .map((p, i) =>
-          p === "..." ? (
-            <span key={`e-${i}`} className="px-1 text-xs text-muted-fg">…</span>
-          ) : (
-            <button
-              key={p}
-              onClick={() => onChange(p as number)}
-              className={`flex h-7 w-7 items-center justify-center rounded text-xs font-medium transition-colors ${p === page ? "bg-blue-600 text-white" : "border text-muted-fg hover:bg-muted"}`}
-            >
-              {p}
-            </button>
-          )
-        )}
-      <button
-        disabled={page >= totalPages}
-        onClick={() => onChange(page + 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <ChevronRight className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  );
-}
 
 export default function SuperAdminTenantsPage() {
   const { data, refetch } = useQuery({
@@ -79,16 +41,20 @@ export default function SuperAdminTenantsPage() {
   const [createdCreds, setCreatedCreds] = useState<{ tenantId: number; adminUsername: string; adminPassword: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const onCreate = async () => {
-    const result = await api.superAdminTenantCreate({
+  const createMut = useMutation({
+    mutationFn: () => api.superAdminTenantCreate({
       tenantKey: newKey, tenantName: newName, planType: newPlan,
       adminUsername: newAdminUser, adminPassword: newAdminPass,
-    });
-    setNewKey(""); setNewName(""); setNewPlan("FREE"); setNewAdminUser(""); setNewAdminPass("Admin1234!");
-    setShowCreate(false);
-    setCreatedCreds(result);
-    await refetch();
-  };
+    }),
+    onSuccess: (result) => {
+      setNewKey(""); setNewName(""); setNewPlan("FREE"); setNewAdminUser(""); setNewAdminPass("Admin1234!");
+      setShowCreate(false);
+      setCreatedCreds(result);
+      toast.success("테넌트가 생성되었습니다.");
+      refetch();
+    },
+    onError: (e: Error) => toast.error(e.message ?? "테넌트 생성에 실패했습니다."),
+  });
 
   const copyCredsToClipboard = () => {
     if (!createdCreds) return;
@@ -111,18 +77,30 @@ export default function SuperAdminTenantsPage() {
     setShowCreate(false);
   };
 
-  const onSave = async () => {
-    if (!editTenant) return;
-    await api.superAdminTenantUpdate(editTenant.tenantId, { tenantName: editName, planType: editPlan, active: editActive });
-    setEditTenant(null);
-    await refetch();
-  };
+  const saveMut = useMutation({
+    mutationFn: () => api.superAdminTenantUpdate(editTenant!.tenantId, { tenantName: editName, planType: editPlan, active: editActive }),
+    onSuccess: () => {
+      toast.success("테넌트가 수정되었습니다.");
+      setEditTenant(null);
+      refetch();
+    },
+    onError: (e: Error) => toast.error(e.message ?? "테넌트 수정에 실패했습니다."),
+  });
 
-  const onDelete = async (t: TenantListRow) => {
-    if (!confirm(`"${t.tenantName}" 테넌트를 삭제할까요? 모든 데이터가 삭제됩니다.`)) return;
-    await api.superAdminTenantDelete(t.tenantId);
-    await refetch();
-  };
+  const [deleteTarget, setDeleteTarget] = useState<TenantListRow | null>(null);
+
+  const deleteMut = useMutation({
+    mutationFn: () => api.superAdminTenantDelete(deleteTarget!.tenantId),
+    onSuccess: () => {
+      toast.success("테넌트가 삭제되었습니다.");
+      refetch();
+      setDeleteTarget(null);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message ?? "테넌트 삭제에 실패했습니다.");
+      setDeleteTarget(null);
+    },
+  });
 
   return (
     <div className="space-y-4">
@@ -182,7 +160,7 @@ export default function SuperAdminTenantsPage() {
                 <div className="text-xs text-muted-fg">초기 관리자 비밀번호</div>
                 <Input className="w-40" value={newAdminPass} onChange={(e) => setNewAdminPass(e.target.value)} placeholder="Admin1234!" />
               </div>
-              <Button onClick={onCreate} disabled={!newKey.trim() || !newName.trim() || !newAdminUser.trim() || !newAdminPass.trim()}>추가</Button>
+              <Button onClick={() => createMut.mutate()} disabled={!newKey.trim() || !newName.trim() || !newAdminUser.trim() || !newAdminPass.trim() || createMut.isPending}>추가</Button>
               <Button variant="outline" onClick={() => setShowCreate(false)}>취소</Button>
             </div>
             <div className="text-xs text-muted-fg">테넌트 생성 시 메뉴, 게시판, 공통코드, 역할 권한, 초기 관리자 계정이 자동으로 초기화됩니다.</div>
@@ -207,7 +185,7 @@ export default function SuperAdminTenantsPage() {
                 />
                 활성
               </label>
-              <Button onClick={onSave} disabled={!editName.trim()}>저장</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>저장</Button>
               <Button variant="outline" onClick={() => setEditTenant(null)}>취소</Button>
             </div>
           </div>
@@ -258,7 +236,7 @@ export default function SuperAdminTenantsPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
-                          onClick={() => onDelete(t)}
+                          onClick={() => setDeleteTarget(t)}
                         >
                           <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
                         </DropdownMenuItem>
@@ -279,6 +257,15 @@ export default function SuperAdminTenantsPage() {
           <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="테넌트 삭제"
+        description={`"${deleteTarget?.tenantName}" 테넌트를 삭제할까요? 모든 데이터가 삭제됩니다.`}
+        confirmLabel="삭제"
+        onConfirm={() => deleteMut.mutate()}
+      />
     </div>
   );
 }

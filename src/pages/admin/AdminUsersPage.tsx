@@ -1,7 +1,10 @@
-﻿import { useQuery } from "@tanstack/react-query";
+﻿import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, ChevronLeft, ChevronRight, KeyRound } from "lucide-react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { toast } from "sonner";
+import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, KeyRound, Link2, Copy, Check, Download } from "lucide-react";
 import { api } from "@/lib/api";
+import Pagination from "@/components/Pagination";
 import { useAuthStore } from "@/stores/auth";
 import TenantSelector from "@/components/TenantSelector";
 import { Button } from "@/components/ui/button";
@@ -17,47 +20,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const PAGE_SIZE = 10;
-
-function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
-  return (
-    <div className="flex items-center justify-center gap-1 border-t px-4 py-3">
-      <button
-        disabled={page <= 1}
-        onClick={() => onChange(page - 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <ChevronLeft className="h-3.5 w-3.5" />
-      </button>
-      {Array.from({ length: totalPages }, (_, i) => i + 1)
-        .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-        .reduce<(number | "...")[]>((acc, p, i, arr) => {
-          if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-          acc.push(p);
-          return acc;
-        }, [])
-        .map((p, i) =>
-          p === "..." ? (
-            <span key={`e-${i}`} className="px-1 text-xs text-muted-fg">…</span>
-          ) : (
-            <button
-              key={p}
-              onClick={() => onChange(p as number)}
-              className={`flex h-7 w-7 items-center justify-center rounded text-xs font-medium transition-colors ${p === page ? "bg-blue-600 text-white" : "border text-muted-fg hover:bg-muted"}`}
-            >
-              {p}
-            </button>
-          )
-        )}
-      <button
-        disabled={page >= totalPages}
-        onClick={() => onChange(page + 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <ChevronRight className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  );
-}
 
 function flattenOrgs(nodes: any[], depth = 0): { orgId: number; label: string; name: string }[] {
   return (nodes ?? []).flatMap((n) => [
@@ -111,13 +73,17 @@ export default function AdminUsersPage() {
   const [roleKey, setRoleKey] = useState("USER");
   const [orgId, setOrgId] = useState<string>("1");
 
-  const onCreate = async () => {
-    await api.userCreate({ username, password, name, roleKey, orgId: orgId ? Number(orgId) : null, enabled: true, tenantId: selectedTenantId });
-    setUsername("");
-    setName("");
-    setShowCreate(false);
-    await refetch();
-  };
+  const createMut = useMutation({
+    mutationFn: () => api.userCreate({ username, password, name, roleKey, orgId: orgId ? Number(orgId) : null, enabled: true, tenantId: selectedTenantId }),
+    onSuccess: () => {
+      setUsername("");
+      setName("");
+      setShowCreate(false);
+      refetch();
+      toast.success("생성되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   // --- Edit ---
   const [editUser, setEditUser] = useState<any>(null);
@@ -133,21 +99,34 @@ export default function AdminUsersPage() {
     setShowCreate(false);
   };
 
-  const onSave = async () => {
-    await api.userUpdate(editUser.userId, {
+  const saveMut = useMutation({
+    mutationFn: () => api.userUpdate(editUser.userId, {
       name: editName,
       roleKey: editRoleKey,
       orgId: editOrgId ? Number(editOrgId) : null,
-    });
-    setEditUser(null);
-    await refetch();
-  };
+    }),
+    onSuccess: () => {
+      setEditUser(null);
+      refetch();
+      toast.success("수정되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
-  const onDelete = async (u: any) => {
-    if (!confirm(`"${u.username}" 사용자를 삭제할까요?`)) return;
-    await api.userDelete(u.userId);
-    await refetch();
-  };
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+
+  const deleteMut = useMutation({
+    mutationFn: () => api.userDelete(deleteTarget.userId),
+    onSuccess: () => {
+      refetch();
+      toast.success("삭제되었습니다.");
+      setDeleteTarget(null);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      setDeleteTarget(null);
+    },
+  });
 
   // --- Password Reset ---
   const [resetUser, setResetUser] = useState<any>(null);
@@ -162,13 +141,54 @@ export default function AdminUsersPage() {
     setEditUser(null);
   };
 
-  const onResetPassword = async () => {
-    if (resetPassword.length < 8) { setResetError("8자 이상 입력해주세요."); return; }
-    try {
-      await api.userResetPassword(resetUser.userId, resetPassword);
+  const resetMut = useMutation({
+    mutationFn: () => api.userResetPassword(resetUser.userId, resetPassword),
+    onSuccess: () => {
       setResetUser(null);
-    } catch (e: any) {
+      toast.success("비밀번호가 초기화되었습니다.");
+    },
+    onError: (e: Error) => {
       setResetError(e.message ?? "초기화에 실패했습니다.");
+      toast.error(e.message ?? "초기화에 실패했습니다.");
+    },
+  });
+
+  // --- Reset Token Link ---
+  const [resetLinkUser, setResetLinkUser] = useState<any>(null);
+  const [resetLinkUrl, setResetLinkUrl] = useState<string | null>(null);
+  const [resetLinkExpiry, setResetLinkExpiry] = useState<number>(0);
+  const [resetLinkCopied, setResetLinkCopied] = useState(false);
+
+  const resetTokenMut = useMutation({
+    mutationFn: (userId: number) => api.userResetToken(userId),
+    onSuccess: (data) => {
+      const url = `${window.location.origin}/reset-password?token=${data.token}`;
+      setResetLinkUrl(url);
+      setResetLinkExpiry(data.expiresInMinutes);
+      setResetLinkCopied(false);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message ?? "토큰 생성에 실패했습니다.");
+      setResetLinkUser(null);
+    },
+  });
+
+  const startResetLink = (u: any) => {
+    setResetLinkUser(u);
+    setResetLinkUrl(null);
+    setResetLinkCopied(false);
+    resetTokenMut.mutate(u.userId);
+  };
+
+  const copyResetLink = async () => {
+    if (!resetLinkUrl) return;
+    try {
+      await navigator.clipboard.writeText(resetLinkUrl);
+      setResetLinkCopied(true);
+      toast.success("클립보드에 복사되었습니다.");
+      setTimeout(() => setResetLinkCopied(false), 2000);
+    } catch {
+      toast.error("복사에 실패했습니다.");
     }
   };
 
@@ -191,6 +211,17 @@ export default function AdminUsersPage() {
               />
             </div>
             <span className="text-xs text-muted-fg">{filtered.length}명</span>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                try {
+                  await api.usersExport(selectedTenantId);
+                  toast.success("CSV 파일이 다운로드되었습니다.");
+                } catch (e: any) { toast.error(e.message); }
+              }}
+            >
+              <Download className="mr-1.5 h-4 w-4" />CSV 내보내기
+            </Button>
             <Button
               variant="outline"
               onClick={() => { setShowCreate((v) => !v); setEditUser(null); }}
@@ -230,7 +261,7 @@ export default function AdminUsersPage() {
               </select>
             </div>
             <div className="flex gap-2">
-              <Button onClick={onCreate} disabled={!username || !password || !name}>추가</Button>
+              <Button onClick={() => createMut.mutate()} disabled={!username || !password || !name || createMut.isPending}>추가</Button>
               <Button variant="outline" onClick={() => setShowCreate(false)}>취소</Button>
             </div>
           </div>
@@ -265,7 +296,7 @@ export default function AdminUsersPage() {
               </select>
             </div>
             <div className="flex gap-2">
-              <Button onClick={onSave} disabled={!editName.trim()}>저장</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>저장</Button>
               <Button variant="outline" onClick={() => setEditUser(null)}>취소</Button>
             </div>
           </div>
@@ -285,7 +316,7 @@ export default function AdminUsersPage() {
                 onChange={(e) => { setResetPassword(e.target.value); setResetError(null); }}
                 placeholder="새 비밀번호 (8자 이상)"
               />
-              <Button onClick={onResetPassword}>초기화</Button>
+              <Button onClick={() => { if (resetPassword.length < 8) { setResetError("8자 이상 입력해주세요."); return; } resetMut.mutate(); }} disabled={resetMut.isPending}>초기화</Button>
               <Button variant="outline" onClick={() => setResetUser(null)}>취소</Button>
             </div>
             {resetError && <p className="text-xs text-red-400">{resetError}</p>}
@@ -337,10 +368,13 @@ export default function AdminUsersPage() {
                           <DropdownMenuItem onClick={() => startReset(u)}>
                             <KeyRound className="mr-2 h-3.5 w-3.5" />비밀번호 초기화
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => startResetLink(u)}>
+                            <Link2 className="mr-2 h-3.5 w-3.5" />비밀번호 재설정 링크
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
-                            onClick={() => onDelete(u)}
+                            onClick={() => setDeleteTarget(u)}
                           >
                             <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
                           </DropdownMenuItem>
@@ -362,6 +396,59 @@ export default function AdminUsersPage() {
           <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="사용자 삭제"
+        description={`"${deleteTarget?.username}" 사용자를 삭제할까요?`}
+        confirmLabel="삭제"
+        onConfirm={() => deleteMut.mutate()}
+      />
+
+      {/* Reset Link Dialog */}
+      {resetLinkUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setResetLinkUser(null)}>
+          <div className="w-full max-w-lg rounded-lg border bg-surface p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold">비밀번호 재설정 링크</h3>
+            <p className="mt-1 text-sm text-muted-fg">
+              <span className="font-medium">{resetLinkUser.username}</span> 사용자의 비밀번호 재설정 링크입니다.
+            </p>
+
+            {resetTokenMut.isPending ? (
+              <div className="mt-4 flex items-center gap-2 text-sm text-muted-fg">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                토큰 생성 중...
+              </div>
+            ) : resetLinkUrl ? (
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={resetLinkUrl}
+                    className="h-9 flex-1 rounded-md border bg-muted px-3 font-mono text-xs"
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                  />
+                  <Button variant="outline" className="h-9 shrink-0" onClick={copyResetLink}>
+                    {resetLinkCopied
+                      ? <><Check className="mr-1.5 h-3.5 w-3.5 text-emerald-500" />복사됨</>
+                      : <><Copy className="mr-1.5 h-3.5 w-3.5" />복사</>
+                    }
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-fg">
+                  이 링크는 <span className="font-medium text-amber-500">{resetLinkExpiry}분</span> 후 만료됩니다.
+                  사용자에게 전달해 주세요.
+                </p>
+              </div>
+            ) : null}
+
+            <div className="mt-5 flex justify-end">
+              <Button variant="outline" onClick={() => setResetLinkUser(null)}>닫기</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

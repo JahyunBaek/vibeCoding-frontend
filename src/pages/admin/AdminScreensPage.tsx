@@ -1,5 +1,7 @@
-﻿import { useQuery } from "@tanstack/react-query";
+﻿import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth";
 import {
   Shield,
@@ -38,13 +40,19 @@ function ActionRoleRow({
     queryFn: () => api.permRolesByAction(action.actionId),
   });
 
-  const toggle = async (roleKey: string) => {
-    const next = assignedRoles.includes(roleKey)
-      ? assignedRoles.filter((k) => k !== roleKey)
-      : [...assignedRoles, roleKey];
-    await api.permSetRoles(action.actionId, next);
-    await refetch();
-  };
+  const toggleMut = useMutation({
+    mutationFn: (roleKey: string) => {
+      const next = assignedRoles.includes(roleKey)
+        ? assignedRoles.filter((k) => k !== roleKey)
+        : [...assignedRoles, roleKey];
+      return api.permSetRoles(action.actionId, next);
+    },
+    onSuccess: () => {
+      refetch();
+      toast.success("저장되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const visibleRoles = allRoles.filter((r: any) => isSuperAdmin || r.roleKey !== "SUPER_ADMIN");
 
@@ -60,7 +68,8 @@ function ActionRoleRow({
             <input
               type="checkbox"
               checked={checked}
-              onChange={() => toggle(role.roleKey)}
+              onChange={() => toggleMut.mutate(role.roleKey)}
+              disabled={toggleMut.isPending}
               className="rounded"
             />
             <span className={checked ? "font-medium text-foreground" : "text-muted-fg"}>
@@ -98,13 +107,17 @@ function ActionsPanel({
   const [newActionKey, setNewActionKey] = useState("");
   const [newActionName, setNewActionName] = useState("");
 
-  const onCreateAction = async () => {
-    await api.permCreateAction(screen.screenId, newActionKey.trim(), newActionName.trim());
-    setNewActionKey("");
-    setNewActionName("");
-    setShowCreate(false);
-    await refetch();
-  };
+  const createMut = useMutation({
+    mutationFn: () => api.permCreateAction(screen.screenId, newActionKey.trim(), newActionName.trim()),
+    onSuccess: () => {
+      setNewActionKey("");
+      setNewActionName("");
+      setShowCreate(false);
+      refetch();
+      toast.success("액션이 생성되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   // Edit action
   const [editAction, setEditAction] = useState<any>(null);
@@ -118,17 +131,30 @@ function ActionsPanel({
     setShowCreate(false);
   };
 
-  const onSaveAction = async () => {
-    await api.permUpdateAction(editAction.actionId, editActionName, editActionUseYn);
-    setEditAction(null);
-    await refetch();
-  };
+  const saveMut = useMutation({
+    mutationFn: () => api.permUpdateAction(editAction.actionId, editActionName, editActionUseYn),
+    onSuccess: () => {
+      setEditAction(null);
+      refetch();
+      toast.success("액션이 수정되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
-  const onDeleteAction = async (a: any) => {
-    if (!confirm(`"${a.actionKey}" 액션을 삭제할까요?`)) return;
-    await api.permDeleteAction(a.actionId);
-    await refetch();
-  };
+  const [deleteActionTarget, setDeleteActionTarget] = useState<any>(null);
+
+  const deleteMut = useMutation({
+    mutationFn: () => api.permDeleteAction(deleteActionTarget.actionId),
+    onSuccess: () => {
+      refetch();
+      toast.success("액션이 삭제되었습니다.");
+      setDeleteActionTarget(null);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      setDeleteActionTarget(null);
+    },
+  });
 
   return (
     <Card>
@@ -170,8 +196,8 @@ function ActionsPanel({
               placeholder="액션 이름"
             />
             <Button
-              onClick={onCreateAction}
-              disabled={!newActionKey.trim() || !newActionName.trim()}
+              onClick={() => createMut.mutate()}
+              disabled={!newActionKey.trim() || !newActionName.trim() || createMut.isPending}
             >
               추가
             </Button>
@@ -201,7 +227,7 @@ function ActionsPanel({
               />
               사용
             </label>
-            <Button onClick={onSaveAction} disabled={!editActionName.trim()}>저장</Button>
+            <Button onClick={() => saveMut.mutate()} disabled={!editActionName.trim() || saveMut.isPending}>저장</Button>
             <Button variant="outline" onClick={() => setEditAction(null)}>취소</Button>
           </div>
         </div>
@@ -244,7 +270,7 @@ function ActionsPanel({
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
-                        onClick={() => onDeleteAction(a)}
+                        onClick={() => setDeleteActionTarget(a)}
                       >
                         <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
                       </DropdownMenuItem>
@@ -256,6 +282,15 @@ function ActionsPanel({
           </div>
         )}
       </CardContent>
+
+      <ConfirmDialog
+        open={!!deleteActionTarget}
+        onOpenChange={(open) => { if (!open) setDeleteActionTarget(null); }}
+        title="액션 삭제"
+        description={`"${deleteActionTarget?.actionKey}" 액션을 삭제할까요?`}
+        confirmLabel="삭제"
+        onConfirm={() => deleteMut.mutate()}
+      />
     </Card>
   );
 }
@@ -283,13 +318,17 @@ export default function AdminScreensPage() {
   const [newScreenKey, setNewScreenKey] = useState("");
   const [newScreenName, setNewScreenName] = useState("");
 
-  const onCreateScreen = async () => {
-    await api.permCreateScreen(newScreenKey.trim(), newScreenName.trim());
-    setNewScreenKey("");
-    setNewScreenName("");
-    setShowCreate(false);
-    await refetchScreens();
-  };
+  const createScreenMut = useMutation({
+    mutationFn: () => api.permCreateScreen(newScreenKey.trim(), newScreenName.trim()),
+    onSuccess: () => {
+      setNewScreenKey("");
+      setNewScreenName("");
+      setShowCreate(false);
+      refetchScreens();
+      toast.success("화면이 생성되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   // Edit screen
   const [editScreen, setEditScreen] = useState<any>(null);
@@ -303,21 +342,36 @@ export default function AdminScreensPage() {
     setShowCreate(false);
   };
 
-  const onSaveScreen = async () => {
-    await api.permUpdateScreen(editScreen.screenId, editScreenName, editScreenUseYn);
-    if (selectedScreen?.screenId === editScreen.screenId) {
-      setSelectedScreen({ ...selectedScreen, screenName: editScreenName, useYn: editScreenUseYn });
-    }
-    setEditScreen(null);
-    await refetchScreens();
-  };
+  const saveScreenMut = useMutation({
+    mutationFn: () => api.permUpdateScreen(editScreen.screenId, editScreenName, editScreenUseYn),
+    onSuccess: () => {
+      if (selectedScreen?.screenId === editScreen.screenId) {
+        setSelectedScreen({ ...selectedScreen, screenName: editScreenName, useYn: editScreenUseYn });
+      }
+      setEditScreen(null);
+      refetchScreens();
+      toast.success("화면이 수정되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
-  const onDeleteScreen = async (s: any) => {
-    if (!confirm(`"${s.screenKey}" 화면을 삭제할까요?`)) return;
-    if (selectedScreen?.screenId === s.screenId) setSelectedScreen(null);
-    await api.permDeleteScreen(s.screenId);
-    await refetchScreens();
-  };
+  const [deleteScreenTarget, setDeleteScreenTarget] = useState<any>(null);
+
+  const deleteScreenMut = useMutation({
+    mutationFn: () => {
+      if (selectedScreen?.screenId === deleteScreenTarget.screenId) setSelectedScreen(null);
+      return api.permDeleteScreen(deleteScreenTarget.screenId);
+    },
+    onSuccess: () => {
+      refetchScreens();
+      toast.success("화면이 삭제되었습니다.");
+      setDeleteScreenTarget(null);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      setDeleteScreenTarget(null);
+    },
+  });
 
   return (
     <div className="space-y-4">
@@ -358,8 +412,8 @@ export default function AdminScreensPage() {
                   placeholder="화면 이름"
                 />
                 <Button
-                  onClick={onCreateScreen}
-                  disabled={!newScreenKey.trim() || !newScreenName.trim()}
+                  onClick={() => createScreenMut.mutate()}
+                  disabled={!newScreenKey.trim() || !newScreenName.trim() || createScreenMut.isPending}
                 >
                   추가
                 </Button>
@@ -389,7 +443,7 @@ export default function AdminScreensPage() {
                   />
                   사용
                 </label>
-                <Button onClick={onSaveScreen} disabled={!editScreenName.trim()}>저장</Button>
+                <Button onClick={() => saveScreenMut.mutate()} disabled={!editScreenName.trim() || saveScreenMut.isPending}>저장</Button>
                 <Button variant="outline" onClick={() => setEditScreen(null)}>취소</Button>
               </div>
             </div>
@@ -439,7 +493,7 @@ export default function AdminScreensPage() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
-                            onClick={() => onDeleteScreen(s)}
+                            onClick={() => setDeleteScreenTarget(s)}
                           >
                             <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
                           </DropdownMenuItem>
@@ -482,6 +536,15 @@ export default function AdminScreensPage() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteScreenTarget}
+        onOpenChange={(open) => { if (!open) setDeleteScreenTarget(null); }}
+        title="화면 삭제"
+        description={`"${deleteScreenTarget?.screenKey}" 화면을 삭제할까요?`}
+        confirmLabel="삭제"
+        onConfirm={() => deleteScreenMut.mutate()}
+      />
     </div>
   );
 }

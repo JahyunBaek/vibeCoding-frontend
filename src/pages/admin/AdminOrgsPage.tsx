@@ -1,5 +1,7 @@
-﻿import { useQuery } from "@tanstack/react-query";
+﻿import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { toast } from "sonner";
 import TenantSelector from "@/components/TenantSelector";
 import { ChevronRight, ChevronDown, Minus, MoreHorizontal, Pencil, Trash2, Plus, X, Search } from "lucide-react";
 import { api } from "@/lib/api";
@@ -77,12 +79,16 @@ export default function AdminOrgsPage() {
   const [parentId, setParentId] = useState("");
   const [name, setName] = useState("");
 
-  const onCreate = async () => {
-    await api.orgCreate(parentId ? Number(parentId) : null, name, 0, true, selectedTenantId);
-    setName("");
-    setShowCreate(false);
-    await refetch();
-  };
+  const createMut = useMutation({
+    mutationFn: () => api.orgCreate(parentId ? Number(parentId) : null, name, 0, true, selectedTenantId),
+    onSuccess: () => {
+      setName("");
+      setShowCreate(false);
+      refetch();
+      toast.success("생성되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   // --- Edit ---
   const [editNode, setEditNode] = useState<FlatOrg | null>(null);
@@ -96,23 +102,35 @@ export default function AdminOrgsPage() {
     setShowCreate(false);
   };
 
-  const onSave = async () => {
-    if (!editNode) return;
-    await api.orgUpdate(editNode.orgId, {
+  const saveMut = useMutation({
+    mutationFn: () => api.orgUpdate(editNode!.orgId, {
       parentId: editParentId ? Number(editParentId) : null,
       name: editName,
-      sortOrder: editNode.sortOrder,
-      useYn: editNode.useYn,
-    });
-    setEditNode(null);
-    await refetch();
-  };
+      sortOrder: editNode!.sortOrder,
+      useYn: editNode!.useYn,
+    }),
+    onSuccess: () => {
+      setEditNode(null);
+      refetch();
+      toast.success("수정되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
-  const onDelete = async (row: FlatOrg) => {
-    if (!confirm(`"${row.name}" 조직을 삭제할까요?`)) return;
-    await api.orgDelete(row.orgId);
-    await refetch();
-  };
+  const [deleteTarget, setDeleteTarget] = useState<FlatOrg | null>(null);
+
+  const deleteMut = useMutation({
+    mutationFn: () => api.orgDelete(deleteTarget!.orgId),
+    onSuccess: () => {
+      refetch();
+      toast.success("삭제되었습니다.");
+      setDeleteTarget(null);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      setDeleteTarget(null);
+    },
+  });
 
   return (
     <div className="space-y-4">
@@ -166,7 +184,7 @@ export default function AdminOrgsPage() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="조직 이름"
               />
-              <Button onClick={onCreate} disabled={!name.trim()}>추가</Button>
+              <Button onClick={() => createMut.mutate()} disabled={!name.trim() || createMut.isPending}>추가</Button>
               <Button variant="outline" onClick={() => setShowCreate(false)}>취소</Button>
             </div>
           </div>
@@ -197,7 +215,7 @@ export default function AdminOrgsPage() {
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="조직 이름"
               />
-              <Button onClick={onSave} disabled={!editName.trim()}>저장</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>저장</Button>
               <Button variant="outline" onClick={() => setEditNode(null)}>취소</Button>
             </div>
           </div>
@@ -263,7 +281,7 @@ export default function AdminOrgsPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
-                          onClick={() => onDelete(row)}
+                          onClick={() => setDeleteTarget(row)}
                         >
                           <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
                         </DropdownMenuItem>
@@ -283,6 +301,15 @@ export default function AdminOrgsPage() {
           </table>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="조직 삭제"
+        description={`"${deleteTarget?.name}" 조직을 삭제할까요?`}
+        confirmLabel="삭제"
+        onConfirm={() => deleteMut.mutate()}
+      />
     </div>
   );
 }

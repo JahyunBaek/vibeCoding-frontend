@@ -1,5 +1,7 @@
-﻿import { useQuery } from "@tanstack/react-query";
+﻿import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth";
 import TenantSelector from "@/components/TenantSelector";
 import { ChevronRight, ChevronDown, Minus, MoreHorizontal, Pencil, Trash2, Plus, X, Link2, Search } from "lucide-react";
@@ -90,8 +92,8 @@ export default function AdminMenusPage() {
   const toggleCRole = (key: string) =>
     setCRoleKeys((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
 
-  const onCreate = async () => {
-    await api.menuCreate({
+  const createMut = useMutation({
+    mutationFn: () => api.menuCreate({
       parentId: cParentId ? Number(cParentId) : null,
       name: cName,
       path: cPath || null,
@@ -102,14 +104,18 @@ export default function AdminMenusPage() {
       boardId: null,
       roleKeys: cRoleKeys,
       tenantId: selectedTenantId,
-    });
-    setCName("");
-    setCPath("");
-    setCSortOrder(0);
-    setCRoleKeys([]);
-    setShowCreate(false);
-    await refetch();
-  };
+    }),
+    onSuccess: () => {
+      setCName("");
+      setCPath("");
+      setCSortOrder(0);
+      setCRoleKeys([]);
+      setShowCreate(false);
+      refetch();
+      toast.success("생성되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   // --- Edit ---
   const [editNode, setEditNode] = useState<FlatMenu | null>(null);
@@ -134,28 +140,42 @@ export default function AdminMenusPage() {
     setShowCreate(false);
   };
 
-  const onSave = async () => {
-    if (!editNode) return;
-    await api.menuUpdate(editNode.menuId, {
-      parentId: editParentId ? Number(editParentId) : null,
-      name: editName,
-      path: editPath || null,
-      icon: editNode.icon,
-      sortOrder: editSortOrder,
-      useYn: editUseYn,
-    });
-    if (editRoleKeys.length > 0) {
-      await api.menuSetRoles(editNode.menuId, editRoleKeys);
-    }
-    setEditNode(null);
-    await refetch();
-  };
+  const saveMut = useMutation({
+    mutationFn: async () => {
+      await api.menuUpdate(editNode!.menuId, {
+        parentId: editParentId ? Number(editParentId) : null,
+        name: editName,
+        path: editPath || null,
+        icon: editNode!.icon,
+        sortOrder: editSortOrder,
+        useYn: editUseYn,
+      });
+      if (editRoleKeys.length > 0) {
+        await api.menuSetRoles(editNode!.menuId, editRoleKeys);
+      }
+    },
+    onSuccess: () => {
+      setEditNode(null);
+      refetch();
+      toast.success("수정되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
-  const onDelete = async (row: FlatMenu) => {
-    if (!confirm(`"${row.name}" 메뉴를 삭제할까요?`)) return;
-    await api.menuDelete(row.menuId);
-    await refetch();
-  };
+  const [deleteTarget, setDeleteTarget] = useState<FlatMenu | null>(null);
+
+  const deleteMut = useMutation({
+    mutationFn: () => api.menuDelete(deleteTarget!.menuId),
+    onSuccess: () => {
+      refetch();
+      toast.success("삭제되었습니다.");
+      setDeleteTarget(null);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      setDeleteTarget(null);
+    },
+  });
 
   return (
     <div className="space-y-4">
@@ -231,7 +251,7 @@ export default function AdminMenusPage() {
                   </label>
                 ))}
               </div>
-              <Button onClick={onCreate} disabled={!cName.trim()}>추가</Button>
+              <Button onClick={() => createMut.mutate()} disabled={!cName.trim() || createMut.isPending}>추가</Button>
               <Button variant="outline" onClick={() => setShowCreate(false)}>취소</Button>
             </div>
           </div>
@@ -282,7 +302,7 @@ export default function AdminMenusPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button onClick={onSave} disabled={!editName.trim()}>저장</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>저장</Button>
               <Button variant="outline" onClick={() => setEditNode(null)}>취소</Button>
             </div>
           </div>
@@ -362,7 +382,7 @@ export default function AdminMenusPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
-                          onClick={() => onDelete(row)}
+                          onClick={() => setDeleteTarget(row)}
                         >
                           <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
                         </DropdownMenuItem>
@@ -385,6 +405,15 @@ export default function AdminMenusPage() {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="메뉴 삭제"
+        description={`"${deleteTarget?.name}" 메뉴를 삭제할까요?`}
+        confirmLabel="삭제"
+        onConfirm={() => deleteMut.mutate()}
+      />
     </div>
   );
 }

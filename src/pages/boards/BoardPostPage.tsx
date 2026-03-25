@@ -1,15 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import DOMPurify from "dompurify";
 import { useAuthStore } from "@/stores/auth";
 import { useAction } from "@/hooks/useAction";
 import { SCREENS, ACTIONS } from "@/config/permissions";
-import { Download, MessageSquare, Paperclip, Send } from "lucide-react";
+import { Download, MessageSquare, MoreHorizontal, Paperclip, Pencil, Send, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import RichEditor from "@/components/RichEditor";
 
 function getExt(name: string): string {
@@ -94,21 +97,91 @@ function FileAttachment({ f }: { f: any }) {
   );
 }
 
-function CommentItem({ c }: { c: any }) {
+function CommentItem({ c, postId, canModify, onRefresh }: {
+  c: any; postId: string; canModify: boolean; onRefresh: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState(c.content);
+
+  const saveMut = useMutation({
+    mutationFn: () => api.commentUpdate(postId, c.commentId, editContent.trim()),
+    onSuccess: () => {
+      setEditing(false);
+      onRefresh();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const deleteMut = useMutation({
+    mutationFn: () => api.commentDelete(postId, c.commentId),
+    onSuccess: () => {
+      toast.success("댓글이 삭제되었습니다.");
+      onRefresh();
+      setShowDeleteConfirm(false);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      setShowDeleteConfirm(false);
+    },
+  });
+
   return (
-    <div className="flex gap-3">
+    <div className="group flex gap-3">
       <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${avatarColor(c.authorName ?? "")}`}>
         {getInitials(c.authorName ?? "")}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-foreground">{c.authorName}</span>
           <span className="text-xs text-muted-fg">{formatRelativeTime(c.createdAt)}</span>
+          {canModify && !editing && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent">
+                  <MoreHorizontal className="h-4 w-4 text-muted-fg" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => { setEditContent(c.content); setEditing(true); }}>
+                  <Pencil className="mr-2 h-3.5 w-3.5" /> 수정
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowDeleteConfirm(true)} className="text-red-400">
+                  <Trash2 className="mr-2 h-3.5 w-3.5" /> 삭제
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
-        <div className="mt-1 rounded-2xl rounded-tl-sm bg-accent px-4 py-2.5 text-sm text-foreground leading-relaxed whitespace-pre-wrap border border-base">
-          {c.content}
-        </div>
+        {editing ? (
+          <div className="mt-1 space-y-2">
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="w-full rounded-lg border border-base bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-blue-500/50 resize-none"
+              rows={3}
+            />
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => { if (!editContent.trim()) return; saveMut.mutate(); }} disabled={saveMut.isPending}>저장</Button>
+              <Button variant="outline" size="sm" onClick={() => setEditing(false)}>취소</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-1 rounded-2xl rounded-tl-sm bg-accent px-4 py-2.5 text-sm text-foreground leading-relaxed whitespace-pre-wrap border border-base">
+            {c.content}
+          </div>
+        )}
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="댓글 삭제"
+        description="댓글을 삭제하시겠습니까?"
+        confirmLabel="삭제"
+        onConfirm={() => deleteMut.mutate()}
+      />
     </div>
   );
 }
@@ -138,38 +211,47 @@ export default function BoardPostPage() {
     setContent(data.content ?? "");
   }, [data]);
 
-  const onSave = async () => {
-    await api.postUpdate(boardId, postId, title, content, (data?.files ?? []).map((f: any) => f.fileId));
-    setEdit(false);
-    await refetch();
-  };
+  const updateMut = useMutation({
+    mutationFn: () => api.postUpdate(boardId, postId, title, content, (data?.files ?? []).map((f: any) => f.fileId)),
+    onSuccess: () => {
+      toast.success("게시글이 저장되었습니다.");
+      setEdit(false);
+      refetch();
+    },
+    onError: (e: Error) => toast.error(e.message ?? "게시글 저장에 실패했습니다."),
+  });
 
-  const onDelete = async () => {
-    if (!confirm("삭제하시겠습니까?")) return;
-    await api.postDelete(boardId, postId);
-    nav(`/boards/${boardId}`);
-  };
+  const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
+
+  const deletePostMut = useMutation({
+    mutationFn: () => api.postDelete(boardId, postId),
+    onSuccess: () => {
+      toast.success("게시글이 삭제되었습니다.");
+      nav(`/boards/${boardId}`);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message ?? "게시글 삭제에 실패했습니다.");
+      setShowPostDeleteConfirm(false);
+    },
+  });
 
   const [comment, setComment] = useState("");
-  const [submittingComment, setSubmittingComment] = useState(false);
 
-  const onAddComment = async () => {
-    if (!comment.trim() || submittingComment) return;
-    setSubmittingComment(true);
-    try {
-      await api.commentCreate(postId, comment.trim());
+  const commentMut = useMutation({
+    mutationFn: () => api.commentCreate(postId, comment.trim()),
+    onSuccess: () => {
+      toast.success("댓글이 등록되었습니다.");
       setComment("");
       if (textareaRef.current) textareaRef.current.style.height = "auto";
-      await refetchComments();
-    } finally {
-      setSubmittingComment(false);
-    }
-  };
+      refetchComments();
+    },
+    onError: (e: Error) => toast.error(e.message ?? "댓글 등록에 실패했습니다."),
+  });
 
   const handleCommentKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
-      onAddComment();
+      if (comment.trim() && !commentMut.isPending) commentMut.mutate();
     }
   };
 
@@ -203,13 +285,13 @@ export default function BoardPostPage() {
                 <Button variant="outline" size="sm" onClick={() => setEdit(true)}>편집</Button>
               ) : (
                 <>
-                  <Button size="sm" onClick={onSave}>저장</Button>
+                  <Button size="sm" onClick={() => updateMut.mutate()} disabled={updateMut.isPending}>저장</Button>
                   <Button variant="outline" size="sm" onClick={() => setEdit(false)}>취소</Button>
                 </>
               )
             )}
             {canDelete && (
-              <Button variant="outline" size="sm" onClick={onDelete} className="text-red-400 hover:text-red-300 hover:border-red-500/40">삭제</Button>
+              <Button variant="outline" size="sm" onClick={() => setShowPostDeleteConfirm(true)} className="text-red-400 hover:text-red-300 hover:border-red-500/40">삭제</Button>
             )}
           </div>
         )}
@@ -293,7 +375,13 @@ export default function BoardPostPage() {
           {commentList.length > 0 ? (
             <div className="space-y-4">
               {commentList.map((c: any) => (
-                <CommentItem key={c.commentId} c={c} />
+                <CommentItem
+                  key={c.commentId}
+                  c={c}
+                  postId={postId}
+                  canModify={!!user && (user.userId === c.authorId || user.roleKey === "ADMIN" || user.roleKey === "SUPER_ADMIN")}
+                  onRefresh={refetchComments}
+                />
               ))}
             </div>
           ) : (
@@ -319,12 +407,12 @@ export default function BoardPostPage() {
                   onChange={handleCommentChange}
                   onKeyDown={handleCommentKeyDown}
                   placeholder="댓글을 입력하세요... (Ctrl+Enter로 등록)"
-                  disabled={submittingComment}
+                  disabled={commentMut.isPending}
                   className="w-full resize-none bg-transparent px-4 py-2.5 pr-12 text-sm text-foreground placeholder:text-muted-fg outline-none disabled:opacity-60 max-h-40 overflow-y-auto"
                 />
                 <button
-                  onClick={onAddComment}
-                  disabled={!comment.trim() || submittingComment}
+                  onClick={() => { if (comment.trim() && !commentMut.isPending) commentMut.mutate(); }}
+                  disabled={!comment.trim() || commentMut.isPending}
                   className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white transition-all hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <Send className="h-3.5 w-3.5" />
@@ -336,6 +424,15 @@ export default function BoardPostPage() {
 
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={showPostDeleteConfirm}
+        onOpenChange={setShowPostDeleteConfirm}
+        title="게시글 삭제"
+        description="게시글을 삭제하시겠습니까?"
+        confirmLabel="삭제"
+        onConfirm={() => deletePostMut.mutate()}
+      />
     </div>
   );
 }

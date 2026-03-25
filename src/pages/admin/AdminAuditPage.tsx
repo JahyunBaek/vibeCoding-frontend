@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Search, RefreshCw } from "lucide-react";
+import { Search, RefreshCw, Download } from "lucide-react";
+import Pagination from "@/components/Pagination";
 import TenantSelector from "@/components/TenantSelector";
 import { api } from "@/lib/api";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -17,47 +19,6 @@ const ACTION_COLORS: Record<string, string> = {
   UPDATE: "bg-amber-500/10 text-amber-700 border-amber-300",
   DELETE: "bg-red-500/10 text-red-600 border-red-300",
 };
-
-function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
-  return (
-    <div className="flex items-center justify-center gap-1 border-t px-4 py-3">
-      <button
-        disabled={page <= 1}
-        onClick={() => onChange(page - 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <ChevronLeft className="h-3.5 w-3.5" />
-      </button>
-      {Array.from({ length: totalPages }, (_, i) => i + 1)
-        .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-        .reduce<(number | "...")[]>((acc, p, i, arr) => {
-          if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-          acc.push(p);
-          return acc;
-        }, [])
-        .map((p, i) =>
-          p === "..." ? (
-            <span key={`e-${i}`} className="px-1 text-xs text-muted-fg">…</span>
-          ) : (
-            <button
-              key={p}
-              onClick={() => onChange(p as number)}
-              className={`flex h-7 w-7 items-center justify-center rounded text-xs font-medium transition-colors ${p === page ? "bg-blue-600 text-white" : "border text-muted-fg hover:bg-muted"}`}
-            >
-              {p}
-            </button>
-          )
-        )}
-      <button
-        disabled={page >= totalPages}
-        onClick={() => onChange(page + 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <ChevronRight className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  );
-}
 
 export default function AdminAuditPage() {
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
@@ -113,6 +74,21 @@ export default function AdminAuditPage() {
               />
             </div>
             <span className="text-xs text-muted-fg">{data?.total ?? 0}건</span>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                try {
+                  await api.auditExport({
+                    tenantId: selectedTenantId,
+                    action: actionFilter || undefined,
+                    targetType: targetFilter || undefined,
+                  });
+                  toast.success("CSV 파일이 다운로드되었습니다.");
+                } catch (e: any) { toast.error(e.message); }
+              }}
+            >
+              <Download className="mr-1.5 h-4 w-4" />CSV 내보내기
+            </Button>
             <Button variant="outline" className="h-8 w-8 p-0" onClick={() => refetch()} disabled={isFetching}>
               <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
             </Button>

@@ -1,7 +1,10 @@
-﻿import { useQuery } from "@tanstack/react-query";
+﻿import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { toast } from "sonner";
+import { MoreHorizontal, Pencil, Trash2, Plus, X, Search } from "lucide-react";
 import { api } from "@/lib/api";
+import Pagination from "@/components/Pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -15,47 +18,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const PAGE_SIZE = 10;
-
-function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
-  return (
-    <div className="flex items-center justify-center gap-1 border-t px-4 py-3">
-      <button
-        disabled={page <= 1}
-        onClick={() => onChange(page - 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <ChevronLeft className="h-3.5 w-3.5" />
-      </button>
-      {Array.from({ length: totalPages }, (_, i) => i + 1)
-        .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-        .reduce<(number | "...")[]>((acc, p, i, arr) => {
-          if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-          acc.push(p);
-          return acc;
-        }, [])
-        .map((p, i) =>
-          p === "..." ? (
-            <span key={`e-${i}`} className="px-1 text-xs text-muted-fg">…</span>
-          ) : (
-            <button
-              key={p}
-              onClick={() => onChange(p as number)}
-              className={`flex h-7 w-7 items-center justify-center rounded text-xs font-medium transition-colors ${p === page ? "bg-blue-600 text-white" : "border text-muted-fg hover:bg-muted"}`}
-            >
-              {p}
-            </button>
-          )
-        )}
-      <button
-        disabled={page >= totalPages}
-        onClick={() => onChange(page + 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <ChevronRight className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  );
-}
 
 export default function AdminRolesPage() {
   const { data, refetch } = useQuery({
@@ -88,13 +50,17 @@ export default function AdminRolesPage() {
   const [roleKey, setRoleKey] = useState("");
   const [roleName, setRoleName] = useState("");
 
-  const onCreate = async () => {
-    await api.roleCreate(roleKey, roleName, true);
-    setRoleKey("");
-    setRoleName("");
-    setShowCreate(false);
-    await refetch();
-  };
+  const createMut = useMutation({
+    mutationFn: () => api.roleCreate(roleKey, roleName, true),
+    onSuccess: () => {
+      setRoleKey("");
+      setRoleName("");
+      setShowCreate(false);
+      refetch();
+      toast.success("생성되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   // --- Edit ---
   const [editRole, setEditRole] = useState<any>(null);
@@ -108,17 +74,30 @@ export default function AdminRolesPage() {
     setShowCreate(false);
   };
 
-  const onSave = async () => {
-    await api.roleUpdate(editRole.roleKey, editName, editUseYn);
-    setEditRole(null);
-    await refetch();
-  };
+  const saveMut = useMutation({
+    mutationFn: () => api.roleUpdate(editRole.roleKey, editName, editUseYn),
+    onSuccess: () => {
+      setEditRole(null);
+      refetch();
+      toast.success("수정되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
-  const onDelete = async (r: any) => {
-    if (!confirm(`"${r.roleKey}" 역할을 삭제할까요?`)) return;
-    await api.roleDelete(r.roleKey);
-    await refetch();
-  };
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+
+  const deleteMut = useMutation({
+    mutationFn: () => api.roleDelete(deleteTarget.roleKey),
+    onSuccess: () => {
+      refetch();
+      toast.success("삭제되었습니다.");
+      setDeleteTarget(null);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      setDeleteTarget(null);
+    },
+  });
 
   return (
     <div className="space-y-4">
@@ -155,7 +134,7 @@ export default function AdminRolesPage() {
             <div className="flex gap-2">
               <Input className="w-40" value={roleKey} onChange={(e) => setRoleKey(e.target.value)} placeholder="ROLE_KEY" />
               <Input className="w-48" value={roleName} onChange={(e) => setRoleName(e.target.value)} placeholder="역할 이름" />
-              <Button onClick={onCreate} disabled={!roleKey.trim() || !roleName.trim()}>추가</Button>
+              <Button onClick={() => createMut.mutate()} disabled={!roleKey.trim() || !roleName.trim() || createMut.isPending}>추가</Button>
               <Button variant="outline" onClick={() => setShowCreate(false)}>취소</Button>
             </div>
           </div>
@@ -173,7 +152,7 @@ export default function AdminRolesPage() {
                 <input type="checkbox" checked={editUseYn} onChange={(e) => setEditUseYn(e.target.checked)} />
                 사용
               </label>
-              <Button onClick={onSave} disabled={!editName.trim()}>저장</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>저장</Button>
               <Button variant="outline" onClick={() => setEditRole(null)}>취소</Button>
             </div>
           </div>
@@ -215,7 +194,7 @@ export default function AdminRolesPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
-                          onClick={() => onDelete(r)}
+                          onClick={() => setDeleteTarget(r)}
                         >
                           <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
                         </DropdownMenuItem>
@@ -239,6 +218,15 @@ export default function AdminRolesPage() {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="역할 삭제"
+        description={`"${deleteTarget?.roleKey}" 역할을 삭제할까요?`}
+        confirmLabel="삭제"
+        onConfirm={() => deleteMut.mutate()}
+      />
     </div>
   );
 }

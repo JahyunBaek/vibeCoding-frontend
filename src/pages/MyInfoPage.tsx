@@ -1,5 +1,6 @@
-﻿import { useQuery } from "@tanstack/react-query";
+﻿import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { toast } from "sonner";
 import { AlertCircle, CheckCircle2, KeyRound, User as UserIcon } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,6 @@ export default function MyInfoPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -39,30 +39,34 @@ export default function MyInfoPage() {
     return null;
   };
 
-  const onSave = async () => {
-    setError(null);
-    setSuccess(false);
-    const validationError = validate();
-    if (validationError) { setError(validationError); return; }
-
-    setSaving(true);
-    try {
-      await api.updateMe(
-        name || data?.name,
-        changePassword ? currentPassword : undefined,
-        changePassword ? newPassword : undefined,
-      );
+  const saveMut = useMutation({
+    mutationFn: () => api.updateMe(
+      name || data?.name,
+      changePassword ? currentPassword : undefined,
+      changePassword ? newPassword : undefined,
+    ),
+    onSuccess: () => {
       setSuccess(true);
+      setError(null);
+      toast.success(changePassword ? "비밀번호가 변경되었습니다." : "프로필이 저장되었습니다.");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setChangePassword(false);
-      await refetch();
-    } catch (e: any) {
+      refetch();
+    },
+    onError: (e: Error) => {
       setError(e.message ?? "저장에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
+      toast.error(e.message ?? "저장에 실패했습니다.");
+    },
+  });
+
+  const onSave = () => {
+    setError(null);
+    setSuccess(false);
+    const validationError = validate();
+    if (validationError) { setError(validationError); return; }
+    saveMut.mutate();
   };
 
   const displayName = data?.name ?? "";
@@ -101,7 +105,7 @@ export default function MyInfoPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={data?.name ?? "이름 입력"}
-              disabled={saving}
+              disabled={saveMut.isPending}
             />
           </div>
 
@@ -132,7 +136,7 @@ export default function MyInfoPage() {
                   setConfirmPassword("");
                   setError(null);
                 }}
-                disabled={saving}
+                disabled={saveMut.isPending}
               />
               <div className={`h-5 w-9 rounded-full transition-colors ${changePassword ? "bg-slate-800" : "bg-accent"}`} />
               <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-surface shadow transition-transform ${changePassword ? "translate-x-4" : "translate-x-0.5"}`} />
@@ -149,7 +153,7 @@ export default function MyInfoPage() {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="현재 비밀번호 입력"
-                  disabled={saving}
+                  disabled={saveMut.isPending}
                   autoComplete="current-password"
                 />
               </div>
@@ -160,7 +164,7 @@ export default function MyInfoPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="8자 이상"
-                  disabled={saving}
+                  disabled={saveMut.isPending}
                   autoComplete="new-password"
                 />
               </div>
@@ -171,7 +175,7 @@ export default function MyInfoPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="새 비밀번호 재입력"
-                  disabled={saving}
+                  disabled={saveMut.isPending}
                   autoComplete="new-password"
                 />
                 {confirmPassword && newPassword !== confirmPassword && (
@@ -205,8 +209,8 @@ export default function MyInfoPage() {
 
       {/* Actions */}
       <div className="flex justify-end">
-        <Button onClick={onSave} disabled={saving}>
-          {saving ? "저장 중..." : "저장"}
+        <Button onClick={onSave} disabled={saveMut.isPending}>
+          {saveMut.isPending ? "저장 중..." : "저장"}
         </Button>
       </div>
     </div>

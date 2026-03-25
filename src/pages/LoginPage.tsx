@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "sonner";
 import { Loader2, Lock, User, Dna } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/stores/auth";
@@ -36,7 +37,9 @@ export default function LoginPage() {
       } catch { /* ignore */ }
       nav("/dashboard");
     } catch (err: any) {
-      setError(err?.message ?? "로그인에 실패했습니다.");
+      const msg = err?.message ?? "로그인에 실패했습니다.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

@@ -1,8 +1,11 @@
-﻿import { useQuery, useQueryClient } from "@tanstack/react-query";
+﻿import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { toast } from "sonner";
 import TenantSelector from "@/components/TenantSelector";
-import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { MoreHorizontal, Pencil, Trash2, Plus, X, Search } from "lucide-react";
 import { api } from "@/lib/api";
+import Pagination from "@/components/Pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,47 +18,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const PAGE_SIZE = 10;
-
-function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
-  return (
-    <div className="flex items-center justify-center gap-1 border-t px-4 py-3">
-      <button
-        disabled={page <= 1}
-        onClick={() => onChange(page - 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <ChevronLeft className="h-3.5 w-3.5" />
-      </button>
-      {Array.from({ length: totalPages }, (_, i) => i + 1)
-        .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
-        .reduce<(number | "...")[]>((acc, p, i, arr) => {
-          if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...");
-          acc.push(p);
-          return acc;
-        }, [])
-        .map((p, i) =>
-          p === "..." ? (
-            <span key={`e-${i}`} className="px-1 text-xs text-muted-fg">…</span>
-          ) : (
-            <button
-              key={p}
-              onClick={() => onChange(p as number)}
-              className={`flex h-7 w-7 items-center justify-center rounded text-xs font-medium transition-colors ${p === page ? "bg-blue-600 text-white" : "border text-muted-fg hover:bg-muted"}`}
-            >
-              {p}
-            </button>
-          )
-        )}
-      <button
-        disabled={page >= totalPages}
-        onClick={() => onChange(page + 1)}
-        className="flex h-7 w-7 items-center justify-center rounded border text-muted-fg hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
-      >
-        <ChevronRight className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  );
-}
 
 export default function AdminBoardsPage() {
   const qc = useQueryClient();
@@ -93,14 +55,18 @@ export default function AdminBoardsPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  const onCreate = async () => {
-    await api.boardsAdminCreate(name, description, true, selectedTenantId);
-    setName("");
-    setDescription("");
-    setShowCreate(false);
-    await refetch();
-    await invalidateMenus();
-  };
+  const createMut = useMutation({
+    mutationFn: () => api.boardsAdminCreate(name, description, true, selectedTenantId),
+    onSuccess: () => {
+      setName("");
+      setDescription("");
+      setShowCreate(false);
+      refetch();
+      invalidateMenus();
+      toast.success("게시판이 생성되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   // --- Edit ---
   const [editBoard, setEditBoard] = useState<any>(null);
@@ -114,19 +80,31 @@ export default function AdminBoardsPage() {
     setShowCreate(false);
   };
 
-  const onSave = async () => {
-    await api.boardsAdminUpdate(editBoard.boardId, editName, editDesc, true);
-    setEditBoard(null);
-    await refetch();
-    await invalidateMenus();
-  };
+  const saveMut = useMutation({
+    mutationFn: () => api.boardsAdminUpdate(editBoard.boardId, editName, editDesc, true),
+    onSuccess: () => {
+      setEditBoard(null);
+      refetch();
+      invalidateMenus();
+      toast.success("게시판이 수정되었습니다.");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
-  const onDelete = async (b: any) => {
-    if (!confirm(`"${b.name}" 게시판을 삭제할까요?`)) return;
-    await api.boardsAdminDelete(b.boardId);
-    await refetch();
-    await invalidateMenus();
-  };
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const deleteMut = useMutation({
+    mutationFn: () => api.boardsAdminDelete(deleteTarget.boardId),
+    onSuccess: () => {
+      refetch();
+      invalidateMenus();
+      toast.success("게시판이 삭제되었습니다.");
+      setDeleteTarget(null);
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      setDeleteTarget(null);
+    },
+  });
 
   return (
     <div className="space-y-4">
@@ -164,7 +142,7 @@ export default function AdminBoardsPage() {
             <div className="flex gap-2">
               <Input className="w-48" value={name} onChange={(e) => setName(e.target.value)} placeholder="게시판 이름" />
               <Input className="flex-1" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="설명" />
-              <Button onClick={onCreate} disabled={!name.trim()}>추가</Button>
+              <Button onClick={() => createMut.mutate()} disabled={!name.trim() || createMut.isPending}>추가</Button>
               <Button variant="outline" onClick={() => setShowCreate(false)}>취소</Button>
             </div>
             <div className="text-xs text-muted-fg">게시판 생성 시 메뉴 트리(Boards 하위)에 자동 반영됩니다.</div>
@@ -180,7 +158,7 @@ export default function AdminBoardsPage() {
             <div className="flex gap-2">
               <Input className="w-48" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="게시판 이름" />
               <Input className="flex-1" value={editDesc} onChange={(e) => setEditDesc(e.target.value)} placeholder="설명" />
-              <Button onClick={onSave} disabled={!editName.trim()}>저장</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>저장</Button>
               <Button variant="outline" onClick={() => setEditBoard(null)}>취소</Button>
             </div>
           </div>
@@ -220,7 +198,7 @@ export default function AdminBoardsPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
-                          onClick={() => onDelete(b)}
+                          onClick={() => setDeleteTarget(b)}
                         >
                           <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
                         </DropdownMenuItem>
@@ -241,6 +219,14 @@ export default function AdminBoardsPage() {
           <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="게시판 삭제"
+        description={`"${deleteTarget?.name}" 게시판을 삭제하시겠습니까?`}
+        onConfirm={() => deleteMut.mutate()}
+      />
     </div>
   );
 }
