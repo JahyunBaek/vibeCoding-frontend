@@ -10,7 +10,9 @@
       "Bash(node:*)",
       "Skill(update-config)",
       "Bash(./gradlew compileJava)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(find /c/Users/jahyun/Downloads/common-system-starter/backend -name *Mapper.xml -type f)",
+      "Bash(xargs grep:*)"
     ],
     "additionalDirectories": [
       "C:/Users/jahyun/Downloads/common-system-starter/backend"

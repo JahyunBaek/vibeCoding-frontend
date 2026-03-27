@@ -30,6 +30,9 @@ export default function Breadcrumb() {
     "super-admin": t("nav.system"),
     tenants: t("nav.tenants"),
     "my-info": t("nav.myInfo"),
+    sample: t("sample.medical"),
+    patients: t("sample.patients"),
+    trials: t("sample.trials"),
   };
 
   const crumbs: { label: string; path: string }[] = [];

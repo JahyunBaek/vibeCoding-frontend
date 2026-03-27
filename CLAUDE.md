@@ -146,7 +146,53 @@ const canEdit = hasEditPerm && (isAdmin || isAuthor);
 
 **테넌트 관리 화면**: `/super-admin/tenants` (`SuperAdminTenantsPage.tsx`) — `RequireSuperAdmin` 가드로 보호.
 
-**테넌트 브랜딩**: `Sidebar`가 `GET /api/tenant/branding`으로 `company_name`, `logo_url`을 조회하여 동적 표시.
+**테넌트 브랜딩**: `Sidebar`가 `GET /api/tenant/branding`으로 `company_name`, `logo_url`, `locale`을 조회하여 동적 표시. `useTenantTheme` 훅이 테마 색상 + locale 자동 적용.
+
+### 공통코드 (Common Codes)
+
+공통코드는 드롭다운/콤보박스 선택 항목을 관리하는 시스템. 백엔드 Redis 캐시 기반.
+
+**조회 API**: `api.commonCodes("GROUP_KEY")` → `GET /api/common-codes/{groupKey}`
+
+**사용 패턴**:
+```tsx
+const { data: statuses = [] } = useQuery({
+  queryKey: ["common-codes", "PATIENT_STATUS"],
+  queryFn: () => api.commonCodes("PATIENT_STATUS"),
+});
+// select에서 사용
+<select>
+  <option value="">{t("sample.allStatuses")}</option>
+  {statuses.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+</select>
+// 코드 → 이름 변환
+const codeName = (codes: any[], code: string) => codes.find(c => c.code === code)?.name ?? code;
+```
+
+**등록된 공통코드 그룹**:
+
+| Group Key | 그룹명 | 용도 |
+|-----------|--------|------|
+| `YN` | Y/N | 범용 Y/N 선택 |
+| `PATIENT_STATUS` | 환자 상태 | 환자 관리 페이지 필터/상태 표시 |
+| `DEPARTMENT` | 진료과 | 환자 관리 페이지 필터/부서 표시 |
+| `BLOOD_TYPE` | 혈액형 | 환자 관리 페이지 |
+| `GENDER` | 성별 | 환자 관리 페이지 |
+| `TRIAL_PHASE` | 임상시험 단계 | 임상시험 관리 페이지 필터 |
+| `TRIAL_STATUS` | 임상시험 상태 | 임상시험 관리 페이지 필터/상태 표시 |
+
+### 샘플 페이지 (Medical)
+
+**위치**: `src/pages/sample/` — Dashboard와 Boards 사이에 배치
+
+| 페이지 | 경로 | API | 공통코드 |
+|--------|------|-----|---------|
+| `SamplePatientsPage` | `/sample/patients` | `GET /api/sample/patients` | PATIENT_STATUS, DEPARTMENT, GENDER, BLOOD_TYPE |
+| `SampleTrialsPage` | `/sample/trials` | `GET /api/sample/trials` | TRIAL_PHASE, TRIAL_STATUS |
+
+- Mock 데이터 (서버에서 하드코딩 반환, DB 없음)
+- 공통코드로 필터 `<select>` 구성 + 코드→이름 변환
+- 상태 Badge 색상 매핑 포함
 
 ### 비밀번호 재설정
 
@@ -208,6 +254,7 @@ src/
 │   └── ErrorBoundary.tsx  # 에러 바운더리
 │
 ├── pages/
+│   ├── sample/     #   의료 샘플 페이지 (환자, 임상시험)
 │   ├── boards/     #   게시판 관련 페이지
 │   ├── admin/      #   어드민 전용 페이지 (ADMIN + SUPER_ADMIN 접근)
 │   └── super-admin/ #  슈퍼어드민 전용 페이지 (SUPER_ADMIN만 접근)

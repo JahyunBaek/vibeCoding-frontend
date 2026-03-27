@@ -20,6 +20,8 @@ import AdminSettingsPage from "@/pages/admin/AdminSettingsPage";
 import AdminAuditPage from "@/pages/admin/AdminAuditPage";
 import MyInfoPage from "@/pages/MyInfoPage";
 import SuperAdminTenantsPage from "@/pages/super-admin/SuperAdminTenantsPage";
+import SamplePatientsPage from "@/pages/sample/SamplePatientsPage";
+import SampleTrialsPage from "@/pages/sample/SampleTrialsPage";
 
 export default function AppRoutes() {
   return (
@@ -38,6 +40,9 @@ export default function AppRoutes() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
+
+        <Route path="sample/patients" element={<SamplePatientsPage />} />
+        <Route path="sample/trials" element={<SampleTrialsPage />} />
 
         <Route path="boards/:boardId" element={<BoardListPage />} />
         <Route path="boards/:boardId/new" element={<BoardWritePage />} />
