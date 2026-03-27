@@ -12,6 +12,11 @@
   --foreground:         15  23  42;   /* 기본 텍스트     text-foreground    */
   --muted-foreground:  100 116 139;   /* 보조 텍스트     text-muted-fg      */
   --border:            226 232 240;   /* 선              border-base        */
+
+  /* ─── 테넌트 테마 (기본값, JS로 오버라이드) ──── */
+  --tenant-primary:  #3B82F6;
+  --tenant-sidebar:  #1E293B;
+  --tenant-accent:   #2563EB;
 }
 
 /* ─── 다크 토큰 (slate-950 기반) ───────────────── */

@@ -1,5 +1,9 @@
-﻿import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { toast } from "sonner";
 import { AlertCircle, CheckCircle2, KeyRound, User as UserIcon } from "lucide-react";
 import { api } from "@/lib/api";
@@ -15,73 +19,96 @@ function avatarColor(name: string): string {
 }
 
 export default function MyInfoPage() {
+  const { t } = useTranslation();
+
+  const myInfoSchema = z.object({
+    name: z.string().min(1, t("myInfo.nameRequired")),
+    changePassword: z.boolean(),
+    currentPassword: z.string(),
+    newPassword: z.string(),
+    confirmPassword: z.string(),
+  }).superRefine((data, ctx) => {
+    if (data.changePassword) {
+      if (!data.currentPassword) {
+        ctx.addIssue({ code: "custom", message: t("myInfo.currentPasswordRequired"), path: ["currentPassword"] });
+      }
+      if (!data.newPassword) {
+        ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordRequired"), path: ["newPassword"] });
+      } else if (data.newPassword.length < 8) {
+        ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordMinLength"), path: ["newPassword"] });
+      } else if (data.newPassword === data.currentPassword) {
+        ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordSameAsCurrent"), path: ["newPassword"] });
+      }
+      if (data.newPassword && data.confirmPassword !== data.newPassword) {
+        ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordMismatch"), path: ["confirmPassword"] });
+      }
+    }
+  });
+  type MyInfoFormData = z.infer<typeof myInfoSchema>;
   const { data, refetch } = useQuery({ queryKey: ["me"], queryFn: api.me });
 
-  const [name, setName] = useState("");
-  const [changePassword, setChangePassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<MyInfoFormData>({
+    resolver: zodResolver(myInfoSchema),
+    defaultValues: {
+      name: "",
+      changePassword: false,
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  const changePassword = watch("changePassword");
+  const newPassword = watch("newPassword");
+  const confirmPassword = watch("confirmPassword");
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // 클라이언트 검증
-  const validate = (): string | null => {
-    if (!(name || data?.name).trim()) return "이름을 입력해주세요.";
-    if (changePassword) {
-      if (!currentPassword) return "현재 비밀번호를 입력해주세요.";
-      if (!newPassword) return "새 비밀번호를 입력해주세요.";
-      if (newPassword.length < 8) return "새 비밀번호는 8자 이상이어야 합니다.";
-      if (newPassword === currentPassword) return "새 비밀번호가 현재 비밀번호와 동일합니다.";
-      if (newPassword !== confirmPassword) return "새 비밀번호가 일치하지 않습니다.";
-    }
-    return null;
-  };
-
   const saveMut = useMutation({
-    mutationFn: () => api.updateMe(
-      name || data?.name,
-      changePassword ? currentPassword : undefined,
-      changePassword ? newPassword : undefined,
+    mutationFn: (formData: MyInfoFormData) => api.updateMe(
+      formData.name || data?.name,
+      formData.changePassword ? formData.currentPassword : undefined,
+      formData.changePassword ? formData.newPassword : undefined,
     ),
     onSuccess: () => {
       setSuccess(true);
       setError(null);
-      toast.success(changePassword ? "비밀번호가 변경되었습니다." : "프로필이 저장되었습니다.");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setChangePassword(false);
+      toast.success(changePassword ? t("myInfo.passwordChanged") : t("myInfo.profileSaved"));
+      reset({
+        name: "",
+        changePassword: false,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
       refetch();
     },
     onError: (e: Error) => {
-      setError(e.message ?? "저장에 실패했습니다.");
-      toast.error(e.message ?? "저장에 실패했습니다.");
+      setError(e.message ?? t("myInfo.saveFailed"));
+      toast.error(e.message ?? t("myInfo.saveFailed"));
     },
   });
 
-  const onSave = () => {
+  const onSave = handleSubmit((formData) => {
     setError(null);
     setSuccess(false);
-    const validationError = validate();
-    if (validationError) { setError(validationError); return; }
-    saveMut.mutate();
-  };
+    saveMut.mutate(formData);
+  });
 
   const displayName = data?.name ?? "";
   const initials = displayName ? displayName.charAt(0).toUpperCase() : "?";
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <h1 className="text-xl font-bold text-foreground">내 정보</h1>
+      <h1 className="text-xl font-bold text-foreground">{t("myInfo.title")}</h1>
 
       {/* Profile card */}
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
             <UserIcon className="h-4 w-4 text-muted-fg" />
-            프로필
+            {t("myInfo.profile")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -92,21 +119,21 @@ export default function MyInfoPage() {
               {initials}
             </div>
             <div>
-              <div className="text-xs text-muted-fg">Login ID</div>
+              <div className="text-xs text-muted-fg">{t("myInfo.loginIdLabel")}</div>
               <div className="mt-0.5 font-mono text-sm font-semibold text-foreground">{data?.username}</div>
-              <div className="mt-1 text-xs text-muted-fg">Role: {data?.roleKey}</div>
+              <div className="mt-1 text-xs text-muted-fg">{t("myInfo.roleLabel")}: {data?.roleKey}</div>
             </div>
           </div>
 
           {/* Name */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-fg">이름</label>
+            <label className="text-xs font-medium text-muted-fg">{t("myInfo.nameLabel")}</label>
             <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={data?.name ?? "이름 입력"}
+              {...register("name")}
+              placeholder={data?.name ?? t("myInfo.namePlaceholder")}
               disabled={saveMut.isPending}
             />
+            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
           </div>
 
         </CardContent>
@@ -117,7 +144,7 @@ export default function MyInfoPage() {
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
             <KeyRound className="h-4 w-4 text-muted-fg" />
-            비밀번호
+            {t("myInfo.passwordSection")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -130,10 +157,12 @@ export default function MyInfoPage() {
                 className="sr-only"
                 checked={changePassword}
                 onChange={(e) => {
-                  setChangePassword(e.target.checked);
-                  setCurrentPassword("");
-                  setNewPassword("");
-                  setConfirmPassword("");
+                  setValue("changePassword", e.target.checked);
+                  if (!e.target.checked) {
+                    setValue("currentPassword", "");
+                    setValue("newPassword", "");
+                    setValue("confirmPassword", "");
+                  }
                   setError(null);
                 }}
                 disabled={saveMut.isPending}
@@ -141,49 +170,49 @@ export default function MyInfoPage() {
               <div className={`h-5 w-9 rounded-full transition-colors ${changePassword ? "bg-slate-800" : "bg-accent"}`} />
               <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-surface shadow transition-transform ${changePassword ? "translate-x-4" : "translate-x-0.5"}`} />
             </div>
-            <span className="text-sm font-medium text-foreground">비밀번호 변경</span>
+            <span className="text-sm font-medium text-foreground">{t("myInfo.passwordChange")}</span>
           </label>
 
           {changePassword && (
             <div className="space-y-3 rounded-xl border border-dashed border-slate-300 bg-muted p-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-fg">현재 비밀번호</label>
+                <label className="text-xs font-medium text-muted-fg">{t("myInfo.currentPassword")}</label>
                 <Input
                   type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="현재 비밀번호 입력"
+                  {...register("currentPassword")}
+                  placeholder={t("myInfo.currentPasswordPlaceholder")}
                   disabled={saveMut.isPending}
                   autoComplete="current-password"
                 />
+                {errors.currentPassword && <p className="text-xs text-red-500 mt-1">{errors.currentPassword.message}</p>}
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-fg">새 비밀번호</label>
+                <label className="text-xs font-medium text-muted-fg">{t("auth.newPassword")}</label>
                 <Input
                   type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="8자 이상"
+                  {...register("newPassword")}
+                  placeholder={t("myInfo.newPasswordPlaceholder")}
                   disabled={saveMut.isPending}
                   autoComplete="new-password"
                 />
+                {errors.newPassword && <p className="text-xs text-red-500 mt-1">{errors.newPassword.message}</p>}
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-fg">새 비밀번호 확인</label>
+                <label className="text-xs font-medium text-muted-fg">{t("auth.confirmPassword")}</label>
                 <Input
                   type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="새 비밀번호 재입력"
+                  {...register("confirmPassword")}
+                  placeholder={t("myInfo.confirmPasswordPlaceholder")}
                   disabled={saveMut.isPending}
                   autoComplete="new-password"
                 />
-                {confirmPassword && newPassword !== confirmPassword && (
-                  <p className="text-xs text-red-400">비밀번호가 일치하지 않습니다.</p>
+                {errors.confirmPassword && <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>}
+                {!errors.confirmPassword && confirmPassword && newPassword !== confirmPassword && (
+                  <p className="text-xs text-red-400">{t("auth.passwordMismatch")}</p>
                 )}
-                {confirmPassword && newPassword === confirmPassword && newPassword.length >= 8 && (
+                {!errors.confirmPassword && confirmPassword && newPassword === confirmPassword && newPassword.length >= 8 && (
                   <p className="flex items-center gap-1 text-xs text-emerald-600">
-                    <CheckCircle2 className="h-3 w-3" /> 비밀번호가 일치합니다.
+                    <CheckCircle2 className="h-3 w-3" /> {t("myInfo.passwordMatch")}
                   </p>
                 )}
               </div>
@@ -203,14 +232,14 @@ export default function MyInfoPage() {
       {success && (
         <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
-          저장되었습니다.
+          {t("myInfo.saved")}
         </div>
       )}
 
       {/* Actions */}
       <div className="flex justify-end">
         <Button onClick={onSave} disabled={saveMut.isPending}>
-          {saveMut.isPending ? "저장 중..." : "저장"}
+          {saveMut.isPending ? t("common.saving") : t("common.save")}
         </Button>
       </div>
     </div>

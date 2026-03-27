@@ -3,6 +3,7 @@ import { RequireAdmin, RequireAuth, RequireSuperAdmin } from "./guards";
 
 import LoginPage from "@/pages/LoginPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import SignupPage from "@/pages/SignupPage";
 import DashboardPage from "@/pages/DashboardPage";
 import AppLayout from "@/components/layout/AppLayout";
 import BoardListPage from "@/pages/boards/BoardListPage";
@@ -25,6 +26,7 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/signup" element={<SignupPage />} />
 
       <Route
         path="/"

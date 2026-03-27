@@ -1,5 +1,6 @@
-﻿import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { toast } from "sonner";
 import { MoreHorizontal, Pencil, Trash2, Plus, X } from "lucide-react";
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function AdminCodesPage() {
+  const { t } = useTranslation();
   const { data: groups, refetch: refetchGroups } = useQuery({
     queryKey: ["admin", "codes", "groups"],
     queryFn: () => api.codesGroups(1, 50),
@@ -41,7 +43,7 @@ export default function AdminCodesPage() {
       setGKey(""); setGName("");
       setShowGroupCreate(false);
       refetchGroups();
-      toast.success("그룹이 생성되었습니다.");
+      toast.success(t("admin.groupCreated"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -63,7 +65,7 @@ export default function AdminCodesPage() {
     onSuccess: () => {
       setEditGroup(null);
       refetchGroups();
-      toast.success("그룹이 수정되었습니다.");
+      toast.success(t("admin.groupUpdated"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -75,7 +77,7 @@ export default function AdminCodesPage() {
     onSuccess: () => {
       if (selected === deleteGroupTarget.groupKey) setSelected("");
       refetchGroups();
-      toast.success("그룹이 삭제되었습니다.");
+      toast.success(t("admin.groupDeleted"));
       setDeleteGroupTarget(null);
     },
     onError: (e: Error) => {
@@ -96,7 +98,7 @@ export default function AdminCodesPage() {
       setCode(""); setItemName(""); setItemValue("");
       setShowItemCreate(false);
       refetchItems();
-      toast.success("항목이 생성되었습니다.");
+      toast.success(t("admin.itemCreated"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -122,7 +124,7 @@ export default function AdminCodesPage() {
     onSuccess: () => {
       setEditItem(null);
       refetchItems();
-      toast.success("항목이 수정되었습니다.");
+      toast.success(t("admin.itemUpdated"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -133,7 +135,7 @@ export default function AdminCodesPage() {
     mutationFn: () => api.codesDeleteItem(selected, deleteItemTarget.code),
     onSuccess: () => {
       refetchItems();
-      toast.success("항목이 삭제되었습니다.");
+      toast.success(t("admin.itemDeleted"));
       setDeleteItemTarget(null);
     },
     onError: (e: Error) => {
@@ -150,30 +152,30 @@ export default function AdminCodesPage() {
 
   return (
     <div className="space-y-4">
-      <div className="text-xl font-semibold">Admin · Common Codes (Redis cache)</div>
+      <div className="text-xl font-semibold">{t("admin.codesPageTitle")}</div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Groups */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle>그룹</CardTitle>
+            <CardTitle>{t("admin.codeGroups")}</CardTitle>
             <Button
               variant="outline"
               onClick={() => { setShowGroupCreate((v) => !v); setEditGroup(null); }}
             >
               {showGroupCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
-              {showGroupCreate ? "닫기" : "그룹 추가"}
+              {showGroupCreate ? t("common.close") : t("admin.codeGroupAdd")}
             </Button>
           </CardHeader>
 
           {showGroupCreate && (
             <div className="mx-4 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-3 space-y-2">
-              <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">새 그룹</div>
+              <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">{t("admin.newGroup")}</div>
               <div className="flex gap-2">
                 <Input value={gKey} onChange={(e) => setGKey(e.target.value)} placeholder="GROUP_KEY" />
-                <Input value={gName} onChange={(e) => setGName(e.target.value)} placeholder="그룹 이름" />
-                <Button onClick={() => createGroupMut.mutate()} disabled={!gKey || !gName || createGroupMut.isPending}>추가</Button>
-                <Button variant="outline" onClick={() => setShowGroupCreate(false)}>취소</Button>
+                <Input value={gName} onChange={(e) => setGName(e.target.value)} placeholder={t("admin.groupName")} />
+                <Button onClick={() => createGroupMut.mutate()} disabled={!gKey || !gName || createGroupMut.isPending}>{t("common.create")}</Button>
+                <Button variant="outline" onClick={() => setShowGroupCreate(false)}>{t("common.cancel")}</Button>
               </div>
             </div>
           )}
@@ -181,16 +183,16 @@ export default function AdminCodesPage() {
           {editGroup && (
             <div className="mx-4 mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10/50 p-3 space-y-2">
               <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
-                편집 중 — <span className="font-mono">{editGroup.groupKey}</span>
+                {t("admin.editing")} — <span className="font-mono">{editGroup.groupKey}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Input value={editGroupName} onChange={(e) => setEditGroupName(e.target.value)} placeholder="그룹 이름" />
+                <Input value={editGroupName} onChange={(e) => setEditGroupName(e.target.value)} placeholder={t("admin.groupName")} />
                 <label className="flex items-center gap-1.5 text-xs whitespace-nowrap h-9">
                   <input type="checkbox" checked={editGroupUseYn} onChange={(e) => setEditGroupUseYn(e.target.checked)} />
-                  사용
+                  {t("common.use")}
                 </label>
-                <Button onClick={() => saveGroupMut.mutate()} disabled={!editGroupName.trim() || saveGroupMut.isPending}>저장</Button>
-                <Button variant="outline" onClick={() => setEditGroup(null)}>취소</Button>
+                <Button onClick={() => saveGroupMut.mutate()} disabled={!editGroupName.trim() || saveGroupMut.isPending}>{t("common.save")}</Button>
+                <Button variant="outline" onClick={() => setEditGroup(null)}>{t("common.cancel")}</Button>
               </div>
             </div>
           )}
@@ -200,9 +202,9 @@ export default function AdminCodesPage() {
               <thead>
                 <tr className="border-b bg-muted text-xs text-muted-fg">
                   <th className="px-4 py-2.5 text-left font-medium">Key</th>
-                  <th className="px-4 py-2.5 text-left font-medium">이름</th>
-                  <th className="px-4 py-2.5 text-left font-medium">사용</th>
-                  <th className="px-4 py-2.5 text-right font-medium">관리</th>
+                  <th className="px-4 py-2.5 text-left font-medium">{t("common.name")}</th>
+                  <th className="px-4 py-2.5 text-left font-medium">{t("common.use")}</th>
+                  <th className="px-4 py-2.5 text-right font-medium">{t("common.actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -228,14 +230,14 @@ export default function AdminCodesPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => startEditGroup(g)}>
-                            <Pencil className="mr-2 h-3.5 w-3.5" />편집
+                            <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                             onClick={() => setDeleteGroupTarget(g)}
                           >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
+                            <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -244,7 +246,7 @@ export default function AdminCodesPage() {
                 ))}
                 {(groups?.items ?? []).length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-sm text-muted-fg">그룹이 없습니다.</td>
+                    <td colSpan={4} className="px-4 py-6 text-center text-sm text-muted-fg">{t("admin.noGroups")}</td>
                   </tr>
                 )}
               </tbody>
@@ -256,7 +258,7 @@ export default function AdminCodesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <CardTitle>
-              항목
+              {t("admin.codeItems")}
               {selected && <span className="ml-2 text-xs font-mono text-muted-fg">({selected})</span>}
             </CardTitle>
             {selected && (
@@ -265,20 +267,20 @@ export default function AdminCodesPage() {
                 onClick={() => { setShowItemCreate((v) => !v); setEditItem(null); }}
               >
                 {showItemCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
-                {showItemCreate ? "닫기" : "항목 추가"}
+                {showItemCreate ? t("common.close") : t("admin.codeItemAdd")}
               </Button>
             )}
           </CardHeader>
 
           {selected && showItemCreate && (
             <div className="mx-4 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-3 space-y-2">
-              <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">새 항목</div>
+              <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">{t("admin.newItem")}</div>
               <div className="flex gap-2">
                 <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="CODE" />
-                <Input value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="이름" />
-                <Input value={itemValue} onChange={(e) => setItemValue(e.target.value)} placeholder="값" />
-                <Button onClick={() => createItemMut.mutate()} disabled={!code || !itemName || createItemMut.isPending}>추가</Button>
-                <Button variant="outline" onClick={() => setShowItemCreate(false)}>취소</Button>
+                <Input value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder={t("admin.itemName")} />
+                <Input value={itemValue} onChange={(e) => setItemValue(e.target.value)} placeholder={t("admin.itemValue")} />
+                <Button onClick={() => createItemMut.mutate()} disabled={!code || !itemName || createItemMut.isPending}>{t("common.create")}</Button>
+                <Button variant="outline" onClick={() => setShowItemCreate(false)}>{t("common.cancel")}</Button>
               </div>
             </div>
           )}
@@ -286,41 +288,41 @@ export default function AdminCodesPage() {
           {editItem && (
             <div className="mx-4 mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10/50 p-3 space-y-2">
               <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
-                편집 중 — <span className="font-mono">{editItem.code}</span>
+                {t("admin.editing")} — <span className="font-mono">{editItem.code}</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Input className="w-32" value={editItemName} onChange={(e) => setEditItemName(e.target.value)} placeholder="이름" />
-                <Input className="w-32" value={editItemValue} onChange={(e) => setEditItemValue(e.target.value)} placeholder="값" />
+                <Input className="w-32" value={editItemName} onChange={(e) => setEditItemName(e.target.value)} placeholder={t("admin.itemName")} />
+                <Input className="w-32" value={editItemValue} onChange={(e) => setEditItemValue(e.target.value)} placeholder={t("admin.itemValue")} />
                 <Input
                   type="number"
                   className="w-20"
                   value={editItemSortOrder}
                   onChange={(e) => setEditItemSortOrder(Number(e.target.value))}
-                  placeholder="순서"
+                  placeholder={t("admin.menuOrder")}
                 />
                 <label className="flex items-center gap-1.5 text-xs h-9">
                   <input type="checkbox" checked={editItemUseYn} onChange={(e) => setEditItemUseYn(e.target.checked)} />
-                  사용
+                  {t("common.use")}
                 </label>
-                <Button onClick={() => saveItemMut.mutate()} disabled={!editItemName.trim() || saveItemMut.isPending}>저장</Button>
-                <Button variant="outline" onClick={() => setEditItem(null)}>취소</Button>
+                <Button onClick={() => saveItemMut.mutate()} disabled={!editItemName.trim() || saveItemMut.isPending}>{t("common.save")}</Button>
+                <Button variant="outline" onClick={() => setEditItem(null)}>{t("common.cancel")}</Button>
               </div>
             </div>
           )}
 
           <CardContent className="p-0">
             {!selected ? (
-              <div className="px-4 py-8 text-center text-sm text-muted-fg">왼쪽에서 그룹을 선택하세요.</div>
+              <div className="px-4 py-8 text-center text-sm text-muted-fg">{t("admin.selectGroupGuide")}</div>
             ) : (
               <>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted text-xs text-muted-fg">
                       <th className="px-4 py-2.5 text-left font-medium">Code</th>
-                      <th className="px-4 py-2.5 text-left font-medium">이름</th>
-                      <th className="px-4 py-2.5 text-left font-medium">값</th>
-                      <th className="px-4 py-2.5 text-left font-medium">사용</th>
-                      <th className="px-4 py-2.5 text-right font-medium">관리</th>
+                      <th className="px-4 py-2.5 text-left font-medium">{t("common.name")}</th>
+                      <th className="px-4 py-2.5 text-left font-medium">{t("admin.itemValue")}</th>
+                      <th className="px-4 py-2.5 text-left font-medium">{t("common.use")}</th>
+                      <th className="px-4 py-2.5 text-right font-medium">{t("common.actions")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -344,14 +346,14 @@ export default function AdminCodesPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => startEditItem(it)}>
-                                <Pencil className="mr-2 h-3.5 w-3.5" />편집
+                                <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                                 onClick={() => setDeleteItemTarget(it)}
                               >
-                                <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
+                                <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -360,13 +362,13 @@ export default function AdminCodesPage() {
                     ))}
                     {(items ?? []).length === 0 && (
                       <tr>
-                        <td colSpan={5} className="px-4 py-6 text-center text-sm text-muted-fg">항목이 없습니다.</td>
+                        <td colSpan={5} className="px-4 py-6 text-center text-sm text-muted-fg">{t("admin.noItems")}</td>
                       </tr>
                     )}
                   </tbody>
                 </table>
                 <div className="border-t px-4 py-3 text-xs text-muted-fg">
-                  <span className="font-mono">GET /api/common-codes/{selected}</span> 로 캐시된 목록 조회
+                  <span className="font-mono">GET /api/common-codes/{selected}</span> {t("admin.codesCacheNote", { groupKey: "" }).replace("GET /api/common-codes/ ", "")}
                 </div>
               </>
             )}
@@ -377,18 +379,18 @@ export default function AdminCodesPage() {
       <ConfirmDialog
         open={!!deleteGroupTarget}
         onOpenChange={(open) => { if (!open) setDeleteGroupTarget(null); }}
-        title="그룹 삭제"
-        description={`"${deleteGroupTarget?.groupKey}" 그룹을 삭제할까요?`}
-        confirmLabel="삭제"
+        title={t("admin.groupDeleteTitle")}
+        description={t("admin.groupDeleteConfirm", { groupKey: deleteGroupTarget?.groupKey })}
+        confirmLabel={t("common.delete")}
         onConfirm={() => deleteGroupMut.mutate()}
       />
 
       <ConfirmDialog
         open={!!deleteItemTarget}
         onOpenChange={(open) => { if (!open) setDeleteItemTarget(null); }}
-        title="항목 삭제"
-        description={`"${deleteItemTarget?.code}" 항목을 삭제할까요?`}
-        confirmLabel="삭제"
+        title={t("admin.itemDeleteTitle")}
+        description={t("admin.itemDeleteConfirm", { code: deleteItemTarget?.code })}
+        confirmLabel={t("common.delete")}
         onConfirm={() => deleteItemMut.mutate()}
       />
     </div>

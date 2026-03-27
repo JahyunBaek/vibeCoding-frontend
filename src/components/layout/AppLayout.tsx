@@ -2,8 +2,11 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import Breadcrumb from "../Breadcrumb";
+import { useTenantTheme } from "@/hooks/useTenantTheme";
 
 export default function AppLayout() {
+  useTenantTheme();
+
   return (
     <div className="flex h-screen overflow-hidden bg-muted">
       <Sidebar />

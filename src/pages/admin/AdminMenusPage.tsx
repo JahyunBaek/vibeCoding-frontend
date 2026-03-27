@@ -1,5 +1,6 @@
-﻿import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth";
@@ -48,6 +49,7 @@ function flattenForSelect(nodes: MenuNode[], depth = 0): { menuId: number; label
 }
 
 export default function AdminMenusPage() {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuthStore();
   const isSuperAdmin = currentUser?.roleKey === "SUPER_ADMIN";
 
@@ -112,7 +114,7 @@ export default function AdminMenusPage() {
       setCRoleKeys([]);
       setShowCreate(false);
       refetch();
-      toast.success("생성되었습니다.");
+      toast.success(t("admin.menuCreated"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -157,7 +159,7 @@ export default function AdminMenusPage() {
     onSuccess: () => {
       setEditNode(null);
       refetch();
-      toast.success("수정되었습니다.");
+      toast.success(t("admin.menuUpdated"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -168,7 +170,7 @@ export default function AdminMenusPage() {
     mutationFn: () => api.menuDelete(deleteTarget!.menuId),
     onSuccess: () => {
       refetch();
-      toast.success("삭제되었습니다.");
+      toast.success(t("admin.menuDeleted"));
       setDeleteTarget(null);
     },
     onError: (e: Error) => {
@@ -179,24 +181,24 @@ export default function AdminMenusPage() {
 
   return (
     <div className="space-y-4">
-      <div className="text-xl font-semibold">Admin · Menus</div>
+      <div className="text-xl font-semibold">{t("admin.menusPageTitle")}</div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle>메뉴 트리</CardTitle>
+          <CardTitle>{t("admin.menuTree")}</CardTitle>
           <div className="flex items-center gap-2 ml-auto mr-2">
             <TenantSelector value={selectedTenantId} onChange={setSelectedTenantId} />
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input
                 className="pl-9 w-56"
-                placeholder="메뉴 이름 검색..."
+                placeholder={t("admin.menuSearchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
             {isSearching && (
-              <span className="text-xs text-muted-fg">검색 결과 {searchRows.length}개</span>
+              <span className="text-xs text-muted-fg">{t("common.searchResults", { count: searchRows.length })}</span>
             )}
           </div>
           <Button
@@ -204,33 +206,33 @@ export default function AdminMenusPage() {
             onClick={() => { setShowCreate((v) => !v); setEditNode(null); }}
           >
             {showCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
-            {showCreate ? "닫기" : "새 메뉴 추가"}
+            {showCreate ? t("common.close") : t("admin.newMenu")}
           </Button>
         </CardHeader>
 
         {/* Create Form */}
         {showCreate && (
           <div className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-4 space-y-3">
-            <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">새 메뉴</div>
+            <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">{t("admin.newMenuLabel")}</div>
             <div className="flex flex-wrap gap-2">
               <select
                 className="h-9 rounded-md border bg-surface px-3 text-sm text-foreground w-52"
                 value={cParentId}
                 onChange={(e) => setCParentId(e.target.value)}
               >
-                <option value="">— 최상위 (없음)</option>
+                <option value="">{t("common.topLevel")}</option>
                 {selectOptions.map((o) => (
                   <option key={o.menuId} value={o.menuId}>{o.label}</option>
                 ))}
               </select>
-              <Input className="w-36" value={cName} onChange={(e) => setCName(e.target.value)} placeholder="메뉴 이름" />
-              <Input className="w-36" value={cPath} onChange={(e) => setCPath(e.target.value)} placeholder="/path" />
+              <Input className="w-36" value={cName} onChange={(e) => setCName(e.target.value)} placeholder={t("admin.menuName")} />
+              <Input className="w-36" value={cPath} onChange={(e) => setCPath(e.target.value)} placeholder={t("admin.menuPath")} />
               <Input
                 type="number"
                 className="w-20"
                 value={cSortOrder}
                 onChange={(e) => setCSortOrder(Number(e.target.value))}
-                placeholder="순서"
+                placeholder={t("admin.menuOrder")}
               />
               <select
                 className="h-9 rounded-md border bg-surface px-3 text-sm text-foreground"
@@ -242,7 +244,7 @@ export default function AdminMenusPage() {
               </select>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-xs text-muted-fg">권한:</span>
+              <span className="text-xs text-muted-fg">{t("admin.menuPermission")}</span>
               <div className="flex flex-wrap gap-3">
                 {assignableRoles.map((r: any) => (
                   <label key={r.roleKey} className="flex items-center gap-1.5 text-xs cursor-pointer">
@@ -251,8 +253,8 @@ export default function AdminMenusPage() {
                   </label>
                 ))}
               </div>
-              <Button onClick={() => createMut.mutate()} disabled={!cName.trim() || createMut.isPending}>추가</Button>
-              <Button variant="outline" onClick={() => setShowCreate(false)}>취소</Button>
+              <Button onClick={() => createMut.mutate()} disabled={!cName.trim() || createMut.isPending}>{t("common.create")}</Button>
+              <Button variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
             </div>
           </div>
         )}
@@ -261,7 +263,7 @@ export default function AdminMenusPage() {
         {editNode && (
           <div className="mx-6 mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10/50 p-4 space-y-3">
             <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
-              편집 중 — {editNode.name} <span className="text-blue-400">(ID: {editNode.menuId})</span>
+              {t("admin.editing")} — {editNode.name} <span className="text-blue-400">(ID: {editNode.menuId})</span>
             </div>
             <div className="flex flex-wrap gap-2">
               <select
@@ -269,29 +271,29 @@ export default function AdminMenusPage() {
                 value={editParentId}
                 onChange={(e) => setEditParentId(e.target.value)}
               >
-                <option value="">— 최상위 (없음)</option>
+                <option value="">{t("common.topLevel")}</option>
                 {selectOptions
                   .filter((o) => o.menuId !== editNode.menuId)
                   .map((o) => (
                     <option key={o.menuId} value={o.menuId}>{o.label}</option>
                   ))}
               </select>
-              <Input className="w-36" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="메뉴 이름" />
-              <Input className="w-36" value={editPath} onChange={(e) => setEditPath(e.target.value)} placeholder="/path" />
+              <Input className="w-36" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder={t("admin.menuName")} />
+              <Input className="w-36" value={editPath} onChange={(e) => setEditPath(e.target.value)} placeholder={t("admin.menuPath")} />
               <Input
                 type="number"
                 className="w-20"
                 value={editSortOrder}
                 onChange={(e) => setEditSortOrder(Number(e.target.value))}
-                placeholder="순서"
+                placeholder={t("admin.menuOrder")}
               />
               <label className="flex items-center gap-2 text-sm h-9">
                 <input type="checkbox" checked={editUseYn} onChange={(e) => setEditUseYn(e.target.checked)} />
-                사용
+                {t("common.use")}
               </label>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-xs text-muted-fg">권한 재설정 (선택 시 덮어씀):</span>
+              <span className="text-xs text-muted-fg">{t("admin.menuPermissionOverwrite")}</span>
               <div className="flex flex-wrap gap-3">
                 {assignableRoles.map((r: any) => (
                   <label key={r.roleKey} className="flex items-center gap-1.5 text-xs cursor-pointer">
@@ -302,8 +304,8 @@ export default function AdminMenusPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>저장</Button>
-              <Button variant="outline" onClick={() => setEditNode(null)}>취소</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>{t("common.save")}</Button>
+              <Button variant="outline" onClick={() => setEditNode(null)}>{t("common.cancel")}</Button>
             </div>
           </div>
         )}
@@ -313,12 +315,12 @@ export default function AdminMenusPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted text-xs text-muted-fg">
-                <th className="px-4 py-3 text-left font-medium">이름</th>
-                <th className="px-4 py-3 text-left font-medium">경로</th>
-                <th className="px-4 py-3 text-left font-medium">타입</th>
-                <th className="px-4 py-3 text-left font-medium">순서</th>
-                <th className="px-4 py-3 text-left font-medium">사용</th>
-                <th className="px-4 py-3 text-right font-medium">관리</th>
+                <th className="px-4 py-3 text-left font-medium">{t("common.name")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("admin.menuPathLabel")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("admin.menuType")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("admin.menuOrder")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("common.use")}</th>
+                <th className="px-4 py-3 text-right font-medium">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -377,14 +379,14 @@ export default function AdminMenusPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => startEdit(row)}>
-                          <Pencil className="mr-2 h-3.5 w-3.5" />편집
+                          <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                           onClick={() => setDeleteTarget(row)}
                         >
-                          <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
+                          <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -394,14 +396,14 @@ export default function AdminMenusPage() {
               {rows.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-fg">
-                    {isSearching ? "검색 결과가 없습니다." : "메뉴가 없습니다."}
+                    {isSearching ? t("common.noSearchResults") : t("admin.noMenus")}
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
           <div className="border-t px-4 py-3 text-xs text-muted-fg">
-            게시판 생성/삭제 시 <span className="font-mono">Boards</span> 하위 메뉴가 자동으로 추가/삭제됩니다.
+            {t("admin.menuAutoNote")}
           </div>
         </CardContent>
       </Card>
@@ -409,9 +411,9 @@ export default function AdminMenusPage() {
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-        title="메뉴 삭제"
-        description={`"${deleteTarget?.name}" 메뉴를 삭제할까요?`}
-        confirmLabel="삭제"
+        title={t("admin.menuDeleteTitle")}
+        description={t("admin.menuDeleteConfirm", { name: deleteTarget?.name })}
+        confirmLabel={t("common.delete")}
         onConfirm={() => deleteMut.mutate()}
       />
     </div>

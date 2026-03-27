@@ -1,34 +1,36 @@
 import { Link, useLocation } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-
-const PATH_LABELS: Record<string, string> = {
-  dashboard: "대시보드",
-  boards: "게시판",
-  write: "글쓰기",
-  posts: "게시글",
-  admin: "관리자",
-  users: "사용자 관리",
-  roles: "역할 관리",
-  orgs: "조직 관리",
-  menus: "메뉴 관리",
-  codes: "공통코드 관리",
-  screens: "화면-액션 관리",
-  settings: "설정",
-  audit: "감사 로그",
-  "super-admin": "시스템 관리",
-  tenants: "테넌트 관리",
-  "my-info": "내 정보",
-};
+import { useTranslation } from "react-i18next";
 
 function isNumericOrId(segment: string): boolean {
   return /^\d+$/.test(segment);
 }
 
 export default function Breadcrumb() {
+  const { t } = useTranslation();
   const { pathname } = useLocation();
   const segments = pathname.split("/").filter(Boolean);
 
   if (segments.length === 0) return null;
+
+  const PATH_LABELS: Record<string, string> = {
+    dashboard: t("nav.dashboard"),
+    boards: t("nav.boards"),
+    write: t("breadcrumb.write"),
+    posts: t("breadcrumb.posts"),
+    admin: t("nav.admin"),
+    users: t("nav.users"),
+    roles: t("nav.roles"),
+    orgs: t("nav.orgs"),
+    menus: t("nav.menus"),
+    codes: t("nav.codes"),
+    screens: t("nav.screens"),
+    settings: t("nav.settings"),
+    audit: t("nav.audit"),
+    "super-admin": t("nav.system"),
+    tenants: t("nav.tenants"),
+    "my-info": t("nav.myInfo"),
+  };
 
   const crumbs: { label: string; path: string }[] = [];
 
@@ -49,7 +51,7 @@ export default function Breadcrumb() {
   return (
     <nav className="mb-4 flex items-center gap-1 text-sm text-muted-foreground">
       <Link to="/dashboard" className="hover:text-foreground transition-colors">
-        홈
+        {t("breadcrumb.home")}
       </Link>
       {crumbs.map((crumb, index) => {
         const isLast = index === crumbs.length - 1;

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,22 +23,23 @@ interface ConfirmDialogProps {
 export default function ConfirmDialog({
   open,
   onOpenChange,
-  title = "확인",
+  title,
   description,
-  confirmLabel = "삭제",
-  cancelLabel = "취소",
+  confirmLabel,
+  cancelLabel,
   onConfirm,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogTitle>{title ?? t("common.confirm")}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>{confirmLabel}</AlertDialogAction>
+          <AlertDialogCancel>{cancelLabel ?? t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>{confirmLabel ?? t("common.delete")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -1,8 +1,12 @@
-﻿import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { toast } from "sonner";
-import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, KeyRound, Link2, Copy, Check, Download } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, KeyRound, Link2, Copy, Check, Download, Mail } from "lucide-react";
 import { api } from "@/lib/api";
 import Pagination from "@/components/Pagination";
 import { useAuthStore } from "@/stores/auth";
@@ -29,6 +33,7 @@ function flattenOrgs(nodes: any[], depth = 0): { orgId: number; label: string; n
 }
 
 export default function AdminUsersPage() {
+  const { t } = useTranslation();
   const { user: currentUser } = useAuthStore();
   const isSuperAdmin = currentUser?.roleKey === "SUPER_ADMIN";
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
@@ -38,7 +43,6 @@ export default function AdminUsersPage() {
     queryFn: () => api.usersList(undefined, 1, 500, selectedTenantId),
   });
   const { data: roles } = useQuery({ queryKey: ["admin", "roles", "all"], queryFn: () => api.rolesAll() });
-  // SUPER_ADMIN이 아니면 역할 목록에서 SUPER_ADMIN 제거
   const assignableRoles = (roles ?? []).filter((r: any) => isSuperAdmin || r.roleKey !== "SUPER_ADMIN");
   const { data: orgTree } = useQuery({ queryKey: ["admin", "orgs", "tree"], queryFn: () => api.orgTree() });
   const flatOrgs = flattenOrgs(orgTree ?? []);
@@ -67,20 +71,28 @@ export default function AdminUsersPage() {
 
   // --- Create ---
   const [showCreate, setShowCreate] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("User1234!");
-  const [name, setName] = useState("");
-  const [roleKey, setRoleKey] = useState("USER");
-  const [orgId, setOrgId] = useState<string>("1");
+
+  const createUserSchema = z.object({
+    username: z.string().min(1, t("auth.usernameRequired")),
+    password: z.string().min(1, t("auth.passwordRequired")),
+    name: z.string().min(1, t("auth.nameRequired")),
+    roleKey: z.string().min(1, t("admin.roleRequired")),
+    orgId: z.string(),
+  });
+  type CreateUserFormData = z.infer<typeof createUserSchema>;
+
+  const { register: registerCreate, handleSubmit: handleSubmitCreate, reset: resetCreate, formState: { errors: createErrors } } = useForm<CreateUserFormData>({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: { username: "", password: "User1234!", name: "", roleKey: "USER", orgId: "1" },
+  });
 
   const createMut = useMutation({
-    mutationFn: () => api.userCreate({ username, password, name, roleKey, orgId: orgId ? Number(orgId) : null, enabled: true, tenantId: selectedTenantId }),
+    mutationFn: (data: CreateUserFormData) => api.userCreate({ username: data.username, password: data.password, name: data.name, roleKey: data.roleKey, orgId: data.orgId ? Number(data.orgId) : null, enabled: true, tenantId: selectedTenantId }),
     onSuccess: () => {
-      setUsername("");
-      setName("");
+      resetCreate();
       setShowCreate(false);
       refetch();
-      toast.success("생성되었습니다.");
+      toast.success(t("admin.userCreated"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -108,7 +120,7 @@ export default function AdminUsersPage() {
     onSuccess: () => {
       setEditUser(null);
       refetch();
-      toast.success("수정되었습니다.");
+      toast.success(t("admin.userUpdated"));
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -119,7 +131,7 @@ export default function AdminUsersPage() {
     mutationFn: () => api.userDelete(deleteTarget.userId),
     onSuccess: () => {
       refetch();
-      toast.success("삭제되었습니다.");
+      toast.success(t("admin.userDeleted"));
       setDeleteTarget(null);
     },
     onError: (e: Error) => {
@@ -145,11 +157,11 @@ export default function AdminUsersPage() {
     mutationFn: () => api.userResetPassword(resetUser.userId, resetPassword),
     onSuccess: () => {
       setResetUser(null);
-      toast.success("비밀번호가 초기화되었습니다.");
+      toast.success(t("admin.passwordResetSuccess"));
     },
     onError: (e: Error) => {
-      setResetError(e.message ?? "초기화에 실패했습니다.");
-      toast.error(e.message ?? "초기화에 실패했습니다.");
+      setResetError(e.message ?? t("admin.passwordResetFailed"));
+      toast.error(e.message ?? t("admin.passwordResetFailed"));
     },
   });
 
@@ -168,7 +180,7 @@ export default function AdminUsersPage() {
       setResetLinkCopied(false);
     },
     onError: (e: Error) => {
-      toast.error(e.message ?? "토큰 생성에 실패했습니다.");
+      toast.error(e.message ?? t("admin.tokenGenerateFailed"));
       setResetLinkUser(null);
     },
   });
@@ -185,65 +197,112 @@ export default function AdminUsersPage() {
     try {
       await navigator.clipboard.writeText(resetLinkUrl);
       setResetLinkCopied(true);
-      toast.success("클립보드에 복사되었습니다.");
+      toast.success(t("common.clipboardCopied"));
       setTimeout(() => setResetLinkCopied(false), 2000);
     } catch {
-      toast.error("복사에 실패했습니다.");
+      toast.error(t("common.clipboardFailed"));
+    }
+  };
+
+  // --- Invitation ---
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRoleKey, setInviteRoleKey] = useState("USER");
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [inviteLinkCopied, setInviteLinkCopied] = useState(false);
+
+  const inviteMut = useMutation({
+    mutationFn: () => api.invitationCreate(inviteEmail, inviteRoleKey),
+    onSuccess: (data) => {
+      const url = `${window.location.origin}/signup?token=${data.token}`;
+      setInviteLink(url);
+      setInviteLinkCopied(false);
+      toast.success(t("admin.inviteSent"));
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const copyInviteLink = async () => {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setInviteLinkCopied(true);
+      toast.success(t("common.clipboardCopied"));
+      setTimeout(() => setInviteLinkCopied(false), 2000);
+    } catch {
+      toast.error(t("common.clipboardFailed"));
     }
   };
 
   return (
     <div className="space-y-4">
-      <div className="text-xl font-semibold">Admin · Users</div>
+      <div className="text-xl font-semibold">{t("admin.usersPageTitle")}</div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle>사용자 목록</CardTitle>
+          <CardTitle>{t("admin.userList")}</CardTitle>
           <div className="flex items-center gap-2">
             <TenantSelector value={selectedTenantId} onChange={(id) => { setSelectedTenantId(id); setPage(1); }} />
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input
                 className="pl-9 w-52"
-                placeholder="이름, ID, 역할 검색..."
+                placeholder={t("admin.userSearchPlaceholder")}
                 value={search}
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
-            <span className="text-xs text-muted-fg">{filtered.length}명</span>
+            <span className="text-xs text-muted-fg">{filtered.length}{t("common.persons")}</span>
             <Button
               variant="outline"
               onClick={async () => {
                 try {
                   await api.usersExport(selectedTenantId);
-                  toast.success("CSV 파일이 다운로드되었습니다.");
+                  toast.success(t("admin.csvExported"));
                 } catch (e: any) { toast.error(e.message); }
               }}
             >
-              <Download className="mr-1.5 h-4 w-4" />CSV 내보내기
+              <Download className="mr-1.5 h-4 w-4" />{t("common.export")}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => { setShowInvite(true); setInviteEmail(""); setInviteRoleKey("USER"); setInviteLink(null); }}
+            >
+              <Mail className="mr-1.5 h-4 w-4" />{t("admin.inviteUser")}
             </Button>
             <Button
               variant="outline"
               onClick={() => { setShowCreate((v) => !v); setEditUser(null); }}
             >
               {showCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
-              {showCreate ? "닫기" : "새 사용자 추가"}
+              {showCreate ? t("common.close") : t("admin.newUser")}
             </Button>
           </div>
         </CardHeader>
 
         {/* Create Form */}
         {showCreate && (
-          <div className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-4 space-y-3">
-            <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">새 사용자</div>
+          <form
+            className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-4 space-y-3"
+            onSubmit={handleSubmitCreate((data) => createMut.mutate(data))}
+          >
+            <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">{t("admin.newUserLabel")}</div>
             <div className="grid gap-2 md:grid-cols-2">
-              <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username" />
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="이름" />
-              <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호" />
+              <div>
+                <Input {...registerCreate("username")} placeholder="username" />
+                {createErrors.username && <p className="text-xs text-red-500 mt-1">{createErrors.username.message}</p>}
+              </div>
+              <div>
+                <Input {...registerCreate("name")} placeholder={t("common.name")} />
+                {createErrors.name && <p className="text-xs text-red-500 mt-1">{createErrors.name.message}</p>}
+              </div>
+              <div>
+                <Input type="password" {...registerCreate("password")} placeholder={t("auth.password")} />
+                {createErrors.password && <p className="text-xs text-red-500 mt-1">{createErrors.password.message}</p>}
+              </div>
               <select
                 className="h-9 rounded-md border bg-surface px-3 text-sm"
-                value={roleKey}
-                onChange={(e) => setRoleKey(e.target.value)}
+                {...registerCreate("roleKey")}
               >
                 {assignableRoles.map((r: any) => (
                   <option key={r.roleKey} value={r.roleKey}>{r.roleKey}</option>
@@ -251,30 +310,29 @@ export default function AdminUsersPage() {
               </select>
               <select
                 className="h-9 rounded-md border bg-surface px-3 text-sm"
-                value={orgId}
-                onChange={(e) => setOrgId(e.target.value)}
+                {...registerCreate("orgId")}
               >
-                <option value="">— 미배정</option>
+                <option value="">{t("common.unassigned")}</option>
                 {flatOrgs.map((o) => (
                   <option key={o.orgId} value={o.orgId}>{o.label}</option>
                 ))}
               </select>
             </div>
             <div className="flex gap-2">
-              <Button onClick={() => createMut.mutate()} disabled={!username || !password || !name || createMut.isPending}>추가</Button>
-              <Button variant="outline" onClick={() => setShowCreate(false)}>취소</Button>
+              <Button type="submit" disabled={createMut.isPending}>{t("common.create")}</Button>
+              <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
             </div>
-          </div>
+          </form>
         )}
 
         {/* Edit Panel */}
         {editUser && (
           <div className="mx-6 mb-4 rounded-lg border border-blue-500/30 bg-blue-500/10/50 p-4 space-y-3">
             <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
-              편집 중 — {editUser.username} <span className="text-blue-400">(ID: {editUser.userId})</span>
+              {t("admin.editing")} — {editUser.username} <span className="text-blue-400">(ID: {editUser.userId})</span>
             </div>
             <div className="grid gap-2 md:grid-cols-3">
-              <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="이름" />
+              <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder={t("common.name")} />
               <select
                 className="h-9 rounded-md border bg-surface px-3 text-sm"
                 value={editRoleKey}
@@ -289,15 +347,15 @@ export default function AdminUsersPage() {
                 value={editOrgId}
                 onChange={(e) => setEditOrgId(e.target.value)}
               >
-                <option value="">— 미배정</option>
+                <option value="">{t("common.unassigned")}</option>
                 {flatOrgs.map((o) => (
                   <option key={o.orgId} value={o.orgId}>{o.label}</option>
                 ))}
               </select>
             </div>
             <div className="flex gap-2">
-              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>저장</Button>
-              <Button variant="outline" onClick={() => setEditUser(null)}>취소</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>{t("common.save")}</Button>
+              <Button variant="outline" onClick={() => setEditUser(null)}>{t("common.cancel")}</Button>
             </div>
           </div>
         )}
@@ -306,7 +364,7 @@ export default function AdminUsersPage() {
         {resetUser && (
           <div className="mx-6 mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 space-y-3">
             <div className="text-xs font-medium text-amber-600 uppercase tracking-wide">
-              비밀번호 초기화 — {resetUser.username} <span className="text-amber-400">(ID: {resetUser.userId})</span>
+              {t("admin.passwordReset")} — {resetUser.username} <span className="text-amber-400">(ID: {resetUser.userId})</span>
             </div>
             <div className="flex gap-2 items-center">
               <Input
@@ -314,10 +372,10 @@ export default function AdminUsersPage() {
                 type="password"
                 value={resetPassword}
                 onChange={(e) => { setResetPassword(e.target.value); setResetError(null); }}
-                placeholder="새 비밀번호 (8자 이상)"
+                placeholder={t("admin.newPasswordPlaceholder")}
               />
-              <Button onClick={() => { if (resetPassword.length < 8) { setResetError("8자 이상 입력해주세요."); return; } resetMut.mutate(); }} disabled={resetMut.isPending}>초기화</Button>
-              <Button variant="outline" onClick={() => setResetUser(null)}>취소</Button>
+              <Button onClick={() => { if (resetPassword.length < 8) { setResetError(t("admin.passwordResetMinLength")); return; } resetMut.mutate(); }} disabled={resetMut.isPending}>{t("admin.resetAction")}</Button>
+              <Button variant="outline" onClick={() => setResetUser(null)}>{t("common.cancel")}</Button>
             </div>
             {resetError && <p className="text-xs text-red-400">{resetError}</p>}
           </div>
@@ -329,11 +387,11 @@ export default function AdminUsersPage() {
             <thead>
               <tr className="border-b bg-muted text-xs text-muted-fg">
                 <th className="px-4 py-3 text-left font-medium">ID</th>
-                <th className="px-4 py-3 text-left font-medium">Login ID</th>
-                <th className="px-4 py-3 text-left font-medium">이름</th>
-                <th className="px-4 py-3 text-left font-medium">역할</th>
-                <th className="px-4 py-3 text-left font-medium">조직</th>
-                <th className="px-4 py-3 text-right font-medium">관리</th>
+                <th className="px-4 py-3 text-left font-medium">{t("admin.loginId")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("common.name")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("admin.role")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("admin.org")}</th>
+                <th className="px-4 py-3 text-right font-medium">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -363,20 +421,20 @@ export default function AdminUsersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => startEdit(u)}>
-                            <Pencil className="mr-2 h-3.5 w-3.5" />편집
+                            <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => startReset(u)}>
-                            <KeyRound className="mr-2 h-3.5 w-3.5" />비밀번호 초기화
+                            <KeyRound className="mr-2 h-3.5 w-3.5" />{t("admin.passwordReset")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => startResetLink(u)}>
-                            <Link2 className="mr-2 h-3.5 w-3.5" />비밀번호 재설정 링크
+                            <Link2 className="mr-2 h-3.5 w-3.5" />{t("admin.resetLink")}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                             onClick={() => setDeleteTarget(u)}
                           >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" />삭제
+                            <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -387,7 +445,7 @@ export default function AdminUsersPage() {
               {paged.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-fg">
-                    {search ? "검색 결과가 없습니다." : "사용자가 없습니다."}
+                    {search ? t("common.noSearchResults") : t("admin.noUsers")}
                   </td>
                 </tr>
               )}
@@ -400,9 +458,9 @@ export default function AdminUsersPage() {
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
-        title="사용자 삭제"
-        description={`"${deleteTarget?.username}" 사용자를 삭제할까요?`}
-        confirmLabel="삭제"
+        title={t("admin.userDeleteTitle")}
+        description={t("admin.userDeleteConfirm", { username: deleteTarget?.username })}
+        confirmLabel={t("common.delete")}
         onConfirm={() => deleteMut.mutate()}
       />
 
@@ -410,15 +468,15 @@ export default function AdminUsersPage() {
       {resetLinkUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setResetLinkUser(null)}>
           <div className="w-full max-w-lg rounded-lg border bg-surface p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold">비밀번호 재설정 링크</h3>
+            <h3 className="text-lg font-semibold">{t("admin.resetLink")}</h3>
             <p className="mt-1 text-sm text-muted-fg">
-              <span className="font-medium">{resetLinkUser.username}</span> 사용자의 비밀번호 재설정 링크입니다.
+              {t("admin.resetLinkDescription", { username: resetLinkUser.username })}
             </p>
 
             {resetTokenMut.isPending ? (
               <div className="mt-4 flex items-center gap-2 text-sm text-muted-fg">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                토큰 생성 중...
+                {t("admin.generatingToken")}
               </div>
             ) : resetLinkUrl ? (
               <div className="mt-4 space-y-3">
@@ -431,21 +489,91 @@ export default function AdminUsersPage() {
                   />
                   <Button variant="outline" className="h-9 shrink-0" onClick={copyResetLink}>
                     {resetLinkCopied
-                      ? <><Check className="mr-1.5 h-3.5 w-3.5 text-emerald-500" />복사됨</>
-                      : <><Copy className="mr-1.5 h-3.5 w-3.5" />복사</>
+                      ? <><Check className="mr-1.5 h-3.5 w-3.5 text-emerald-500" />{t("common.copied")}</>
+                      : <><Copy className="mr-1.5 h-3.5 w-3.5" />{t("common.copy")}</>
                     }
                   </Button>
                 </div>
                 <p className="text-xs text-muted-fg">
-                  이 링크는 <span className="font-medium text-amber-500">{resetLinkExpiry}분</span> 후 만료됩니다.
-                  사용자에게 전달해 주세요.
+                  {t("admin.linkExpiry", { minutes: resetLinkExpiry })}
                 </p>
               </div>
             ) : null}
 
             <div className="mt-5 flex justify-end">
-              <Button variant="outline" onClick={() => setResetLinkUser(null)}>닫기</Button>
+              <Button variant="outline" onClick={() => setResetLinkUser(null)}>{t("common.close")}</Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invitation Dialog */}
+      {showInvite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowInvite(false)}>
+          <div className="w-full max-w-lg rounded-lg border bg-surface p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold">{t("admin.inviteTitle")}</h3>
+            <p className="mt-1 text-sm text-muted-fg">
+              {t("admin.inviteDescription")}
+            </p>
+
+            {!inviteLink ? (
+              <div className="mt-4 space-y-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-fg">{t("admin.inviteEmailLabel")}</label>
+                  <Input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder="user@example.com"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-fg">{t("admin.inviteRoleLabel")}</label>
+                  <select
+                    className="h-9 w-full rounded-md border bg-surface px-3 text-sm"
+                    value={inviteRoleKey}
+                    onChange={(e) => setInviteRoleKey(e.target.value)}
+                  >
+                    {assignableRoles.map((r: any) => (
+                      <option key={r.roleKey} value={r.roleKey}>{r.roleKey}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setShowInvite(false)}>{t("common.cancel")}</Button>
+                  <Button
+                    onClick={() => inviteMut.mutate()}
+                    disabled={!inviteEmail.trim() || inviteMut.isPending}
+                  >
+                    {inviteMut.isPending ? t("admin.inviteSending") : t("admin.inviteSend")}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 space-y-3">
+                <p className="text-sm text-emerald-500 font-medium">{t("admin.inviteSent")}</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={inviteLink}
+                    className="h-9 flex-1 rounded-md border bg-muted px-3 font-mono text-xs"
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
+                  />
+                  <Button variant="outline" className="h-9 shrink-0" onClick={copyInviteLink}>
+                    {inviteLinkCopied
+                      ? <><Check className="mr-1.5 h-3.5 w-3.5 text-emerald-500" />{t("common.copied")}</>
+                      : <><Copy className="mr-1.5 h-3.5 w-3.5" />{t("common.copy")}</>
+                    }
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-fg">
+                  {t("admin.inviteLinkGuide")}
+                </p>
+                <div className="flex justify-end">
+                  <Button variant="outline" onClick={() => setShowInvite(false)}>{t("common.close")}</Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

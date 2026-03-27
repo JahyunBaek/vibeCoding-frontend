@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "react-router-dom";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -75,6 +76,7 @@ function MenuItem({
 
 export default function Sidebar() {
   const { user } = useAuthStore();
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem("sidebar-collapsed") === "true";
   });
@@ -121,7 +123,7 @@ export default function Sidebar() {
         <button
           onClick={() => setCollapsed((v) => !v)}
           className="ml-auto shrink-0 rounded-md p-1 text-muted-fg hover:bg-accent hover:text-foreground"
-          title={collapsed ? "펼치기" : "접기"}
+          title={collapsed ? t("sidebar.expand") : t("sidebar.collapse")}
         >
           {collapsed
             ? <PanelLeftOpen className="h-4 w-4" />
@@ -133,7 +135,7 @@ export default function Sidebar() {
       {/* 메뉴 */}
       <div className={cn("flex-1 overflow-y-auto px-2", collapsed && "px-1")}>
         {!collapsed && (
-          <div className="px-3 text-xs font-semibold text-muted-fg">Navigation</div>
+          <div className="px-3 text-xs font-semibold text-muted-fg">{t("sidebar.navigation")}</div>
         )}
         <div className="mt-2 space-y-1">
           {(data ?? []).map((n: MenuNode) => (

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, DragEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Upload, X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
@@ -44,6 +45,7 @@ function extColor(ext: string): string {
 }
 
 export default function BoardWritePage() {
+  const { t } = useTranslation();
   const { boardId = "" } = useParams();
   const nav = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -108,10 +110,10 @@ export default function BoardWritePage() {
           } catch (e: any) {
             setFileItems((prev) =>
               prev.map((f) =>
-                f.uid === item.uid ? { ...f, status: "error", errorMsg: e.message ?? "업로드 실패" } : f
+                f.uid === item.uid ? { ...f, status: "error", errorMsg: e.message ?? t("board.uploadFailed") } : f
               )
             );
-            throw new Error(`"${item.file.name}" 업로드 실패: ${e.message ?? "알 수 없는 오류"}`);
+            throw new Error(`"${item.file.name}" ${t("board.uploadFailed")}: ${e.message ?? ""}`);
           }
         }
 
@@ -119,7 +121,7 @@ export default function BoardWritePage() {
           const postId = await api.postCreate(boardId, title, content, uploadedIds, idempotencyKey);
           return postId;
         } catch (e: any) {
-          throw new Error(`게시글 저장 실패: ${e.message ?? "알 수 없는 오류"}`);
+          throw new Error(`${t("board.submitFailed")}: ${e.message ?? ""}`);
         }
       } catch (e: any) {
         await Promise.allSettled(uploadedIds.map((id) => api.fileDelete(id)));
@@ -137,50 +139,50 @@ export default function BoardWritePage() {
       }
     },
     onSuccess: (postId) => {
-      toast.success("게시글이 작성되었습니다.");
+      toast.success(t("board.postCreated"));
       nav(`/boards/${boardId}/posts/${postId}`);
     },
     onError: (e: Error) => {
       setSubmitError(e.message);
-      toast.error(e.message ?? "게시글 저장에 실패했습니다.");
+      toast.error(e.message ?? t("board.postSaveFailed"));
     },
   });
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <div className="text-xl font-semibold text-foreground">글 작성</div>
+      <div className="text-xl font-semibold text-foreground">{t("board.writeTitle")}</div>
 
       <Card>
         <CardHeader>
-          <CardTitle>새 글</CardTitle>
+          <CardTitle>{t("board.newPost")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
 
           {/* Title */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-fg">제목</label>
+            <label className="text-xs font-medium text-muted-fg">{t("board.title")}</label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="제목을 입력하세요"
+              placeholder={t("board.titlePlaceholder")}
               disabled={submitMut.isPending}
             />
           </div>
 
           {/* Content */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-fg">내용</label>
+            <label className="text-xs font-medium text-muted-fg">{t("board.content")}</label>
             <RichEditor
               value={content}
               onChange={setContent}
-              placeholder="내용을 입력하세요. 이미지는 Ctrl+V로 붙여넣을 수 있습니다."
+              placeholder={t("board.contentPlaceholder")}
               disabled={submitMut.isPending}
             />
           </div>
 
           {/* File Upload */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-muted-fg">첨부파일</label>
+            <label className="text-xs font-medium text-muted-fg">{t("board.attachments")}</label>
 
             {/* Drop Zone */}
             <div
@@ -201,10 +203,10 @@ export default function BoardWritePage() {
               </div>
               <div>
                 <div className="text-sm font-medium text-foreground">
-                  {dragging ? "여기에 놓으세요" : "파일을 드래그하거나 클릭하여 선택"}
+                  {dragging ? t("board.dropHere") : t("board.dragOrClick")}
                 </div>
                 <div className="mt-0.5 text-xs text-muted-fg">
-                  파일은 저장 시 함께 업로드됩니다
+                  {t("board.uploadOnSave")}
                 </div>
               </div>
               <input
@@ -241,7 +243,7 @@ export default function BoardWritePage() {
                         </div>
 
                         {item.status === "staged" && (
-                          <div className="text-xs text-muted-fg">저장 시 업로드됩니다</div>
+                          <div className="text-xs text-muted-fg">{t("board.stagedUpload")}</div>
                         )}
 
                         {item.status === "uploading" && (
@@ -252,14 +254,14 @@ export default function BoardWritePage() {
                                 style={{ width: `${item.progress}%` }}
                               />
                             </div>
-                            <div className="mt-0.5 text-xs text-muted-fg">{item.progress}% 업로드 중...</div>
+                            <div className="mt-0.5 text-xs text-muted-fg">{t("board.uploading", { progress: item.progress })}</div>
                           </div>
                         )}
 
                         {item.status === "done" && (
                           <div className="flex items-center gap-1 text-xs text-emerald-400">
                             <CheckCircle2 className="h-3 w-3" />
-                            업로드 완료
+                            {t("board.uploadDone")}
                           </div>
                         )}
 
@@ -275,7 +277,7 @@ export default function BoardWritePage() {
                         onClick={() => removeFile(item.uid)}
                         disabled={submitMut.isPending}
                         className="shrink-0 rounded-md p-1.5 text-muted-fg hover:bg-accent hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                        title="제거"
+                        title={t("common.delete")}
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -284,7 +286,7 @@ export default function BoardWritePage() {
                 })}
 
                 <div className="px-1 text-xs text-muted-fg">
-                  총 {fileItems.length}개 파일 · {formatSize(fileItems.reduce((s, f) => s + f.file.size, 0))}
+                  {t("board.totalFiles", { count: fileItems.length, size: formatSize(fileItems.reduce((s, f) => s + f.file.size, 0)) })}
                 </div>
               </div>
             )}
@@ -295,8 +297,8 @@ export default function BoardWritePage() {
             <div className="flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-400">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <div>
-                <div className="font-medium">저장 실패</div>
-                <div className="mt-0.5 text-xs">{submitError} — 업로드된 파일은 자동으로 롤백되었습니다.</div>
+                <div className="font-medium">{t("board.submitFailed")}</div>
+                <div className="mt-0.5 text-xs">{t("board.submitFailedDetail", { error: submitError })}</div>
               </div>
             </div>
           )}
@@ -310,12 +312,12 @@ export default function BoardWritePage() {
               {submitMut.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  저장 중...
+                  {t("common.saving")}
                 </>
-              ) : "저장"}
+              ) : t("common.save")}
             </Button>
             <Button variant="outline" onClick={() => nav(-1)} disabled={submitMut.isPending}>
-              취소
+              {t("common.cancel")}
             </Button>
           </div>
 

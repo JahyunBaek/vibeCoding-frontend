@@ -1,5 +1,6 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import { memo } from "react";
+import { useTranslation } from "react-i18next";
 import StarterKit from "@tiptap/starter-kit";
 import ImageExt from "@tiptap/extension-image";
 import Underline from "@tiptap/extension-underline";
@@ -31,10 +32,12 @@ interface RichEditorProps {
 function RichEditor({
   value = "",
   onChange,
-  placeholder = "내용을 입력하세요",
+  placeholder,
   disabled = false,
   className,
 }: RichEditorProps) {
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t("editor.placeholder");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadingRef = useRef(false);
 
@@ -43,7 +46,7 @@ function RichEditor({
       StarterKit.configure({ codeBlock: { languageClassPrefix: "language-" } }),
       Underline,
       ImageExt.configure({ allowBase64: false, inline: false }),
-      Placeholder.configure({ placeholder }),
+      Placeholder.configure({ placeholder: resolvedPlaceholder }),
       Link.configure({ openOnClick: false, HTMLAttributes: { rel: "noopener noreferrer" } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
@@ -91,8 +94,8 @@ function RichEditor({
       const result = await api.fileUploadInlineImage(file);
       editor.chain().focus().setImage({ src: result.url, alt: file.name }).run();
     } catch (e) {
-      console.error("이미지 업로드 실패", e);
-      alert("이미지 업로드에 실패했습니다.");
+      console.error("Image upload failed", e);
+      alert(t("editor.uploadFailed"));
     } finally {
       uploadingRef.current = false;
     }
@@ -101,7 +104,7 @@ function RichEditor({
   function setLink() {
     if (!editor) return;
     const prev = editor.getAttributes("link").href ?? "";
-    const url = window.prompt("링크 URL 입력", prev);
+    const url = window.prompt(t("editor.linkPrompt"), prev);
     if (url === null) return;
     if (url === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run();
@@ -119,76 +122,76 @@ function RichEditor({
         <div className="flex flex-wrap items-center gap-0.5 border-b border-base bg-muted px-2 py-1.5">
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleBold().run()}
-            active={editor.isActive("bold")} title="굵게"
+            active={editor.isActive("bold")} title={t("editor.bold")}
           ><Bold className="h-3.5 w-3.5" /></ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            active={editor.isActive("italic")} title="기울임"
+            active={editor.isActive("italic")} title={t("editor.italic")}
           ><Italic className="h-3.5 w-3.5" /></ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleUnderline().run()}
-            active={editor.isActive("underline")} title="밑줄"
+            active={editor.isActive("underline")} title={t("editor.underline")}
           ><UnderlineIcon className="h-3.5 w-3.5" /></ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleStrike().run()}
-            active={editor.isActive("strike")} title="취소선"
+            active={editor.isActive("strike")} title={t("editor.strikethrough")}
           ><Strikethrough className="h-3.5 w-3.5" /></ToolbarBtn>
 
           <Divider />
 
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            active={editor.isActive("heading", { level: 2 })} title="제목2"
+            active={editor.isActive("heading", { level: 2 })} title={t("editor.heading2")}
           ><Heading2 className="h-3.5 w-3.5" /></ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-            active={editor.isActive("heading", { level: 3 })} title="제목3"
+            active={editor.isActive("heading", { level: 3 })} title={t("editor.heading3")}
           ><Heading3 className="h-3.5 w-3.5" /></ToolbarBtn>
 
           <Divider />
 
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            active={editor.isActive("bulletList")} title="목록"
+            active={editor.isActive("bulletList")} title={t("editor.bulletList")}
           ><List className="h-3.5 w-3.5" /></ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            active={editor.isActive("orderedList")} title="번호 목록"
+            active={editor.isActive("orderedList")} title={t("editor.orderedList")}
           ><ListOrdered className="h-3.5 w-3.5" /></ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            active={editor.isActive("blockquote")} title="인용"
+            active={editor.isActive("blockquote")} title={t("editor.blockquote")}
           ><Quote className="h-3.5 w-3.5" /></ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleCode().run()}
-            active={editor.isActive("code")} title="인라인 코드"
+            active={editor.isActive("code")} title={t("editor.inlineCode")}
           ><Code className="h-3.5 w-3.5" /></ToolbarBtn>
 
           <Divider />
 
           <ToolbarBtn
             onClick={() => editor.chain().focus().setTextAlign("left").run()}
-            active={editor.isActive({ textAlign: "left" })} title="왼쪽 정렬"
+            active={editor.isActive({ textAlign: "left" })} title={t("editor.alignLeft")}
           ><AlignLeft className="h-3.5 w-3.5" /></ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().setTextAlign("center").run()}
-            active={editor.isActive({ textAlign: "center" })} title="가운데 정렬"
+            active={editor.isActive({ textAlign: "center" })} title={t("editor.alignCenter")}
           ><AlignCenter className="h-3.5 w-3.5" /></ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().setTextAlign("right").run()}
-            active={editor.isActive({ textAlign: "right" })} title="오른쪽 정렬"
+            active={editor.isActive({ textAlign: "right" })} title={t("editor.alignRight")}
           ><AlignRight className="h-3.5 w-3.5" /></ToolbarBtn>
 
           <Divider />
 
-          <ToolbarBtn onClick={setLink} active={editor.isActive("link")} title="링크">
+          <ToolbarBtn onClick={setLink} active={editor.isActive("link")} title={t("editor.link")}>
             <LinkIcon className="h-3.5 w-3.5" />
           </ToolbarBtn>
           <ToolbarBtn
-            onClick={() => fileInputRef.current?.click()} title="이미지 삽입"
+            onClick={() => fileInputRef.current?.click()} title={t("editor.insertImage")}
           ><ImageIcon className="h-3.5 w-3.5" /></ToolbarBtn>
           <ToolbarBtn
-            onClick={() => editor.chain().focus().setHorizontalRule().run()} title="구분선"
+            onClick={() => editor.chain().focus().setHorizontalRule().run()} title={t("editor.horizontalRule")}
           ><Minus className="h-3.5 w-3.5" /></ToolbarBtn>
         </div>
       )}

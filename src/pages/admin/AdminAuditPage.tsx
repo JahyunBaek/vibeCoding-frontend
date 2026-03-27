@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, RefreshCw, Download } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import TenantSelector from "@/components/TenantSelector";
@@ -21,6 +22,7 @@ const ACTION_COLORS: Record<string, string> = {
 };
 
 export default function AdminAuditPage() {
+  const { t } = useTranslation();
   const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
   const [actionFilter, setActionFilter] = useState("");
   const [targetFilter, setTargetFilter] = useState("");
@@ -47,11 +49,11 @@ export default function AdminAuditPage() {
 
   return (
     <div className="space-y-4">
-      <div className="text-xl font-semibold">Admin · Audit Log</div>
+      <div className="text-xl font-semibold">{t("admin.auditPageTitle")}</div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3 flex-wrap gap-2">
-          <CardTitle>감사 로그</CardTitle>
+          <CardTitle>{t("admin.auditLog")}</CardTitle>
           <div className="flex items-center gap-2 flex-wrap ml-auto">
             <TenantSelector value={selectedTenantId} onChange={(id) => { setSelectedTenantId(id); setPage(1); }} />
             <select
@@ -59,7 +61,7 @@ export default function AdminAuditPage() {
               value={actionFilter}
               onChange={(e) => handleFilterChange(setActionFilter)(e.target.value)}
             >
-              <option value="">전체 액션</option>
+              <option value="">{t("admin.auditAllActions")}</option>
               {["LOGIN", "LOGOUT", "CREATE", "UPDATE", "DELETE"].map((a) => (
                 <option key={a} value={a}>{a}</option>
               ))}
@@ -68,12 +70,12 @@ export default function AdminAuditPage() {
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input
                 className="pl-9 w-36"
-                placeholder="대상 유형"
+                placeholder={t("admin.auditTargetType")}
                 value={targetFilter}
                 onChange={(e) => handleFilterChange(setTargetFilter)(e.target.value)}
               />
             </div>
-            <span className="text-xs text-muted-fg">{data?.total ?? 0}건</span>
+            <span className="text-xs text-muted-fg">{data?.total ?? 0}{t("common.cases")}</span>
             <Button
               variant="outline"
               onClick={async () => {
@@ -83,11 +85,11 @@ export default function AdminAuditPage() {
                     action: actionFilter || undefined,
                     targetType: targetFilter || undefined,
                   });
-                  toast.success("CSV 파일이 다운로드되었습니다.");
+                  toast.success(t("admin.csvExported"));
                 } catch (e: any) { toast.error(e.message); }
               }}
             >
-              <Download className="mr-1.5 h-4 w-4" />CSV 내보내기
+              <Download className="mr-1.5 h-4 w-4" />{t("common.export")}
             </Button>
             <Button variant="outline" className="h-8 w-8 p-0" onClick={() => refetch()} disabled={isFetching}>
               <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
@@ -99,13 +101,13 @@ export default function AdminAuditPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted text-xs text-muted-fg">
-                <th className="px-4 py-3 text-left font-medium w-40">일시</th>
-                <th className="px-4 py-3 text-left font-medium">사용자</th>
-                <th className="px-4 py-3 text-left font-medium w-24">액션</th>
-                <th className="px-4 py-3 text-left font-medium w-28">대상 유형</th>
-                <th className="px-4 py-3 text-left font-medium w-28">대상 ID</th>
-                <th className="px-4 py-3 text-left font-medium">상세</th>
-                <th className="px-4 py-3 text-left font-medium w-32">IP</th>
+                <th className="px-4 py-3 text-left font-medium w-40">{t("admin.auditDateTime")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("admin.auditUser")}</th>
+                <th className="px-4 py-3 text-left font-medium w-24">{t("admin.auditAction")}</th>
+                <th className="px-4 py-3 text-left font-medium w-28">{t("admin.auditTargetType")}</th>
+                <th className="px-4 py-3 text-left font-medium w-28">{t("admin.auditTargetId")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("admin.auditDetail")}</th>
+                <th className="px-4 py-3 text-left font-medium w-32">{t("admin.auditIp")}</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -129,7 +131,7 @@ export default function AdminAuditPage() {
               {items.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-4 py-8 text-center text-sm text-muted-fg">
-                    감사 로그가 없습니다.
+                    {t("admin.auditNoLogs")}
                   </td>
                 </tr>
               )}

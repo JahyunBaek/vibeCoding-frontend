@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, FileText, MessageSquare, Pencil, Search, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { api } from "@/lib/api";
@@ -8,16 +9,16 @@ import { Input } from "@/components/ui/input";
 import { Can } from "@/components/Can";
 import { SCREENS, ACTIONS } from "@/config/permissions";
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string, t: (key: string, opts?: any) => string, lang: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const min = Math.floor(diff / 60000);
-  if (min < 1) return "방금 전";
-  if (min < 60) return `${min}분 전`;
+  if (min < 1) return t("notification.justNow");
+  if (min < 60) return t("notification.minutesAgo", { count: min });
   const hour = Math.floor(min / 60);
-  if (hour < 24) return `${hour}시간 전`;
+  if (hour < 24) return t("notification.hoursAgo", { count: hour });
   const day = Math.floor(hour / 24);
-  if (day < 7) return `${day}일 전`;
-  return new Date(dateStr).toLocaleDateString("ko-KR");
+  if (day < 7) return t("notification.daysAgo", { count: day });
+  return new Date(dateStr).toLocaleDateString(lang === "ko" ? "ko-KR" : "en-US");
 }
 
 function avatarColor(name: string): string {
@@ -42,6 +43,7 @@ function findMenuName(nodes: any[], boardId: number): string | null {
 }
 
 export default function BoardListPage() {
+  const { t, i18n } = useTranslation();
   const { boardId = "" } = useParams();
   const [sp, setSp] = useSearchParams();
   const page = Number(sp.get("page") || "1");
@@ -51,7 +53,7 @@ export default function BoardListPage() {
 
   const qc = useQueryClient();
   const menus: any[] = qc.getQueryData(["menus", "my"]) ?? [];
-  const menuName = findMenuName(menus, Number(boardId)) ?? "게시판";
+  const menuName = findMenuName(menus, Number(boardId)) ?? t("nav.boards");
 
   const { data } = useQuery({
     queryKey: ["posts", boardId, page, search],
@@ -91,14 +93,14 @@ export default function BoardListPage() {
         <div>
           <h1 className="text-xl font-bold text-foreground">{menuName}</h1>
           {total > 0 && (
-            <p className="mt-0.5 text-sm text-muted-fg">전체 {total}개</p>
+            <p className="mt-0.5 text-sm text-muted-fg">{t("board.totalCount", { count: total })}</p>
           )}
         </div>
         <Can screen={SCREENS.BOARD_POST} action={ACTIONS.CREATE}>
           <Link to={`/boards/${boardId}/new`}>
             <Button size="sm" className="gap-1.5">
               <Pencil className="h-3.5 w-3.5" />
-              글쓰기
+              {t("board.write")}
             </Button>
           </Link>
         </Can>
@@ -112,7 +114,7 @@ export default function BoardListPage() {
             ref={inputRef}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="제목으로 검색..."
+            placeholder={t("board.searchByTitle")}
             className="pl-9 pr-8"
           />
           {inputValue && (
@@ -125,7 +127,7 @@ export default function BoardListPage() {
             </button>
           )}
         </div>
-        <Button type="submit" variant="outline" size="sm" className="shrink-0">검색</Button>
+        <Button type="submit" variant="outline" size="sm" className="shrink-0">{t("common.search")}</Button>
       </form>
 
       {/* List */}
@@ -133,10 +135,10 @@ export default function BoardListPage() {
 
         {/* Table header */}
         <div className="grid grid-cols-[1fr_auto] gap-4 border-b border-base bg-muted px-5 py-2.5 text-xs font-medium text-muted-fg sm:grid-cols-[auto_1fr_auto_auto]">
-          <span className="hidden sm:block w-10 text-center">번호</span>
-          <span>제목</span>
-          <span className="hidden sm:block">작성자</span>
-          <span>날짜</span>
+          <span className="hidden sm:block w-10 text-center">{t("board.number")}</span>
+          <span>{t("board.title")}</span>
+          <span className="hidden sm:block">{t("board.author")}</span>
+          <span>{t("board.date")}</span>
         </div>
 
         {/* Rows */}
@@ -173,7 +175,7 @@ export default function BoardListPage() {
                       </span>
                     )}
                     {(p.fileCount ?? 0) > 0 && (
-                      <span className="shrink-0 text-[11px] text-muted-fg" title="첨부파일 있음">
+                      <span className="shrink-0 text-[11px] text-muted-fg" title={t("board.hasAttachment")}>
                         📎
                       </span>
                     )}
@@ -189,7 +191,7 @@ export default function BoardListPage() {
 
                   {/* Date */}
                   <span className="flex items-center text-xs text-muted-fg">
-                    {p.createdAt ? formatRelativeTime(p.createdAt) : ""}
+                    {p.createdAt ? formatRelativeTime(p.createdAt, t, i18n.language) : ""}
                   </span>
                 </Link>
               );
@@ -198,9 +200,9 @@ export default function BoardListPage() {
         ) : (
           <div className="flex flex-col items-center gap-3 py-16 text-muted-fg">
             <FileText className="h-10 w-10 opacity-30" />
-            <p className="text-sm">등록된 게시글이 없습니다.</p>
+            <p className="text-sm">{t("board.noPosts")}</p>
             <Link to={`/boards/${boardId}/new`}>
-              <Button variant="outline" size="sm">첫 글 작성하기</Button>
+              <Button variant="outline" size="sm">{t("board.writeFirst")}</Button>
             </Link>
           </div>
         )}

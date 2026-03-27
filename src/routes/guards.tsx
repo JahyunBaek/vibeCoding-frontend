@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/auth";
 import Spinner from "@/components/ui/spinner";
 
@@ -16,16 +17,18 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 }
 
 export function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   if (!user) return null;
   if (user.roleKey !== "ADMIN" && user.roleKey !== "SUPER_ADMIN")
-    return <div className="p-6 text-sm">403 (Admin only)</div>;
+    return <div className="p-6 text-sm">{t("error.forbiddenAdmin")}</div>;
   return <>{children}</>;
 }
 
 export function RequireSuperAdmin({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   if (!user) return null;
-  if (user.roleKey !== "SUPER_ADMIN") return <div className="p-6 text-sm">403 (Super Admin only)</div>;
+  if (user.roleKey !== "SUPER_ADMIN") return <div className="p-6 text-sm">{t("error.forbiddenSuperAdmin")}</div>;
   return <>{children}</>;
 }

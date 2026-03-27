@@ -360,7 +360,7 @@ export const api = {
   permSetRoles: (actionId: number, roleKeys: string[]) => apiRequest<void>("PUT", `/api/admin/permissions/actions/${actionId}/roles`, { roleKeys }),
 
   // Tenant Branding (any authenticated user)
-  tenantBranding: () => apiRequest<{ companyName: string; logoUrl: string }>("GET", "/api/tenant/branding"),
+  tenantBranding: () => apiRequest<{ companyName: string; logoUrl: string; locale: string; primaryColor: string; sidebarColor: string; accentColor: string }>("GET", "/api/tenant/branding"),
 
   // Settings (Tenant Config)
   settingsGet: (tenantId?: number | null) => {
@@ -371,6 +371,20 @@ export const api = {
     const q = tenantId != null ? `?tenantId=${tenantId}` : "";
     return apiRequest<void>("PUT", `/api/admin/settings${q}`, configs);
   },
+
+  // Admin invitation
+  invitationCreate: (email: string, roleKey: string) =>
+    apiRequest<{ token: string }>("POST", "/api/admin/invitations", { email, roleKey }),
+  invitationList: (tenantId?: number | null) => {
+    const q = tenantId ? `?tenantId=${tenantId}` : "";
+    return apiRequest<any[]>("GET", `/api/admin/invitations${q}`);
+  },
+
+  // Public signup
+  invitationValidate: (token: string) =>
+    apiRequest<{ email: string; tenantName: string }>("GET", `/api/auth/invitation/${token}`),
+  signup: (token: string, username: string, password: string, name: string) =>
+    apiRequest<void>("POST", "/api/auth/signup", { token, username, password, name }),
 
   // Audit Log
   auditList: (params: { tenantId?: number | null; action?: string; targetType?: string; page?: number; size?: number }) => {
@@ -395,6 +409,12 @@ export const api = {
     a.click();
     URL.revokeObjectURL(url);
   },
+  // Notifications
+  notificationsList: () => apiRequest<any[]>("GET", "/api/notifications"),
+  notificationsUnreadCount: () => apiRequest<number>("GET", "/api/notifications/unread-count"),
+  notificationMarkRead: (id: number) => apiRequest<void>("PUT", `/api/notifications/${id}/read`),
+  notificationMarkAllRead: () => apiRequest<void>("PUT", "/api/notifications/read-all"),
+
   auditExport: async (params: { tenantId?: number | null; action?: string; targetType?: string }) => {
     const q = new URLSearchParams();
     if (params.tenantId != null) q.set("tenantId", String(params.tenantId));

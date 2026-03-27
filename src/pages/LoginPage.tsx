@@ -1,12 +1,22 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, Lock, User, Dna } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/stores/auth";
 import { api } from "@/lib/api";
 
 export default function LoginPage() {
+  const { t } = useTranslation();
+
+  const loginSchema = z.object({
+    username: z.string().min(1, t("auth.usernameRequired")),
+    password: z.string().min(1, t("auth.passwordRequired")),
+  });
+  type LoginFormData = z.infer<typeof loginSchema>;
   const nav = useNavigate();
   const location = useLocation();
   const { setAuth, setPermissions, initialized, accessToken } = useAuthStore();
@@ -17,18 +27,20 @@ export default function LoginPage() {
     nav(from, { replace: true });
   }, [initialized, accessToken, nav, location.state]);
 
-  const [username, setUsername] = useState("superadmin");
-  const [password, setPassword] = useState("Admin1234!");
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { username: "superadmin", password: "Admin1234!" },
+  });
+
   const [error, setError]       = useState<string | null>(null);
   const [loading, setLoading]   = useState(false);
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = handleSubmit(async (data) => {
     setError(null);
     setLoading(true);
     try {
-      const data = await api.login(username, password);
-      setAuth(data.accessToken, data.user);
+      const result = await api.login(data.username, data.password);
+      setAuth(result.accessToken, result.user);
       try {
         const perms = await api.permissionsMyList();
         const permMap: Record<string, string[]> = {};
@@ -37,13 +49,13 @@ export default function LoginPage() {
       } catch { /* ignore */ }
       nav("/dashboard");
     } catch (err: any) {
-      const msg = err?.message ?? "로그인에 실패했습니다.";
+      const msg = err?.message ?? t("auth.loginFailed");
       setError(msg);
       toast.error(msg);
     } finally {
       setLoading(false);
     }
-  };
+  });
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-12">
@@ -94,10 +106,10 @@ export default function LoginPage() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 </span>
-                시스템 정상 운영중
+                {t("auth.systemOnline")}
               </div>
-              <h2 className="text-[22px] font-bold text-white">로그인</h2>
-              <p className="mt-1 text-[13px] text-slate-500">계정 정보를 입력해 접속하세요.</p>
+              <h2 className="text-[22px] font-bold text-white">{t("auth.loginTitle")}</h2>
+              <p className="mt-1 text-[13px] text-slate-500">{t("auth.loginDescription")}</p>
             </div>
 
             {/* 폼 */}
@@ -106,38 +118,38 @@ export default function LoginPage() {
               {/* 아이디 */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  아이디
+                  {t("auth.username")}
                 </label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-600" />
                   <input
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="아이디"
+                    {...register("username")}
+                    placeholder={t("auth.usernamePlaceholder")}
                     autoComplete="username"
                     disabled={loading}
                     className="h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.06] pl-9 pr-4 text-sm text-white placeholder:text-slate-600 outline-none transition-all focus:border-blue-500/60 focus:bg-white/[0.08] focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
                   />
                 </div>
+                {errors.username && <p className="text-xs text-red-500 mt-1">{errors.username.message}</p>}
               </div>
 
               {/* 비밀번호 */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  비밀번호
+                  {t("auth.password")}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-600" />
                   <input
                     type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    {...register("password")}
                     placeholder="••••••••"
                     autoComplete="current-password"
                     disabled={loading}
                     className="h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.06] pl-9 pr-4 text-sm text-white placeholder:text-slate-600 outline-none transition-all focus:border-blue-500/60 focus:bg-white/[0.08] focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
                   />
                 </div>
+                {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
               </div>
 
               {/* 에러 */}
@@ -156,8 +168,8 @@ export default function LoginPage() {
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 transition-opacity group-hover:opacity-100" />
                 {loading
-                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />로그인 중...</>
-                  : "로그인 →"
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("auth.loginLoading")}</>
+                  : t("auth.loginArrow")
                 }
               </button>
 
@@ -191,18 +203,18 @@ export default function LoginPage() {
           {/* 테스트 계정 */}
           <div className="border-t border-white/[0.06] bg-white/[0.02] px-8 py-5">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-slate-600">
-              테스트 계정
+              {t("auth.testAccounts")}
             </p>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { role: "슈퍼관리자", id: "superadmin", pw: "Admin1234!", accent: "violet" },
-                { role: "관리자",     id: "admin",      pw: "Admin1234!",  accent: "blue"   },
-                { role: "일반",       id: "user",       pw: "User1234!",   accent: "slate"  },
+                { role: t("auth.superAdmin"), id: "superadmin", pw: "Admin1234!", accent: "violet" },
+                { role: t("auth.admin"),      id: "admin",      pw: "Admin1234!",  accent: "blue"   },
+                { role: t("auth.user"),        id: "user",       pw: "User1234!",   accent: "slate"  },
               ].map((a) => (
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => { setUsername(a.id); setPassword(a.pw); }}
+                  onClick={() => { setValue("username", a.id); setValue("password", a.pw); }}
                   className={`flex flex-col items-start rounded-lg border px-3 py-2.5 text-left transition-all ${
                     a.accent === "violet"
                       ? "border-violet-500/20 bg-violet-500/[0.06] hover:border-violet-500/40 hover:bg-violet-500/10"
