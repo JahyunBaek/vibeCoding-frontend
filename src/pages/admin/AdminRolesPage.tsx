@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/auth";
+import TenantSelector from "@/components/TenantSelector";
 import { MoreHorizontal, Pencil, Trash2, Plus, X, Search } from "lucide-react";
 import { api } from "@/lib/api";
 import Pagination from "@/components/Pagination";
@@ -22,6 +24,10 @@ const PAGE_SIZE = 10;
 
 export default function AdminRolesPage() {
   const { t } = useTranslation();
+  const { user: currentUser } = useAuthStore();
+  const isSuperAdmin = currentUser?.roleKey === "SUPER_ADMIN";
+  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
+
   const { data, refetch } = useQuery({
     queryKey: ["admin", "roles", "page"],
     queryFn: () => api.rolesPage(1, 200),
@@ -36,7 +42,9 @@ export default function AdminRolesPage() {
     setPage(1);
   };
 
-  const allItems: any[] = data?.items ?? [];
+  const allItems: any[] = (data?.items ?? []).filter(
+    (r: any) => isSuperAdmin || r.roleKey !== "SUPER_ADMIN"
+  );
   const filtered = allItems.filter((r) => {
     const q = search.toLowerCase();
     return (
@@ -109,6 +117,7 @@ export default function AdminRolesPage() {
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle>{t("admin.roleList")}</CardTitle>
           <div className="flex items-center gap-2">
+            <TenantSelector value={selectedTenantId} onChange={setSelectedTenantId} />
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-fg" />
               <Input

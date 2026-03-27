@@ -9,6 +9,7 @@ export type MenuNode = {
   useYn: boolean;
   menuType: string;
   boardId: number | null;
+  roleKeys: string[];
   children: MenuNode[];
 };
 

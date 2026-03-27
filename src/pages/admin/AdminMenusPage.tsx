@@ -138,7 +138,7 @@ export default function AdminMenusPage() {
     setEditParentId(row.parentId != null ? String(row.parentId) : "");
     setEditSortOrder(row.sortOrder);
     setEditUseYn(row.useYn);
-    setEditRoleKeys([]);
+    setEditRoleKeys(row.roleKeys ?? []);
     setShowCreate(false);
   };
 
@@ -152,9 +152,7 @@ export default function AdminMenusPage() {
         sortOrder: editSortOrder,
         useYn: editUseYn,
       });
-      if (editRoleKeys.length > 0) {
-        await api.menuSetRoles(editNode!.menuId, editRoleKeys);
-      }
+      await api.menuSetRoles(editNode!.menuId, editRoleKeys);
     },
     onSuccess: () => {
       setEditNode(null);
@@ -319,6 +317,7 @@ export default function AdminMenusPage() {
                 <th className="px-4 py-3 text-left font-medium">{t("admin.menuPathLabel")}</th>
                 <th className="px-4 py-3 text-left font-medium">{t("admin.menuType")}</th>
                 <th className="px-4 py-3 text-left font-medium">{t("admin.menuOrder")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("admin.menuPermission")}</th>
                 <th className="px-4 py-3 text-left font-medium">{t("common.use")}</th>
                 <th className="px-4 py-3 text-right font-medium">{t("common.actions")}</th>
               </tr>
@@ -368,6 +367,16 @@ export default function AdminMenusPage() {
                   </td>
                   <td className="px-4 py-3 text-xs text-muted-fg">{row.sortOrder}</td>
                   <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {(row.roleKeys ?? []).map((rk) => (
+                        <Badge key={rk} variant="secondary" className="text-[10px] font-normal">{rk}</Badge>
+                      ))}
+                      {(!row.roleKeys || row.roleKeys.length === 0) && (
+                        <span className="text-[10px] text-muted-fg">—</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
                     <Badge variant={row.useYn ? "default" : "secondary"}>{row.useYn ? "Y" : "N"}</Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -395,7 +404,7 @@ export default function AdminMenusPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-fg">
+                  <td colSpan={7} className="px-4 py-8 text-center text-sm text-muted-fg">
                     {isSearching ? t("common.noSearchResults") : t("admin.noMenus")}
                   </td>
                 </tr>

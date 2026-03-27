@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth";
+import TenantSelector from "@/components/TenantSelector";
 import {
   Shield,
   Plus,
@@ -304,6 +305,8 @@ export default function AdminScreensPage() {
   const { user: currentUser } = useAuthStore();
   const isSuperAdmin = currentUser?.roleKey === "SUPER_ADMIN";
 
+  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
+
   const { data: screens = [], refetch: refetchScreens } = useQuery<any[]>({
     queryKey: ["admin", "perm", "screens"],
     queryFn: () => api.permScreens(),
@@ -382,6 +385,9 @@ export default function AdminScreensPage() {
       <div className="flex items-center gap-2 text-xl font-semibold">
         <Shield className="h-5 w-5 text-muted-fg" />
         {t("admin.screensPageTitle")}
+        <div className="ml-auto">
+          <TenantSelector value={selectedTenantId} onChange={setSelectedTenantId} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
