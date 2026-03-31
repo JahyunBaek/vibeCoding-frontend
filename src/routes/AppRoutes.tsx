@@ -22,6 +22,7 @@ import MyInfoPage from "@/pages/MyInfoPage";
 import SuperAdminTenantsPage from "@/pages/super-admin/SuperAdminTenantsPage";
 import SamplePatientsPage from "@/pages/sample/SamplePatientsPage";
 import SampleTrialsPage from "@/pages/sample/SampleTrialsPage";
+import AgentChatPage from "@/pages/analysis/AgentChatPage";
 
 export default function AppRoutes() {
   return (
@@ -43,6 +44,8 @@ export default function AppRoutes() {
 
         <Route path="sample/patients" element={<SamplePatientsPage />} />
         <Route path="sample/trials" element={<SampleTrialsPage />} />
+
+        <Route path="analysis/agent" element={<AgentChatPage />} />
 
         <Route path="boards/:boardId" element={<BoardListPage />} />
         <Route path="boards/:boardId/new" element={<BoardWritePage />} />

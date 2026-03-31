@@ -33,6 +33,8 @@ export default function Breadcrumb() {
     sample: t("sample.medical"),
     patients: t("sample.patients"),
     trials: t("sample.trials"),
+    analysis: t("agent.analysis"),
+    agent: t("agent.agent"),
   };
 
   const crumbs: { label: string; path: string }[] = [];

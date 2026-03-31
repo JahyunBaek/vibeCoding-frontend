@@ -448,6 +448,20 @@
     "enrolled": "{{enrolled}}/{{target}}명",
     "mockDataNotice": "이 페이지는 샘플 데이터입니다."
   },
+  "agent": {
+    "analysis": "분석",
+    "agent": "Agent",
+    "pageTitle": "AI Agent 분석",
+    "mockNotice": "현재 Mock 모드입니다. 실제 AI API 연동 후 정확한 분석이 제공됩니다.",
+    "dataset": "데이터셋",
+    "provider": "Agent",
+    "clearChat": "대화 초기화",
+    "emptyChat": "질문을 입력하면 선택한 AI Agent가 데이터를 분석합니다.",
+    "thinking": "분석 중...",
+    "inputPlaceholder": "데이터에 대해 질문하세요... (Enter로 전송)",
+    "inputHint": "Enter로 전송, Shift+Enter로 줄바꿈",
+    "send": "전송"
+  },
   "editor": {
     "placeholder": "내용을 입력하세요",
     "bold": "굵게",

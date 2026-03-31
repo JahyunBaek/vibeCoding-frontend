@@ -448,6 +448,20 @@
     "enrolled": "{{enrolled}}/{{target}}",
     "mockDataNotice": "This page displays sample data."
   },
+  "agent": {
+    "analysis": "Analysis",
+    "agent": "Agent",
+    "pageTitle": "AI Agent Analysis",
+    "mockNotice": "Currently in Mock mode. Accurate analysis will be available after connecting actual AI APIs.",
+    "dataset": "Dataset",
+    "provider": "Agent",
+    "clearChat": "Clear Chat",
+    "emptyChat": "Ask a question and the selected AI Agent will analyze the data.",
+    "thinking": "Analyzing...",
+    "inputPlaceholder": "Ask about the data... (Enter to send)",
+    "inputHint": "Enter to send, Shift+Enter for new line",
+    "send": "Send"
+  },
   "editor": {
     "placeholder": "Enter content",
     "bold": "Bold",

@@ -12,7 +12,8 @@
       "Bash(./gradlew compileJava)",
       "Bash(wc:*)",
       "Bash(find /c/Users/jahyun/Downloads/common-system-starter/backend -name *Mapper.xml -type f)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(find C:/Users/jahyun/Downloads/common-system-starter/frontend/src -type f \\\\\\(-name *i18n* -o -name *.json \\\\\\))"
     ],
     "additionalDirectories": [
       "C:/Users/jahyun/Downloads/common-system-starter/backend"
