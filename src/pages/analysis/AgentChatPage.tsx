@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Send, Bot, User, Info, Loader2, Trash2 } from "lucide-react";
+import { Send, Bot, User, Info, Loader2, Trash2, Zap, FlaskConical } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,7 @@ type Message = {
   content: string;
   timestamp: string;
   provider?: string;
+  mock?: boolean;
 };
 
 const PROVIDER_ICONS: Record<string, string> = {
@@ -51,6 +52,7 @@ export default function AgentChatPage() {
           content: data.message,
           timestamp: data.timestamp,
           provider: data.provider,
+          mock: data.mock,
         },
       ]);
     },
@@ -70,6 +72,7 @@ export default function AgentChatPage() {
 
   const selectedProvider = providers.find((p: any) => p.id === provider);
   const selectedDataset = datasets.find((d: any) => d.id === dataset);
+  const isProviderMock = selectedProvider?.mock ?? true;
 
   const handleSend = () => {
     const msg = input.trim();
@@ -105,11 +108,18 @@ export default function AgentChatPage() {
     <div className="space-y-4">
       <div className="text-xl font-semibold">{t("agent.pageTitle")}</div>
 
-      {/* Mock notice */}
-      <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-600">
-        <Info className="h-4 w-4 shrink-0" />
-        {t("agent.mockNotice")}
-      </div>
+      {/* Notice: Mock 또는 Live */}
+      {isProviderMock ? (
+        <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-600">
+          <FlaskConical className="h-4 w-4 shrink-0" />
+          {t("agent.mockNotice")}
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-sm text-emerald-600">
+          <Zap className="h-4 w-4 shrink-0" />
+          {t("agent.liveNotice")}
+        </div>
+      )}
 
       {/* Config bar */}
       <div className="flex flex-wrap items-center gap-3">
@@ -147,6 +157,15 @@ export default function AgentChatPage() {
               >
                 <span>{PROVIDER_ICONS[p.icon] ?? "🤖"}</span>
                 <span>{p.name}</span>
+                {p.mock ? (
+                  <span className="ml-0.5 rounded bg-amber-500/15 px-1 py-0.5 text-[10px] leading-none text-amber-600">
+                    Mock
+                  </span>
+                ) : (
+                  <span className="ml-0.5 rounded bg-emerald-500/15 px-1 py-0.5 text-[10px] leading-none text-emerald-600">
+                    Live
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -223,6 +242,19 @@ export default function AgentChatPage() {
                 }`}
               >
                 {msg.content}
+                {msg.role === "assistant" && msg.mock !== undefined && (
+                  <div className="mt-2 flex items-center gap-1">
+                    {msg.mock ? (
+                      <span className="inline-flex items-center gap-0.5 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] text-amber-600">
+                        <FlaskConical className="h-2.5 w-2.5" /> Mock
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-0.5 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] text-emerald-600">
+                        <Zap className="h-2.5 w-2.5" /> Live
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
               {msg.role === "user" && (
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
