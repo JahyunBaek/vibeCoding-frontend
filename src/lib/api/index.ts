@@ -8,6 +8,7 @@ import { tenantApi } from "./tenant";
 import { notificationApi } from "./notification";
 import { sampleApi } from "./sample";
 import { agentApi } from "./agent";
+import { genomicsApi } from "./genomics";
 
 export const api = {
   ...authApi,
@@ -17,4 +18,5 @@ export const api = {
   ...notificationApi,
   ...sampleApi,
   ...agentApi,
+  ...genomicsApi,
 };

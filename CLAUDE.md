@@ -95,3 +95,9 @@ src/
 2. 내부 — `@/lib/*`, `@/stores/*`, `@/hooks/*`
 3. 내부 — `@/components/*`
 4. 내부 — `@/types/*` (타입은 마지막, `import type` 사용)
+
+## 브랜치 전략
+
+- 큰 단위의 신규 기능 개발 시 `feature/xxxx` 브랜치(원격 포함)를 생성하여 개발 및 테스트한다.
+- 문제없으면 `dev` 브랜치에 merge 한다.
+- `main` 브랜치로의 merge는 **사용자가 직접** 진행한다. (Claude가 main에 merge하지 않는다.)
