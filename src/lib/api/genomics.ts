@@ -1,4 +1,5 @@
-import { apiRequest } from "@/lib/client";
+import { apiRequest, client } from "@/lib/client";
+import type { ApiResponse } from "@/types/api";
 
 export const genomicsApi = {
   // ── Samples ──
@@ -18,6 +19,16 @@ export const genomicsApi = {
     apiRequest<void>("PATCH", `/api/genomics/samples/${sampleId}/status`, { status }),
   sampleDelete: (sampleId: number) =>
     apiRequest<void>("DELETE", `/api/genomics/samples/${sampleId}`),
+  sampleUploadVcf: async (sampleId: number, file: File, onProgress?: (pct: number) => void) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await client.post<ApiResponse<{ sampleId: number; variantCount: number }>>(
+      `/api/genomics/samples/${sampleId}/vcf`, fd,
+      { onUploadProgress: (e) => onProgress?.(e.total ? Math.round((e.loaded * 100) / e.total) : 0) }
+    );
+    if (!res.data.success) throw new Error(res.data.error?.message ?? "Upload failed");
+    return res.data.data;
+  },
 
   // ── Panels ──
   panelList: (page = 1, size = 20, search?: string) => {

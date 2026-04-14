@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Trash2, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Trash2, ChevronRight, Upload, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -32,10 +33,13 @@ const STATUS_FLOW = ["RECEIVED", "EXTRACTED", "SEQUENCING", "ANALYZING", "COMPLE
 export default function SamplesPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
+  const vcfInputRef = useRef<HTMLInputElement>(null);
+  const [vcfTarget, setVcfTarget] = useState<number | null>(null);
 
   const { data } = useQuery({
     queryKey: ["genomics", "samples", page, status, search],
@@ -60,6 +64,16 @@ export default function SamplesPage() {
   const createMut = useMutation({
     mutationFn: (data: any) => api.sampleCreate(data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["genomics", "samples"] }); toast.success(t("genomics.sample.created")); setShowCreate(false); },
+  });
+
+  const vcfMut = useMutation({
+    mutationFn: ({ sampleId, file }: { sampleId: number; file: File }) =>
+      api.sampleUploadVcf(sampleId, file),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["genomics", "samples"] });
+      toast.success(t("genomics.sample.vcfUploaded", { count: data.variantCount }));
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const items = data?.items ?? [];
@@ -133,6 +147,14 @@ export default function SamplesPage() {
                   <td className="px-4 py-2">{s.completedDate ?? "-"}</td>
                   <td className="px-4 py-2 text-center">
                     <div className="flex items-center justify-center gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 text-xs"
+                              onClick={() => { setVcfTarget(s.sampleId); vcfInputRef.current?.click(); }}>
+                        <Upload className="mr-0.5 h-3 w-3" />{t("genomics.sample.uploadVcf")}
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs"
+                              onClick={() => navigate(`/genomics/variants?sampleId=${s.sampleId}`)}>
+                        <ExternalLink className="mr-0.5 h-3 w-3" />{t("genomics.sample.viewVariants")}
+                      </Button>
                       {next && (
                         <Button variant="ghost" size="sm" className="h-7 text-xs"
                                 onClick={() => statusMut.mutate({ id: s.sampleId, status: next })}>
@@ -160,6 +182,22 @@ export default function SamplesPage() {
           <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
         </div>
       )}
+
+      {/* Hidden VCF file input */}
+      <input
+        ref={vcfInputRef}
+        type="file"
+        accept=".vcf,.vcf.gz"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file && vcfTarget) {
+            vcfMut.mutate({ sampleId: vcfTarget, file });
+          }
+          e.target.value = "";
+          setVcfTarget(null);
+        }}
+      />
 
       {/* Create Dialog (simple) */}
       {showCreate && (

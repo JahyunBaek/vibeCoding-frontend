@@ -490,7 +490,12 @@
       "created": "Sample registered successfully.",
       "updated": "Sample updated successfully.",
       "deleted": "Sample deleted successfully.",
-      "statusChanged": "Status changed successfully."
+      "statusChanged": "Status changed successfully.",
+      "uploadVcf": "Upload VCF",
+      "vcfUploaded": "VCF uploaded: {{count}} variants loaded",
+      "vcfUploading": "Uploading VCF file...",
+      "vcfHint": "Select a .vcf file",
+      "viewVariants": "View Variants"
     },
     "panel": {
       "pageTitle": "Gene Panel Management",
@@ -531,7 +536,11 @@
       "allAcmg": "All ACMG",
       "allType": "All Types",
       "gnomadAfMax": "gnomAD AF Max",
-      "sampleFilter": "Sample Filter"
+      "sampleFilter": "Sample Filter",
+      "detail": "Variant Detail",
+      "externalLinks": "External Databases",
+      "noResults": "No variants match the current filters.",
+      "resetFilters": "Reset Filters"
     }
   },
   "editor": {
