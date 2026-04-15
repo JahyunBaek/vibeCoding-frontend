@@ -59,4 +59,34 @@ export const genomicsApi = {
   },
   variantDetail: (variantId: number) =>
     apiRequest<any>("GET", `/api/genomics/variants/${variantId}`),
+
+  // ── AI ──
+  aiInterpretVariant: (variantId: number) =>
+    apiRequest<{ interpretation: string }>("POST", `/api/genomics/ai/interpret/${variantId}`),
+  aiSummarizeSample: (sampleId: number) =>
+    apiRequest<{ summary: string }>("POST", `/api/genomics/ai/summarize/${sampleId}`),
+
+  // ── Reports ──
+  reportList: (page = 1, size = 20, sampleId?: number) => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (sampleId) params.set("sampleId", String(sampleId));
+    return apiRequest<any>("GET", `/api/genomics/reports?${params}`);
+  },
+  reportDetail: (reportId: number) =>
+    apiRequest<any>("GET", `/api/genomics/reports/${reportId}`),
+  reportGenerate: (sampleId: number) =>
+    apiRequest<void>("POST", `/api/genomics/reports/generate/${sampleId}`),
+  reportUpdateStatus: (reportId: number, status: string) =>
+    apiRequest<void>("PATCH", `/api/genomics/reports/${reportId}/status?status=${status}`),
+  reportDelete: (reportId: number) =>
+    apiRequest<void>("DELETE", `/api/genomics/reports/${reportId}`),
+
+  // ── PGx ──
+  pgxList: (page = 1, size = 20, search?: string) => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (search) params.set("search", search);
+    return apiRequest<any>("GET", `/api/genomics/pgx?${params}`);
+  },
+  pgxMatchBySample: (sampleId: number) =>
+    apiRequest<any[]>("GET", `/api/genomics/pgx/match/${sampleId}`),
 };

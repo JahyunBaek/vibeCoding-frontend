@@ -540,7 +540,47 @@
       "detail": "Variant Detail",
       "externalLinks": "External Databases",
       "noResults": "No variants match the current filters.",
-      "resetFilters": "Reset Filters"
+      "resetFilters": "Reset Filters",
+      "aiInterpret": "AI Interpret",
+      "aiInterpreting": "AI analyzing...",
+      "aiInterpretation": "AI Variant Interpretation"
+    },
+    "report": {
+      "pageTitle": "Analysis Reports",
+      "title": "Title",
+      "variantCount": "Variants",
+      "pathogenicCount": "Pathogenic",
+      "status": "Status",
+      "generate": "Generate Report",
+      "generating": "AI analyzing...",
+      "generated": "Report generated successfully.",
+      "summary": "AI Analysis Summary",
+      "draft": "Draft",
+      "final": "Final",
+      "makeFinal": "Finalize",
+      "deleted": "Report deleted.",
+      "viewReport": "View Report"
+    },
+    "pgx": {
+      "pageTitle": "Pharmacogenomics (PGx)",
+      "gene": "Gene",
+      "variant": "Variant",
+      "drug": "Drug",
+      "effect": "Phenotype",
+      "recommendation": "Recommendation",
+      "evidenceLevel": "Evidence Level",
+      "source": "Source",
+      "matchTitle": "PGx Match Results",
+      "matchBySample": "PGx by Sample",
+      "noMatch": "No PGx-relevant variants found in this sample.",
+      "poorMetabolizer": "Poor Metabolizer",
+      "intermediate": "Intermediate",
+      "normal": "Normal",
+      "rapid": "Rapid/Ultra-rapid"
+    },
+    "ai": {
+      "summarize": "Generate AI Summary",
+      "summarizing": "Generating AI summary..."
     }
   },
   "editor": {

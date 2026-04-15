@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import { X, RotateCcw, ExternalLink } from "lucide-react";
+import { X, RotateCcw, ExternalLink, Sparkles, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +45,12 @@ export default function VariantsPage() {
     sampleId: initialSampleId ? Number(initialSampleId) : undefined,
   });
   const [detailId, setDetailId] = useState<number | null>(null);
+  const [aiResult, setAiResult] = useState<string | null>(null);
+
+  const aiMut = useMutation({
+    mutationFn: (variantId: number) => api.aiInterpretVariant(variantId),
+    onSuccess: (data) => setAiResult(data.interpretation),
+  });
 
   const { data } = useQuery({
     queryKey: ["genomics", "variants", page, filters],
@@ -204,11 +210,11 @@ export default function VariantsPage() {
 
       {/* Variant Detail Modal */}
       {detailId !== null && detail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDetailId(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { setDetailId(null); setAiResult(null); }}>
           <div className="w-full max-w-2xl rounded-lg bg-background p-6 shadow-xl max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">{t("genomics.variant.detail")}: {detail.geneSymbol}</h2>
-              <Button variant="ghost" size="sm" onClick={() => setDetailId(null)}><X className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="sm" onClick={() => { setDetailId(null); setAiResult(null); }}><X className="h-4 w-4" /></Button>
             </div>
 
             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
@@ -267,6 +273,26 @@ export default function VariantsPage() {
                   <ExternalLink className="h-3 w-3" /> NCBI Gene
                 </a>
               </div>
+            </div>
+
+            {/* AI Interpretation */}
+            <div className="mt-4 border-t pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-semibold">{t("genomics.variant.aiInterpretation")}</h3>
+                <Button size="sm" variant="outline"
+                        disabled={aiMut.isPending}
+                        onClick={() => { setAiResult(null); aiMut.mutate(detail.variantId); }}>
+                  {aiMut.isPending
+                    ? <><Loader2 className="mr-1 h-3 w-3 animate-spin" />{t("genomics.variant.aiInterpreting")}</>
+                    : <><Sparkles className="mr-1 h-3 w-3" />{t("genomics.variant.aiInterpret")}</>
+                  }
+                </Button>
+              </div>
+              {aiResult && (
+                <div className="rounded-lg bg-muted/50 p-3 text-sm whitespace-pre-wrap max-h-60 overflow-auto">
+                  {aiResult}
+                </div>
+              )}
             </div>
 
             {detail.sampleNo && (

@@ -26,6 +26,8 @@ import AgentChatPage from "@/pages/analysis/AgentChatPage";
 import SamplesPage from "@/pages/genomics/SamplesPage";
 import PanelsPage from "@/pages/genomics/PanelsPage";
 import VariantsPage from "@/pages/genomics/VariantsPage";
+import ReportsPage from "@/pages/genomics/ReportsPage";
+import PgxPage from "@/pages/genomics/PgxPage";
 
 export default function AppRoutes() {
   return (
@@ -53,6 +55,8 @@ export default function AppRoutes() {
         <Route path="genomics/samples" element={<SamplesPage />} />
         <Route path="genomics/panels" element={<PanelsPage />} />
         <Route path="genomics/variants" element={<VariantsPage />} />
+        <Route path="genomics/reports" element={<ReportsPage />} />
+        <Route path="genomics/pgx" element={<PgxPage />} />
 
         <Route path="boards/:boardId" element={<BoardListPage />} />
         <Route path="boards/:boardId/new" element={<BoardWritePage />} />

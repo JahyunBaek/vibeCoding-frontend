@@ -540,7 +540,47 @@
       "detail": "변이 상세",
       "externalLinks": "외부 데이터베이스",
       "noResults": "필터 조건에 맞는 변이가 없습니다.",
-      "resetFilters": "필터 초기화"
+      "resetFilters": "필터 초기화",
+      "aiInterpret": "AI 해석",
+      "aiInterpreting": "AI 분석 중...",
+      "aiInterpretation": "AI 변이 해석"
+    },
+    "report": {
+      "pageTitle": "분석 보고서",
+      "title": "제목",
+      "variantCount": "변이 수",
+      "pathogenicCount": "병원성 변이",
+      "status": "상태",
+      "generate": "보고서 생성",
+      "generating": "AI 분석 중...",
+      "generated": "보고서가 생성되었습니다.",
+      "summary": "AI 분석 요약",
+      "draft": "초안",
+      "final": "최종",
+      "makeFinal": "최종 확정",
+      "deleted": "보고서가 삭제되었습니다.",
+      "viewReport": "보고서 보기"
+    },
+    "pgx": {
+      "pageTitle": "약물유전체 (PGx)",
+      "gene": "유전자",
+      "variant": "변이",
+      "drug": "약물",
+      "effect": "대사 표현형",
+      "recommendation": "처방 권고",
+      "evidenceLevel": "근거 수준",
+      "source": "출처",
+      "matchTitle": "PGx 매칭 결과",
+      "matchBySample": "샘플 기반 PGx 조회",
+      "noMatch": "해당 샘플에서 PGx 관련 변이가 검출되지 않았습니다.",
+      "poorMetabolizer": "Poor Metabolizer",
+      "intermediate": "Intermediate",
+      "normal": "Normal",
+      "rapid": "Rapid/Ultra-rapid"
+    },
+    "ai": {
+      "summarize": "AI 요약 생성",
+      "summarizing": "AI 요약 생성 중..."
     }
   },
   "editor": {
