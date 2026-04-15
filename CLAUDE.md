@@ -18,6 +18,14 @@ npm run check      # typecheck + lint + format:check (전체 품질 검사)
 
 테스트 프레임워크 없음.
 
+### 검증 스크립트
+
+```bash
+bash scripts/check.sh        # 전체 품질 검사 (typecheck + lint + prettier + build)
+bash scripts/check-i18n.sh   # ko.json ↔ en.json 번역 키 동기화 검증
+bash scripts/setup.sh        # 개발 환경 초기 설정
+```
+
 ## 백엔드 프록시
 
 Vite dev 서버가 `/api` 요청을 백엔드로 프록시한다. 기본 타겟은 `http://localhost:28080`.
