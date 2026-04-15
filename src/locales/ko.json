@@ -581,6 +581,25 @@
     "ai": {
       "summarize": "AI 요약 생성",
       "summarizing": "AI 요약 생성 중..."
+    },
+    "dashboard": {
+      "pageTitle": "유전체 분석 대시보드",
+      "totalVariants": "총 변이 수",
+      "totalSamples": "총 샘플 수",
+      "byChromosome": "염색체별 변이 분포",
+      "byVariantType": "변이 유형별 분포",
+      "byImpact": "영향도별 분포",
+      "byAcmgClass": "ACMG 분류별 분포",
+      "topGenes": "주요 변이 유전자 (Top 15)",
+      "sampleFilter": "샘플 필터",
+      "allSamples": "전체 샘플"
+    },
+    "browser": {
+      "pageTitle": "게놈 브라우저",
+      "genome": "참조 게놈",
+      "locus": "위치 (예: chr17:41,196,312-41,277,500)",
+      "loadVariants": "변이 로드",
+      "noSample": "샘플을 선택하면 해당 변이가 게놈 브라우저에 표시됩니다."
     }
   },
   "editor": {

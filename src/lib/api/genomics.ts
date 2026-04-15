@@ -78,4 +78,10 @@ export const genomicsApi = {
     return apiRequest<any>("GET", `/api/genomics/pgx?${params}`);
   },
   pgxMatchBySample: (sampleId: number) => apiRequest<any[]>("GET", `/api/genomics/pgx/match/${sampleId}`),
+
+  // ── Stats ──
+  variantStats: (sampleId?: number) => {
+    const params = sampleId ? `?sampleId=${sampleId}` : "";
+    return apiRequest<any>("GET", `/api/genomics/stats${params}`);
+  },
 };
