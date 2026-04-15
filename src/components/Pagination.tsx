@@ -25,7 +25,9 @@ export default function Pagination({ page, totalPages, onChange }: PaginationPro
         }, [])
         .map((p, i) =>
           p === "..." ? (
-            <span key={`e-${i}`} className="px-1 text-xs text-muted-fg">...</span>
+            <span key={`e-${i}`} className="px-1 text-xs text-muted-fg">
+              ...
+            </span>
           ) : (
             <button
               key={p}
@@ -34,7 +36,7 @@ export default function Pagination({ page, totalPages, onChange }: PaginationPro
             >
               {p}
             </button>
-          )
+          ),
         )}
       <button
         disabled={page >= totalPages}

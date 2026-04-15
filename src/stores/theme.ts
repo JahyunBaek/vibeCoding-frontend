@@ -16,6 +16,6 @@ export const useThemeStore = create<ThemeState>()(
         document.documentElement.classList.toggle("dark", next);
       },
     }),
-    { name: "theme-v2" }
-  )
+    { name: "theme-v2" },
+  ),
 );

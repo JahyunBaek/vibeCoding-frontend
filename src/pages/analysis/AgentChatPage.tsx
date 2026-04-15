@@ -134,7 +134,10 @@ export default function AgentChatPage() {
             }}
           >
             {datasets.map((d: any) => (
-              <option key={d.id} value={d.id}>{d.name} ({d.recordCount}{t("common.cases")})</option>
+              <option key={d.id} value={d.id}>
+                {d.name} ({d.recordCount}
+                {t("common.cases")})
+              </option>
             ))}
           </select>
         </div>
@@ -192,9 +195,7 @@ export default function AgentChatPage() {
             <Bot className="h-4 w-4" />
             {selectedProvider?.name ?? "Agent"} — {selectedDataset?.name ?? t("agent.dataset")}
             {selectedDataset && (
-              <span className="text-xs text-muted-foreground font-normal">
-                ({selectedDataset.description})
-              </span>
+              <span className="text-xs text-muted-foreground font-normal">({selectedDataset.description})</span>
             )}
           </CardTitle>
         </CardHeader>
@@ -225,10 +226,7 @@ export default function AgentChatPage() {
           )}
 
           {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-            >
+            <div key={msg.id} className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               {msg.role === "assistant" && (
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <Bot className="h-4 w-4" />
@@ -236,9 +234,7 @@ export default function AgentChatPage() {
               )}
               <div
                 className={`max-w-[75%] rounded-xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
-                  msg.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
+                  msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                 }`}
               >
                 {msg.content}
@@ -292,19 +288,12 @@ export default function AgentChatPage() {
               onKeyDown={handleKeyDown}
               disabled={chatMut.isPending}
             />
-            <Button
-              onClick={handleSend}
-              disabled={!canSend}
-              className="self-end"
-              size="sm"
-            >
+            <Button onClick={handleSend} disabled={!canSend} className="self-end" size="sm">
               <Send className="mr-1 h-4 w-4" />
               {t("agent.send")}
             </Button>
           </div>
-          <p className="mt-1.5 text-xs text-muted-foreground">
-            {t("agent.inputHint")}
-          </p>
+          <p className="mt-1.5 text-xs text-muted-foreground">{t("agent.inputHint")}</p>
         </div>
       </Card>
     </div>

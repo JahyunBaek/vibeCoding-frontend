@@ -66,10 +66,7 @@ export default function Breadcrumb() {
             {isLast ? (
               <span className="text-foreground font-medium">{crumb.label}</span>
             ) : (
-              <Link
-                to={crumb.path}
-                className="hover:text-foreground transition-colors"
-              >
+              <Link to={crumb.path} className="hover:text-foreground transition-colors">
                 {crumb.label}
               </Link>
             )}

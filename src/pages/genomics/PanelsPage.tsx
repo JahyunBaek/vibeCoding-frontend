@@ -36,12 +36,19 @@ export default function PanelsPage() {
 
   const deleteMut = useMutation({
     mutationFn: (id: number) => api.panelDelete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["genomics", "panels"] }); toast.success(t("genomics.panel.deleted")); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["genomics", "panels"] });
+      toast.success(t("genomics.panel.deleted"));
+    },
   });
 
   const createMut = useMutation({
     mutationFn: (data: any) => api.panelCreate(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["genomics", "panels"] }); toast.success(t("genomics.panel.created")); setShowCreate(false); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["genomics", "panels"] });
+      toast.success(t("genomics.panel.created"));
+      setShowCreate(false);
+    },
   });
 
   const items = data?.items ?? [];
@@ -63,7 +70,10 @@ export default function PanelsPage() {
           placeholder={t("common.search")}
           className="h-9 w-60 rounded-md border bg-surface px-3 text-sm"
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
         />
       </div>
 
@@ -81,7 +91,11 @@ export default function PanelsPage() {
           </thead>
           <tbody>
             {items.length === 0 && (
-              <tr><td colSpan={6} className="py-8 text-center text-muted-foreground">{t("common.noData")}</td></tr>
+              <tr>
+                <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                  {t("common.noData")}
+                </td>
+              </tr>
             )}
             {items.map((p: any) => (
               <tr key={p.panelId} className="border-t hover:bg-muted/30">
@@ -99,8 +113,12 @@ export default function PanelsPage() {
                     <Button variant="ghost" size="sm" className="h-7" onClick={() => setDetailId(p.panelId)}>
                       <Eye className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-7 text-destructive"
-                            onClick={() => deleteMut.mutate(p.panelId)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-destructive"
+                      onClick={() => deleteMut.mutate(p.panelId)}
+                    >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -113,24 +131,46 @@ export default function PanelsPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</Button>
-          <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            Prev
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {page} / {totalPages}
+          </span>
+          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+            Next
+          </Button>
         </div>
       )}
 
       {/* Detail Drawer */}
       {detailId !== null && detail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDetailId(null)}>
-          <div className="w-full max-w-lg rounded-lg bg-background p-6 shadow-xl max-h-[80vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setDetailId(null)}
+        >
+          <div
+            className="w-full max-w-lg rounded-lg bg-background p-6 shadow-xl max-h-[80vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">{detail.name} ({detail.panelCode})</h2>
-              <Button variant="ghost" size="sm" onClick={() => setDetailId(null)}><X className="h-4 w-4" /></Button>
+              <h2 className="text-lg font-semibold">
+                {detail.name} ({detail.panelCode})
+              </h2>
+              <Button variant="ghost" size="sm" onClick={() => setDetailId(null)}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
             <div className="space-y-2 text-sm">
-              <p><span className="font-medium">{t("genomics.panel.category")}:</span> {detail.category}</p>
-              <p><span className="font-medium">{t("common.description")}:</span> {detail.description || "-"}</p>
-              <p><span className="font-medium">{t("genomics.panel.geneCount")}:</span> {detail.geneCount}</p>
+              <p>
+                <span className="font-medium">{t("genomics.panel.category")}:</span> {detail.category}
+              </p>
+              <p>
+                <span className="font-medium">{t("common.description")}:</span> {detail.description || "-"}
+              </p>
+              <p>
+                <span className="font-medium">{t("genomics.panel.geneCount")}:</span> {detail.geneCount}
+              </p>
             </div>
             {detail.genes?.length > 0 && (
               <div className="mt-4">
@@ -162,34 +202,59 @@ export default function PanelsPage() {
       )}
 
       {/* Create Dialog */}
-      {showCreate && <PanelCreateDialog onClose={() => setShowCreate(false)} onSubmit={(d) => createMut.mutate(d)} isPending={createMut.isPending} />}
+      {showCreate && (
+        <PanelCreateDialog
+          onClose={() => setShowCreate(false)}
+          onSubmit={(d) => createMut.mutate(d)}
+          isPending={createMut.isPending}
+        />
+      )}
     </div>
   );
 }
 
-function PanelCreateDialog({ onClose, onSubmit, isPending }: { onClose: () => void; onSubmit: (data: any) => void; isPending: boolean }) {
+function PanelCreateDialog({
+  onClose,
+  onSubmit,
+  isPending,
+}: {
+  onClose: () => void;
+  onSubmit: (data: any) => void;
+  isPending: boolean;
+}) {
   const { t } = useTranslation();
   const [genes, setGenes] = useState<{ geneSymbol: string; chromosome: string; description: string }[]>([]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-lg bg-background p-6 shadow-xl max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="w-full max-w-lg rounded-lg bg-background p-6 shadow-xl max-h-[85vh] overflow-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="mb-4 text-lg font-semibold">{t("genomics.panel.createPanel")}</h2>
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          const fd = new FormData(e.currentTarget);
-          onSubmit({
-            panelCode: fd.get("panelCode"),
-            name: fd.get("name"),
-            description: fd.get("description") || undefined,
-            category: fd.get("category"),
-            genes,
-          });
-        }} className="space-y-3">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const fd = new FormData(e.currentTarget);
+            onSubmit({
+              panelCode: fd.get("panelCode"),
+              name: fd.get("name"),
+              description: fd.get("description") || undefined,
+              category: fd.get("category"),
+              genes,
+            });
+          }}
+          className="space-y-3"
+        >
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1 block text-sm font-medium">{t("genomics.panel.panelCode")}</label>
-              <input name="panelCode" required className="h-9 w-full rounded-md border px-3 text-sm" placeholder="ONCO-50" />
+              <input
+                name="panelCode"
+                required
+                className="h-9 w-full rounded-md border px-3 text-sm"
+                placeholder="ONCO-50"
+              />
             </div>
             <div>
               <label className="mb-1 block text-sm font-medium">{t("genomics.panel.name")}</label>
@@ -212,8 +277,15 @@ function PanelCreateDialog({ onClose, onSubmit, isPending }: { onClose: () => vo
           {/* Gene list */}
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <label className="text-sm font-medium">{t("genomics.panel.genes")} ({genes.length})</label>
-              <Button type="button" variant="outline" size="sm" onClick={() => setGenes([...genes, { geneSymbol: "", chromosome: "", description: "" }])}>
+              <label className="text-sm font-medium">
+                {t("genomics.panel.genes")} ({genes.length})
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setGenes([...genes, { geneSymbol: "", chromosome: "", description: "" }])}
+              >
                 <Plus className="mr-1 h-3 w-3" /> {t("genomics.panel.addGene")}
               </Button>
             </div>
@@ -223,22 +295,39 @@ function PanelCreateDialog({ onClose, onSubmit, isPending }: { onClose: () => vo
                   placeholder="BRCA1"
                   className="h-8 w-24 rounded border px-2 text-xs font-mono"
                   value={g.geneSymbol}
-                  onChange={(e) => { const ng = [...genes]; ng[i].geneSymbol = e.target.value; setGenes(ng); }}
+                  onChange={(e) => {
+                    const ng = [...genes];
+                    ng[i].geneSymbol = e.target.value;
+                    setGenes(ng);
+                  }}
                 />
                 <input
                   placeholder="chr17"
                   className="h-8 w-16 rounded border px-2 text-xs"
                   value={g.chromosome}
-                  onChange={(e) => { const ng = [...genes]; ng[i].chromosome = e.target.value; setGenes(ng); }}
+                  onChange={(e) => {
+                    const ng = [...genes];
+                    ng[i].chromosome = e.target.value;
+                    setGenes(ng);
+                  }}
                 />
                 <input
                   placeholder={t("common.description")}
                   className="h-8 flex-1 rounded border px-2 text-xs"
                   value={g.description}
-                  onChange={(e) => { const ng = [...genes]; ng[i].description = e.target.value; setGenes(ng); }}
+                  onChange={(e) => {
+                    const ng = [...genes];
+                    ng[i].description = e.target.value;
+                    setGenes(ng);
+                  }}
                 />
-                <Button type="button" variant="ghost" size="sm" className="h-8 text-destructive"
-                        onClick={() => setGenes(genes.filter((_, j) => j !== i))}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-destructive"
+                  onClick={() => setGenes(genes.filter((_, j) => j !== i))}
+                >
                   <X className="h-3 w-3" />
                 </Button>
               </div>
@@ -246,8 +335,12 @@ function PanelCreateDialog({ onClose, onSubmit, isPending }: { onClose: () => vo
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={onClose}>{t("common.cancel")}</Button>
-            <Button type="submit" disabled={isPending}>{t("common.save")}</Button>
+            <Button type="button" variant="outline" onClick={onClose}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {t("common.save")}
+            </Button>
           </div>
         </form>
       </div>

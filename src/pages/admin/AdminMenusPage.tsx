@@ -75,9 +75,7 @@ export default function AdminMenusPage() {
 
   const allFlattened = flattenAll(data ?? []);
   const normalRows: FlatMenu[] = flattenTree(data ?? [], collapsedIds);
-  const searchRows: FlatMenu[] = allFlattened.filter((row) =>
-    row.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const searchRows: FlatMenu[] = allFlattened.filter((row) => row.name.toLowerCase().includes(search.toLowerCase()));
   const rows: FlatMenu[] = isSearching ? searchRows : normalRows;
 
   const selectOptions = flattenForSelect(data ?? []);
@@ -95,18 +93,19 @@ export default function AdminMenusPage() {
     setCRoleKeys((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
 
   const createMut = useMutation({
-    mutationFn: () => api.menuCreate({
-      parentId: cParentId ? Number(cParentId) : null,
-      name: cName,
-      path: cPath || null,
-      icon: null,
-      sortOrder: cSortOrder,
-      useYn: true,
-      menuType: cMenuType,
-      boardId: null,
-      roleKeys: cRoleKeys,
-      tenantId: selectedTenantId,
-    }),
+    mutationFn: () =>
+      api.menuCreate({
+        parentId: cParentId ? Number(cParentId) : null,
+        name: cName,
+        path: cPath || null,
+        icon: null,
+        sortOrder: cSortOrder,
+        useYn: true,
+        menuType: cMenuType,
+        boardId: null,
+        roleKeys: cRoleKeys,
+        tenantId: selectedTenantId,
+      }),
     onSuccess: () => {
       setCName("");
       setCPath("");
@@ -201,7 +200,10 @@ export default function AdminMenusPage() {
           </div>
           <Button
             variant="outline"
-            onClick={() => { setShowCreate((v) => !v); setEditNode(null); }}
+            onClick={() => {
+              setShowCreate((v) => !v);
+              setEditNode(null);
+            }}
           >
             {showCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
             {showCreate ? t("common.close") : t("admin.newMenu")}
@@ -220,11 +222,23 @@ export default function AdminMenusPage() {
               >
                 <option value="">{t("common.topLevel")}</option>
                 {selectOptions.map((o) => (
-                  <option key={o.menuId} value={o.menuId}>{o.label}</option>
+                  <option key={o.menuId} value={o.menuId}>
+                    {o.label}
+                  </option>
                 ))}
               </select>
-              <Input className="w-36" value={cName} onChange={(e) => setCName(e.target.value)} placeholder={t("admin.menuName")} />
-              <Input className="w-36" value={cPath} onChange={(e) => setCPath(e.target.value)} placeholder={t("admin.menuPath")} />
+              <Input
+                className="w-36"
+                value={cName}
+                onChange={(e) => setCName(e.target.value)}
+                placeholder={t("admin.menuName")}
+              />
+              <Input
+                className="w-36"
+                value={cPath}
+                onChange={(e) => setCPath(e.target.value)}
+                placeholder={t("admin.menuPath")}
+              />
               <Input
                 type="number"
                 className="w-20"
@@ -246,13 +260,21 @@ export default function AdminMenusPage() {
               <div className="flex flex-wrap gap-3">
                 {assignableRoles.map((r: any) => (
                   <label key={r.roleKey} className="flex items-center gap-1.5 text-xs cursor-pointer">
-                    <input type="checkbox" checked={cRoleKeys.includes(r.roleKey)} onChange={() => toggleCRole(r.roleKey)} />
+                    <input
+                      type="checkbox"
+                      checked={cRoleKeys.includes(r.roleKey)}
+                      onChange={() => toggleCRole(r.roleKey)}
+                    />
                     {r.roleKey}
                   </label>
                 ))}
               </div>
-              <Button onClick={() => createMut.mutate()} disabled={!cName.trim() || createMut.isPending}>{t("common.create")}</Button>
-              <Button variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
+              <Button onClick={() => createMut.mutate()} disabled={!cName.trim() || createMut.isPending}>
+                {t("common.create")}
+              </Button>
+              <Button variant="outline" onClick={() => setShowCreate(false)}>
+                {t("common.cancel")}
+              </Button>
             </div>
           </div>
         )}
@@ -273,11 +295,23 @@ export default function AdminMenusPage() {
                 {selectOptions
                   .filter((o) => o.menuId !== editNode.menuId)
                   .map((o) => (
-                    <option key={o.menuId} value={o.menuId}>{o.label}</option>
+                    <option key={o.menuId} value={o.menuId}>
+                      {o.label}
+                    </option>
                   ))}
               </select>
-              <Input className="w-36" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder={t("admin.menuName")} />
-              <Input className="w-36" value={editPath} onChange={(e) => setEditPath(e.target.value)} placeholder={t("admin.menuPath")} />
+              <Input
+                className="w-36"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder={t("admin.menuName")}
+              />
+              <Input
+                className="w-36"
+                value={editPath}
+                onChange={(e) => setEditPath(e.target.value)}
+                placeholder={t("admin.menuPath")}
+              />
               <Input
                 type="number"
                 className="w-20"
@@ -295,15 +329,23 @@ export default function AdminMenusPage() {
               <div className="flex flex-wrap gap-3">
                 {assignableRoles.map((r: any) => (
                   <label key={r.roleKey} className="flex items-center gap-1.5 text-xs cursor-pointer">
-                    <input type="checkbox" checked={editRoleKeys.includes(r.roleKey)} onChange={() => toggleEditRole(r.roleKey)} />
+                    <input
+                      type="checkbox"
+                      checked={editRoleKeys.includes(r.roleKey)}
+                      onChange={() => toggleEditRole(r.roleKey)}
+                    />
                     {r.roleKey}
                   </label>
                 ))}
               </div>
             </div>
             <div className="flex gap-2">
-              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>{t("common.save")}</Button>
-              <Button variant="outline" onClick={() => setEditNode(null)}>{t("common.cancel")}</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>
+                {t("common.save")}
+              </Button>
+              <Button variant="outline" onClick={() => setEditNode(null)}>
+                {t("common.cancel")}
+              </Button>
             </div>
           </div>
         )}
@@ -330,18 +372,17 @@ export default function AdminMenusPage() {
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1" style={{ paddingLeft: `${row.depth * 20}px` }}>
-                      {row.depth > 0 && (
-                        <span className="text-slate-300 font-mono text-xs select-none mr-0.5">└</span>
-                      )}
+                      {row.depth > 0 && <span className="text-slate-300 font-mono text-xs select-none mr-0.5">└</span>}
                       {!isSearching && row.hasChildren ? (
                         <button
                           onClick={() => toggleCollapse(row.menuId)}
                           className="p-0.5 rounded hover:bg-accent transition-colors"
                         >
-                          {row.isCollapsed
-                            ? <ChevronRight className="h-3.5 w-3.5 text-muted-fg" />
-                            : <ChevronDown className="h-3.5 w-3.5 text-muted-fg" />
-                          }
+                          {row.isCollapsed ? (
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-fg" />
+                          ) : (
+                            <ChevronDown className="h-3.5 w-3.5 text-muted-fg" />
+                          )}
                         </button>
                       ) : (
                         <Minus className="h-3 w-3 text-slate-300 mx-0.5" />
@@ -354,7 +395,8 @@ export default function AdminMenusPage() {
                   <td className="px-4 py-3">
                     {row.path ? (
                       <div className="flex items-center gap-1 font-mono text-xs text-muted-fg">
-                        <Link2 className="h-3 w-3" />{row.path}
+                        <Link2 className="h-3 w-3" />
+                        {row.path}
                       </div>
                     ) : (
                       <span className="text-slate-300 text-xs">—</span>
@@ -369,7 +411,9 @@ export default function AdminMenusPage() {
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
                       {(row.roleKeys ?? []).map((rk) => (
-                        <Badge key={rk} variant="secondary" className="text-[10px] font-normal">{rk}</Badge>
+                        <Badge key={rk} variant="secondary" className="text-[10px] font-normal">
+                          {rk}
+                        </Badge>
                       ))}
                       {(!row.roleKeys || row.roleKeys.length === 0) && (
                         <span className="text-[10px] text-muted-fg">—</span>
@@ -388,14 +432,16 @@ export default function AdminMenusPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => startEdit(row)}>
-                          <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
+                          <Pencil className="mr-2 h-3.5 w-3.5" />
+                          {t("common.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                           onClick={() => setDeleteTarget(row)}
                         >
-                          <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
+                          <Trash2 className="mr-2 h-3.5 w-3.5" />
+                          {t("common.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -411,15 +457,15 @@ export default function AdminMenusPage() {
               )}
             </tbody>
           </table>
-          <div className="border-t px-4 py-3 text-xs text-muted-fg">
-            {t("admin.menuAutoNote")}
-          </div>
+          <div className="border-t px-4 py-3 text-xs text-muted-fg">{t("admin.menuAutoNote")}</div>
         </CardContent>
       </Card>
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title={t("admin.menuDeleteTitle")}
         description={t("admin.menuDeleteConfirm", { name: deleteTarget?.name })}
         confirmLabel={t("common.delete")}

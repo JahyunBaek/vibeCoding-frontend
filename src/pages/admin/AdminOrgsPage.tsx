@@ -69,9 +69,7 @@ export default function AdminOrgsPage() {
 
   const allFlattened = flattenAll(data ?? []);
   const normalRows: FlatOrg[] = flattenTree(data ?? [], collapsedIds);
-  const searchRows: FlatOrg[] = allFlattened.filter((row) =>
-    row.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const searchRows: FlatOrg[] = allFlattened.filter((row) => row.name.toLowerCase().includes(search.toLowerCase()));
   const rows: FlatOrg[] = isSearching ? searchRows : normalRows;
 
   const selectOptions = flattenForSelect(data ?? []);
@@ -105,12 +103,13 @@ export default function AdminOrgsPage() {
   };
 
   const saveMut = useMutation({
-    mutationFn: () => api.orgUpdate(editNode!.orgId, {
-      parentId: editParentId ? Number(editParentId) : null,
-      name: editName,
-      sortOrder: editNode!.sortOrder,
-      useYn: editNode!.useYn,
-    }),
+    mutationFn: () =>
+      api.orgUpdate(editNode!.orgId, {
+        parentId: editParentId ? Number(editParentId) : null,
+        name: editName,
+        sortOrder: editNode!.sortOrder,
+        useYn: editNode!.useYn,
+      }),
     onSuccess: () => {
       setEditNode(null);
       refetch();
@@ -158,7 +157,10 @@ export default function AdminOrgsPage() {
           </div>
           <Button
             variant="outline"
-            onClick={() => { setShowCreate((v) => !v); setEditNode(null); }}
+            onClick={() => {
+              setShowCreate((v) => !v);
+              setEditNode(null);
+            }}
           >
             {showCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
             {showCreate ? t("common.close") : t("admin.newOrg")}
@@ -177,7 +179,9 @@ export default function AdminOrgsPage() {
               >
                 <option value="">{t("common.topLevel")}</option>
                 {selectOptions.map((o) => (
-                  <option key={o.orgId} value={o.orgId}>{o.label}</option>
+                  <option key={o.orgId} value={o.orgId}>
+                    {o.label}
+                  </option>
                 ))}
               </select>
               <Input
@@ -186,8 +190,12 @@ export default function AdminOrgsPage() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t("admin.orgName")}
               />
-              <Button onClick={() => createMut.mutate()} disabled={!name.trim() || createMut.isPending}>{t("common.create")}</Button>
-              <Button variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
+              <Button onClick={() => createMut.mutate()} disabled={!name.trim() || createMut.isPending}>
+                {t("common.create")}
+              </Button>
+              <Button variant="outline" onClick={() => setShowCreate(false)}>
+                {t("common.cancel")}
+              </Button>
             </div>
           </div>
         )}
@@ -208,7 +216,9 @@ export default function AdminOrgsPage() {
                 {selectOptions
                   .filter((o) => o.orgId !== editNode.orgId)
                   .map((o) => (
-                    <option key={o.orgId} value={o.orgId}>{o.label}</option>
+                    <option key={o.orgId} value={o.orgId}>
+                      {o.label}
+                    </option>
                   ))}
               </select>
               <Input
@@ -217,8 +227,12 @@ export default function AdminOrgsPage() {
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder={t("admin.orgName")}
               />
-              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>{t("common.save")}</Button>
-              <Button variant="outline" onClick={() => setEditNode(null)}>{t("common.cancel")}</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>
+                {t("common.save")}
+              </Button>
+              <Button variant="outline" onClick={() => setEditNode(null)}>
+                {t("common.cancel")}
+              </Button>
             </div>
           </div>
         )}
@@ -243,18 +257,17 @@ export default function AdminOrgsPage() {
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1" style={{ paddingLeft: `${row.depth * 20}px` }}>
-                      {row.depth > 0 && (
-                        <span className="text-slate-300 font-mono text-xs select-none mr-0.5">└</span>
-                      )}
+                      {row.depth > 0 && <span className="text-slate-300 font-mono text-xs select-none mr-0.5">└</span>}
                       {!isSearching && row.hasChildren ? (
                         <button
                           onClick={() => toggleCollapse(row.orgId)}
                           className="p-0.5 rounded hover:bg-accent transition-colors"
                         >
-                          {row.isCollapsed
-                            ? <ChevronRight className="h-3.5 w-3.5 text-muted-fg" />
-                            : <ChevronDown className="h-3.5 w-3.5 text-muted-fg" />
-                          }
+                          {row.isCollapsed ? (
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-fg" />
+                          ) : (
+                            <ChevronDown className="h-3.5 w-3.5 text-muted-fg" />
+                          )}
                         </button>
                       ) : (
                         <Minus className="h-3 w-3 text-slate-300 mx-0.5" />
@@ -278,14 +291,16 @@ export default function AdminOrgsPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => startEdit(row)}>
-                          <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
+                          <Pencil className="mr-2 h-3.5 w-3.5" />
+                          {t("common.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                           onClick={() => setDeleteTarget(row)}
                         >
-                          <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
+                          <Trash2 className="mr-2 h-3.5 w-3.5" />
+                          {t("common.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -306,7 +321,9 @@ export default function AdminOrgsPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title={t("admin.orgDeleteTitle")}
         description={t("admin.orgDeleteConfirm", { name: deleteTarget?.name })}
         confirmLabel={t("common.delete")}

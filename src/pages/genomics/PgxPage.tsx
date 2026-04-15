@@ -53,7 +53,10 @@ export default function PgxPage() {
           placeholder={t("common.search") + " (gene, drug)"}
           className="h-9 w-60 rounded-md border bg-surface px-3 text-sm"
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
         />
         <div className="flex items-center gap-2 ml-auto">
           <label className="text-sm text-muted-foreground">{t("genomics.pgx.matchBySample")}:</label>
@@ -88,7 +91,9 @@ export default function PgxPage() {
                       <span className="mx-1">+</span>
                       <span className="font-medium">{m.drugName}</span>
                       <Badge className={EFFECT_COLORS[m.effect] ?? ""}>{m.effect}</Badge>
-                      <Badge variant="outline" className="text-[10px]">{m.source} {m.evidenceLevel}</Badge>
+                      <Badge variant="outline" className="text-[10px]">
+                        {m.source} {m.evidenceLevel}
+                      </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">{m.recommendation}</p>
                   </div>
@@ -115,7 +120,11 @@ export default function PgxPage() {
           </thead>
           <tbody>
             {items.length === 0 && (
-              <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">{t("common.noData")}</td></tr>
+              <tr>
+                <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                  {t("common.noData")}
+                </td>
+              </tr>
             )}
             {items.map((p: any) => (
               <tr key={p.pgxId} className="border-t hover:bg-muted/30">
@@ -126,10 +135,14 @@ export default function PgxPage() {
                   <Badge className={EFFECT_COLORS[p.effect] ?? ""}>{p.effect}</Badge>
                 </td>
                 <td className="px-4 py-2">
-                  <Badge className={EVIDENCE_COLORS[p.evidenceLevel] ?? "bg-gray-100 text-gray-600"}>{p.evidenceLevel}</Badge>
+                  <Badge className={EVIDENCE_COLORS[p.evidenceLevel] ?? "bg-gray-100 text-gray-600"}>
+                    {p.evidenceLevel}
+                  </Badge>
                 </td>
                 <td className="px-4 py-2">{p.source}</td>
-                <td className="px-4 py-2 text-xs max-w-xs truncate" title={p.recommendation}>{p.recommendation}</td>
+                <td className="px-4 py-2 text-xs max-w-xs truncate" title={p.recommendation}>
+                  {p.recommendation}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -138,9 +151,15 @@ export default function PgxPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</Button>
-          <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            Prev
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {page} / {totalPages}
+          </span>
+          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+            Next
+          </Button>
         </div>
       )}
     </div>

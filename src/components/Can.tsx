@@ -11,5 +11,5 @@ type Props = {
 
 export function Can({ screen, action, condition = true, children, fallback = null }: Props) {
   const allowed = useAction(screen, action);
-  return (allowed && condition) ? <>{children}</> : <>{fallback}</>;
+  return allowed && condition ? <>{children}</> : <>{fallback}</>;
 }

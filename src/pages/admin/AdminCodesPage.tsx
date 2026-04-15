@@ -40,7 +40,8 @@ export default function AdminCodesPage() {
   const createGroupMut = useMutation({
     mutationFn: () => api.codesCreateGroup({ groupKey: gKey, groupName: gName, useYn: true }),
     onSuccess: () => {
-      setGKey(""); setGName("");
+      setGKey("");
+      setGName("");
       setShowGroupCreate(false);
       refetchGroups();
       toast.success(t("admin.groupCreated"));
@@ -93,9 +94,19 @@ export default function AdminCodesPage() {
   const [itemValue, setItemValue] = useState("");
 
   const createItemMut = useMutation({
-    mutationFn: () => api.codesCreateItem(selected, { groupKey: selected, code, name: itemName, value: itemValue, sortOrder: 0, useYn: true }),
+    mutationFn: () =>
+      api.codesCreateItem(selected, {
+        groupKey: selected,
+        code,
+        name: itemName,
+        value: itemValue,
+        sortOrder: 0,
+        useYn: true,
+      }),
     onSuccess: () => {
-      setCode(""); setItemName(""); setItemValue("");
+      setCode("");
+      setItemName("");
+      setItemValue("");
       setShowItemCreate(false);
       refetchItems();
       toast.success(t("admin.itemCreated"));
@@ -120,7 +131,8 @@ export default function AdminCodesPage() {
   };
 
   const saveItemMut = useMutation({
-    mutationFn: () => api.codesUpdateItem(selected, editItem.code, editItemName, editItemValue, editItemSortOrder, editItemUseYn),
+    mutationFn: () =>
+      api.codesUpdateItem(selected, editItem.code, editItemName, editItemValue, editItemSortOrder, editItemUseYn),
     onSuccess: () => {
       setEditItem(null);
       refetchItems();
@@ -161,7 +173,10 @@ export default function AdminCodesPage() {
             <CardTitle>{t("admin.codeGroups")}</CardTitle>
             <Button
               variant="outline"
-              onClick={() => { setShowGroupCreate((v) => !v); setEditGroup(null); }}
+              onClick={() => {
+                setShowGroupCreate((v) => !v);
+                setEditGroup(null);
+              }}
             >
               {showGroupCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
               {showGroupCreate ? t("common.close") : t("admin.codeGroupAdd")}
@@ -174,8 +189,12 @@ export default function AdminCodesPage() {
               <div className="flex gap-2">
                 <Input value={gKey} onChange={(e) => setGKey(e.target.value)} placeholder="GROUP_KEY" />
                 <Input value={gName} onChange={(e) => setGName(e.target.value)} placeholder={t("admin.groupName")} />
-                <Button onClick={() => createGroupMut.mutate()} disabled={!gKey || !gName || createGroupMut.isPending}>{t("common.create")}</Button>
-                <Button variant="outline" onClick={() => setShowGroupCreate(false)}>{t("common.cancel")}</Button>
+                <Button onClick={() => createGroupMut.mutate()} disabled={!gKey || !gName || createGroupMut.isPending}>
+                  {t("common.create")}
+                </Button>
+                <Button variant="outline" onClick={() => setShowGroupCreate(false)}>
+                  {t("common.cancel")}
+                </Button>
               </div>
             </div>
           )}
@@ -186,13 +205,28 @@ export default function AdminCodesPage() {
                 {t("admin.editing")} — <span className="font-mono">{editGroup.groupKey}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Input value={editGroupName} onChange={(e) => setEditGroupName(e.target.value)} placeholder={t("admin.groupName")} />
+                <Input
+                  value={editGroupName}
+                  onChange={(e) => setEditGroupName(e.target.value)}
+                  placeholder={t("admin.groupName")}
+                />
                 <label className="flex items-center gap-1.5 text-xs whitespace-nowrap h-9">
-                  <input type="checkbox" checked={editGroupUseYn} onChange={(e) => setEditGroupUseYn(e.target.checked)} />
+                  <input
+                    type="checkbox"
+                    checked={editGroupUseYn}
+                    onChange={(e) => setEditGroupUseYn(e.target.checked)}
+                  />
                   {t("common.use")}
                 </label>
-                <Button onClick={() => saveGroupMut.mutate()} disabled={!editGroupName.trim() || saveGroupMut.isPending}>{t("common.save")}</Button>
-                <Button variant="outline" onClick={() => setEditGroup(null)}>{t("common.cancel")}</Button>
+                <Button
+                  onClick={() => saveGroupMut.mutate()}
+                  disabled={!editGroupName.trim() || saveGroupMut.isPending}
+                >
+                  {t("common.save")}
+                </Button>
+                <Button variant="outline" onClick={() => setEditGroup(null)}>
+                  {t("common.cancel")}
+                </Button>
               </div>
             </div>
           )}
@@ -230,14 +264,16 @@ export default function AdminCodesPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => startEditGroup(g)}>
-                            <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
+                            <Pencil className="mr-2 h-3.5 w-3.5" />
+                            {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                             onClick={() => setDeleteGroupTarget(g)}
                           >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
+                            <Trash2 className="mr-2 h-3.5 w-3.5" />
+                            {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -246,7 +282,9 @@ export default function AdminCodesPage() {
                 ))}
                 {(groups?.items ?? []).length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-sm text-muted-fg">{t("admin.noGroups")}</td>
+                    <td colSpan={4} className="px-4 py-6 text-center text-sm text-muted-fg">
+                      {t("admin.noGroups")}
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -264,7 +302,10 @@ export default function AdminCodesPage() {
             {selected && (
               <Button
                 variant="outline"
-                onClick={() => { setShowItemCreate((v) => !v); setEditItem(null); }}
+                onClick={() => {
+                  setShowItemCreate((v) => !v);
+                  setEditItem(null);
+                }}
               >
                 {showItemCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
                 {showItemCreate ? t("common.close") : t("admin.codeItemAdd")}
@@ -277,10 +318,22 @@ export default function AdminCodesPage() {
               <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">{t("admin.newItem")}</div>
               <div className="flex gap-2">
                 <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="CODE" />
-                <Input value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder={t("admin.itemName")} />
-                <Input value={itemValue} onChange={(e) => setItemValue(e.target.value)} placeholder={t("admin.itemValue")} />
-                <Button onClick={() => createItemMut.mutate()} disabled={!code || !itemName || createItemMut.isPending}>{t("common.create")}</Button>
-                <Button variant="outline" onClick={() => setShowItemCreate(false)}>{t("common.cancel")}</Button>
+                <Input
+                  value={itemName}
+                  onChange={(e) => setItemName(e.target.value)}
+                  placeholder={t("admin.itemName")}
+                />
+                <Input
+                  value={itemValue}
+                  onChange={(e) => setItemValue(e.target.value)}
+                  placeholder={t("admin.itemValue")}
+                />
+                <Button onClick={() => createItemMut.mutate()} disabled={!code || !itemName || createItemMut.isPending}>
+                  {t("common.create")}
+                </Button>
+                <Button variant="outline" onClick={() => setShowItemCreate(false)}>
+                  {t("common.cancel")}
+                </Button>
               </div>
             </div>
           )}
@@ -291,8 +344,18 @@ export default function AdminCodesPage() {
                 {t("admin.editing")} — <span className="font-mono">{editItem.code}</span>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Input className="w-32" value={editItemName} onChange={(e) => setEditItemName(e.target.value)} placeholder={t("admin.itemName")} />
-                <Input className="w-32" value={editItemValue} onChange={(e) => setEditItemValue(e.target.value)} placeholder={t("admin.itemValue")} />
+                <Input
+                  className="w-32"
+                  value={editItemName}
+                  onChange={(e) => setEditItemName(e.target.value)}
+                  placeholder={t("admin.itemName")}
+                />
+                <Input
+                  className="w-32"
+                  value={editItemValue}
+                  onChange={(e) => setEditItemValue(e.target.value)}
+                  placeholder={t("admin.itemValue")}
+                />
                 <Input
                   type="number"
                   className="w-20"
@@ -304,8 +367,12 @@ export default function AdminCodesPage() {
                   <input type="checkbox" checked={editItemUseYn} onChange={(e) => setEditItemUseYn(e.target.checked)} />
                   {t("common.use")}
                 </label>
-                <Button onClick={() => saveItemMut.mutate()} disabled={!editItemName.trim() || saveItemMut.isPending}>{t("common.save")}</Button>
-                <Button variant="outline" onClick={() => setEditItem(null)}>{t("common.cancel")}</Button>
+                <Button onClick={() => saveItemMut.mutate()} disabled={!editItemName.trim() || saveItemMut.isPending}>
+                  {t("common.save")}
+                </Button>
+                <Button variant="outline" onClick={() => setEditItem(null)}>
+                  {t("common.cancel")}
+                </Button>
               </div>
             </div>
           )}
@@ -346,14 +413,16 @@ export default function AdminCodesPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => startEditItem(it)}>
-                                <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
+                                <Pencil className="mr-2 h-3.5 w-3.5" />
+                                {t("common.edit")}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                                 onClick={() => setDeleteItemTarget(it)}
                               >
-                                <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
+                                <Trash2 className="mr-2 h-3.5 w-3.5" />
+                                {t("common.delete")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -362,13 +431,16 @@ export default function AdminCodesPage() {
                     ))}
                     {(items ?? []).length === 0 && (
                       <tr>
-                        <td colSpan={5} className="px-4 py-6 text-center text-sm text-muted-fg">{t("admin.noItems")}</td>
+                        <td colSpan={5} className="px-4 py-6 text-center text-sm text-muted-fg">
+                          {t("admin.noItems")}
+                        </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
                 <div className="border-t px-4 py-3 text-xs text-muted-fg">
-                  <span className="font-mono">GET /api/common-codes/{selected}</span> {t("admin.codesCacheNote", { groupKey: "" }).replace("GET /api/common-codes/ ", "")}
+                  <span className="font-mono">GET /api/common-codes/{selected}</span>{" "}
+                  {t("admin.codesCacheNote", { groupKey: "" }).replace("GET /api/common-codes/ ", "")}
                 </div>
               </>
             )}
@@ -378,7 +450,9 @@ export default function AdminCodesPage() {
 
       <ConfirmDialog
         open={!!deleteGroupTarget}
-        onOpenChange={(open) => { if (!open) setDeleteGroupTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteGroupTarget(null);
+        }}
         title={t("admin.groupDeleteTitle")}
         description={t("admin.groupDeleteConfirm", { groupKey: deleteGroupTarget?.groupKey })}
         confirmLabel={t("common.delete")}
@@ -387,7 +461,9 @@ export default function AdminCodesPage() {
 
       <ConfirmDialog
         open={!!deleteItemTarget}
-        onOpenChange={(open) => { if (!open) setDeleteItemTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteItemTarget(null);
+        }}
         title={t("admin.itemDeleteTitle")}
         description={t("admin.itemDeleteConfirm", { code: deleteItemTarget?.code })}
         confirmLabel={t("common.delete")}

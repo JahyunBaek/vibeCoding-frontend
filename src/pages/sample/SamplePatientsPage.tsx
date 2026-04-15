@@ -26,7 +26,8 @@ export default function SamplePatientsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["sample", "patients", page, status, department, search],
-    queryFn: () => api.samplePatients(page, PAGE_SIZE, status || undefined, department || undefined, search || undefined),
+    queryFn: () =>
+      api.samplePatients(page, PAGE_SIZE, status || undefined, department || undefined, search || undefined),
   });
 
   const { data: statuses } = useQuery({
@@ -79,21 +80,31 @@ export default function SamplePatientsPage() {
             <select
               className="h-9 rounded-md border bg-surface px-3 text-sm"
               value={status}
-              onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setPage(1);
+              }}
             >
               <option value="">{t("sample.allStatuses")}</option>
               {(statuses ?? []).map((s) => (
-                <option key={s.code} value={s.code}>{s.name}</option>
+                <option key={s.code} value={s.code}>
+                  {s.name}
+                </option>
               ))}
             </select>
             <select
               className="h-9 rounded-md border bg-surface px-3 text-sm"
               value={department}
-              onChange={(e) => { setDepartment(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setDepartment(e.target.value);
+                setPage(1);
+              }}
             >
               <option value="">{t("sample.allDepartments")}</option>
               {(departments ?? []).map((d) => (
-                <option key={d.code} value={d.code}>{d.name}</option>
+                <option key={d.code} value={d.code}>
+                  {d.name}
+                </option>
               ))}
             </select>
             <div className="relative">

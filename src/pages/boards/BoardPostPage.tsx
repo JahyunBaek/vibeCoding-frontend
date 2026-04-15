@@ -13,7 +13,12 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import RichEditor from "@/components/RichEditor";
 
 function getExt(name: string): string {
@@ -23,12 +28,18 @@ function getExt(name: string): string {
 function extColor(ext: string): string {
   const map: Record<string, string> = {
     PDF: "bg-red-500/20 text-red-400",
-    DOC: "bg-blue-500/20 text-blue-400", DOCX: "bg-blue-500/20 text-blue-400",
-    XLS: "bg-emerald-500/20 text-emerald-400", XLSX: "bg-emerald-500/20 text-emerald-400",
-    PPT: "bg-orange-500/20 text-orange-400", PPTX: "bg-orange-500/20 text-orange-400",
-    JPG: "bg-purple-500/20 text-purple-400", JPEG: "bg-purple-500/20 text-purple-400",
-    PNG: "bg-purple-500/20 text-purple-400", GIF: "bg-purple-500/20 text-purple-400",
-    ZIP: "bg-yellow-500/20 text-yellow-400", RAR: "bg-yellow-500/20 text-yellow-400",
+    DOC: "bg-blue-500/20 text-blue-400",
+    DOCX: "bg-blue-500/20 text-blue-400",
+    XLS: "bg-emerald-500/20 text-emerald-400",
+    XLSX: "bg-emerald-500/20 text-emerald-400",
+    PPT: "bg-orange-500/20 text-orange-400",
+    PPTX: "bg-orange-500/20 text-orange-400",
+    JPG: "bg-purple-500/20 text-purple-400",
+    JPEG: "bg-purple-500/20 text-purple-400",
+    PNG: "bg-purple-500/20 text-purple-400",
+    GIF: "bg-purple-500/20 text-purple-400",
+    ZIP: "bg-yellow-500/20 text-yellow-400",
+    RAR: "bg-yellow-500/20 text-yellow-400",
   };
   return map[ext] ?? "bg-accent text-muted-fg";
 }
@@ -59,8 +70,13 @@ function getInitials(name: string): string {
 
 function avatarColor(name: string): string {
   const colors = [
-    "bg-blue-500", "bg-emerald-500", "bg-violet-500",
-    "bg-orange-500", "bg-rose-500", "bg-cyan-500", "bg-amber-500",
+    "bg-blue-500",
+    "bg-emerald-500",
+    "bg-violet-500",
+    "bg-orange-500",
+    "bg-rose-500",
+    "bg-cyan-500",
+    "bg-amber-500",
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -74,8 +90,11 @@ function FileAttachment({ f }: { f: any }) {
 
   const handleDownload = async () => {
     setDownloading(true);
-    try { await api.fileDownload(f.fileId, f.originalName); }
-    finally { setDownloading(false); }
+    try {
+      await api.fileDownload(f.fileId, f.originalName);
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
@@ -84,22 +103,34 @@ function FileAttachment({ f }: { f: any }) {
       disabled={downloading}
       className="group flex w-full items-center gap-3 rounded-lg border border-base bg-surface p-3 text-left transition-all hover:border-blue-500/40 hover:bg-accent disabled:opacity-60"
     >
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold ${extColor(ext)}`}>
+      <div
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold ${extColor(ext)}`}
+      >
         {ext.slice(0, 4)}
       </div>
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium text-foreground">{f.originalName}</div>
         {size && <div className="mt-0.5 text-xs text-muted-fg">{size}</div>}
       </div>
-      <div className={`shrink-0 rounded-md p-1.5 transition-colors ${downloading ? "opacity-30" : "text-muted-fg group-hover:bg-accent group-hover:text-foreground"}`}>
+      <div
+        className={`shrink-0 rounded-md p-1.5 transition-colors ${downloading ? "opacity-30" : "text-muted-fg group-hover:bg-accent group-hover:text-foreground"}`}
+      >
         <Download className="h-4 w-4" />
       </div>
     </button>
   );
 }
 
-function CommentItem({ c, postId, canModify, onRefresh }: {
-  c: any; postId: string; canModify: boolean; onRefresh: () => void;
+function CommentItem({
+  c,
+  postId,
+  canModify,
+  onRefresh,
+}: {
+  c: any;
+  postId: string;
+  canModify: boolean;
+  onRefresh: () => void;
 }) {
   const { t, i18n } = useTranslation();
   const [editing, setEditing] = useState(false);
@@ -131,7 +162,9 @@ function CommentItem({ c, postId, canModify, onRefresh }: {
 
   return (
     <div className="group flex gap-3">
-      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${avatarColor(c.authorName ?? "")}`}>
+      <div
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${avatarColor(c.authorName ?? "")}`}
+      >
         {getInitials(c.authorName ?? "")}
       </div>
       <div className="flex-1 min-w-0">
@@ -146,7 +179,12 @@ function CommentItem({ c, postId, canModify, onRefresh }: {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => { setEditContent(c.content); setEditing(true); }}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setEditContent(c.content);
+                    setEditing(true);
+                  }}
+                >
                   <Pencil className="mr-2 h-3.5 w-3.5" /> {t("comment.edit")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setShowDeleteConfirm(true)} className="text-red-400">
@@ -165,8 +203,19 @@ function CommentItem({ c, postId, canModify, onRefresh }: {
               rows={3}
             />
             <div className="flex gap-2">
-              <Button size="sm" onClick={() => { if (!editContent.trim()) return; saveMut.mutate(); }} disabled={saveMut.isPending}>{t("common.save")}</Button>
-              <Button variant="outline" size="sm" onClick={() => setEditing(false)}>{t("common.cancel")}</Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (!editContent.trim()) return;
+                  saveMut.mutate();
+                }}
+                disabled={saveMut.isPending}
+              >
+                {t("common.save")}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
+                {t("common.cancel")}
+              </Button>
             </div>
           </div>
         ) : (
@@ -215,7 +264,14 @@ export default function BoardPostPage() {
   }, [data]);
 
   const updateMut = useMutation({
-    mutationFn: () => api.postUpdate(boardId, postId, title, content, (data?.files ?? []).map((f: any) => f.fileId)),
+    mutationFn: () =>
+      api.postUpdate(
+        boardId,
+        postId,
+        title,
+        content,
+        (data?.files ?? []).map((f: any) => f.fileId),
+      ),
     onSuccess: () => {
       toast.success(t("board.postSaved"));
       setEdit(false);
@@ -283,18 +339,30 @@ export default function BoardPostPage() {
         </Link>
         {(canEdit || canDelete) && (
           <div className="flex gap-2">
-            {canEdit && (
-              !edit ? (
-                <Button variant="outline" size="sm" onClick={() => setEdit(true)}>{t("common.edit")}</Button>
+            {canEdit &&
+              (!edit ? (
+                <Button variant="outline" size="sm" onClick={() => setEdit(true)}>
+                  {t("common.edit")}
+                </Button>
               ) : (
                 <>
-                  <Button size="sm" onClick={() => updateMut.mutate()} disabled={updateMut.isPending}>{t("common.save")}</Button>
-                  <Button variant="outline" size="sm" onClick={() => setEdit(false)}>{t("common.cancel")}</Button>
+                  <Button size="sm" onClick={() => updateMut.mutate()} disabled={updateMut.isPending}>
+                    {t("common.save")}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setEdit(false)}>
+                    {t("common.cancel")}
+                  </Button>
                 </>
-              )
-            )}
+              ))}
             {canDelete && (
-              <Button variant="outline" size="sm" onClick={() => setShowPostDeleteConfirm(true)} className="text-red-400 hover:text-red-300 hover:border-red-500/40">{t("common.delete")}</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPostDeleteConfirm(true)}
+                className="text-red-400 hover:text-red-300 hover:border-red-500/40"
+              >
+                {t("common.delete")}
+              </Button>
             )}
           </div>
         )}
@@ -304,14 +372,17 @@ export default function BoardPostPage() {
       <Card>
         <CardHeader>
           <CardTitle>
-            {edit
-              ? <Input value={title} onChange={(e) => setTitle(e.target.value)} className="text-base font-semibold" />
-              : <span>{data?.title}</span>
-            }
+            {edit ? (
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} className="text-base font-semibold" />
+            ) : (
+              <span>{data?.title}</span>
+            )}
           </CardTitle>
           {data?.authorName && (
             <div className="flex items-center gap-2 pt-1">
-              <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-white ${avatarColor(data.authorName)}`}>
+              <div
+                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold text-white ${avatarColor(data.authorName)}`}
+              >
                 {getInitials(data.authorName)}
               </div>
               <span className="text-sm text-muted-fg">{data.authorName}</span>
@@ -331,11 +402,28 @@ export default function BoardPostPage() {
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(data?.content ?? "", {
                     ALLOWED_TAGS: [
-                      "p","br","strong","em","u","s","strike",
-                      "h2","h3","ul","ol","li","blockquote","pre","code",
-                      "a","img","hr","span","div",
+                      "p",
+                      "br",
+                      "strong",
+                      "em",
+                      "u",
+                      "s",
+                      "strike",
+                      "h2",
+                      "h3",
+                      "ul",
+                      "ol",
+                      "li",
+                      "blockquote",
+                      "pre",
+                      "code",
+                      "a",
+                      "img",
+                      "hr",
+                      "span",
+                      "div",
                     ],
-                    ALLOWED_ATTR: ["href","src","alt","width","height","class","style","rel","target"],
+                    ALLOWED_ATTR: ["href", "src", "alt", "width", "height", "class", "style", "rel", "target"],
                     ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|\/images):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))/i,
                   }),
                 }}
@@ -351,7 +439,9 @@ export default function BoardPostPage() {
                 {t("board.attachmentCount", { count: files.length })}
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
-                {files.map((f: any) => <FileAttachment key={f.fileId} f={f} />)}
+                {files.map((f: any) => (
+                  <FileAttachment key={f.fileId} f={f} />
+                ))}
               </div>
             </div>
           )}
@@ -374,7 +464,6 @@ export default function BoardPostPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-5">
-
           {commentList.length > 0 ? (
             <div className="space-y-4">
               {commentList.map((c: any) => (
@@ -382,7 +471,9 @@ export default function BoardPostPage() {
                   key={c.commentId}
                   c={c}
                   postId={postId}
-                  canModify={!!user && (user.userId === c.authorId || user.roleKey === "ADMIN" || user.roleKey === "SUPER_ADMIN")}
+                  canModify={
+                    !!user && (user.userId === c.authorId || user.roleKey === "ADMIN" || user.roleKey === "SUPER_ADMIN")
+                  }
                   onRefresh={refetchComments}
                 />
               ))}
@@ -414,7 +505,9 @@ export default function BoardPostPage() {
                   className="w-full resize-none bg-transparent px-4 py-2.5 pr-12 text-sm text-foreground placeholder:text-muted-fg outline-none disabled:opacity-60 max-h-40 overflow-y-auto"
                 />
                 <button
-                  onClick={() => { if (comment.trim() && !commentMut.isPending) commentMut.mutate(); }}
+                  onClick={() => {
+                    if (comment.trim() && !commentMut.isPending) commentMut.mutate();
+                  }}
                   disabled={!comment.trim() || commentMut.isPending}
                   className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-white transition-all hover:bg-blue-500 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
@@ -424,7 +517,6 @@ export default function BoardPostPage() {
               <div className="mt-1 text-right text-[11px] text-muted-fg">{t("comment.submitHint")}</div>
             </div>
           </div>
-
         </CardContent>
       </Card>
 

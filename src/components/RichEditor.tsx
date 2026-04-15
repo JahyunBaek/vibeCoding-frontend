@@ -11,12 +11,22 @@ import { useEffect, useRef } from "react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
-  Bold, Italic, Underline as UnderlineIcon, Strikethrough,
-  Heading2, Heading3,
-  List, ListOrdered,
-  Quote, Code, Minus,
-  Link as LinkIcon, Image as ImageIcon,
-  AlignLeft, AlignCenter, AlignRight,
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Quote,
+  Code,
+  Minus,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
 } from "lucide-react";
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -29,13 +39,7 @@ interface RichEditorProps {
   className?: string;
 }
 
-function RichEditor({
-  value = "",
-  onChange,
-  placeholder,
-  disabled = false,
-  className,
-}: RichEditorProps) {
+function RichEditor({ value = "", onChange, placeholder, disabled = false, className }: RichEditorProps) {
   const { t } = useTranslation();
   const resolvedPlaceholder = placeholder ?? t("editor.placeholder");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -69,9 +73,7 @@ function RichEditor({
         return true;
       },
       handleDrop(_, event) {
-        const files = Array.from(event.dataTransfer?.files ?? []).filter((f) =>
-          ALLOWED_IMAGE_TYPES.includes(f.type)
-        );
+        const files = Array.from(event.dataTransfer?.files ?? []).filter((f) => ALLOWED_IMAGE_TYPES.includes(f.type));
         if (!files.length) return false;
         event.preventDefault();
         files.forEach(uploadImage);
@@ -116,83 +118,131 @@ function RichEditor({
   if (!editor) return null;
 
   return (
-    <div className={cn("rounded-md border border-base bg-surface overflow-hidden", disabled && "opacity-60 cursor-not-allowed", className)}>
+    <div
+      className={cn(
+        "rounded-md border border-base bg-surface overflow-hidden",
+        disabled && "opacity-60 cursor-not-allowed",
+        className,
+      )}
+    >
       {/* Toolbar */}
       {!disabled && (
         <div className="flex flex-wrap items-center gap-0.5 border-b border-base bg-muted px-2 py-1.5">
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleBold().run()}
-            active={editor.isActive("bold")} title={t("editor.bold")}
-          ><Bold className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive("bold")}
+            title={t("editor.bold")}
+          >
+            <Bold className="h-3.5 w-3.5" />
+          </ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            active={editor.isActive("italic")} title={t("editor.italic")}
-          ><Italic className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive("italic")}
+            title={t("editor.italic")}
+          >
+            <Italic className="h-3.5 w-3.5" />
+          </ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleUnderline().run()}
-            active={editor.isActive("underline")} title={t("editor.underline")}
-          ><UnderlineIcon className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive("underline")}
+            title={t("editor.underline")}
+          >
+            <UnderlineIcon className="h-3.5 w-3.5" />
+          </ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleStrike().run()}
-            active={editor.isActive("strike")} title={t("editor.strikethrough")}
-          ><Strikethrough className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive("strike")}
+            title={t("editor.strikethrough")}
+          >
+            <Strikethrough className="h-3.5 w-3.5" />
+          </ToolbarBtn>
 
           <Divider />
 
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            active={editor.isActive("heading", { level: 2 })} title={t("editor.heading2")}
-          ><Heading2 className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive("heading", { level: 2 })}
+            title={t("editor.heading2")}
+          >
+            <Heading2 className="h-3.5 w-3.5" />
+          </ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-            active={editor.isActive("heading", { level: 3 })} title={t("editor.heading3")}
-          ><Heading3 className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive("heading", { level: 3 })}
+            title={t("editor.heading3")}
+          >
+            <Heading3 className="h-3.5 w-3.5" />
+          </ToolbarBtn>
 
           <Divider />
 
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            active={editor.isActive("bulletList")} title={t("editor.bulletList")}
-          ><List className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive("bulletList")}
+            title={t("editor.bulletList")}
+          >
+            <List className="h-3.5 w-3.5" />
+          </ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            active={editor.isActive("orderedList")} title={t("editor.orderedList")}
-          ><ListOrdered className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive("orderedList")}
+            title={t("editor.orderedList")}
+          >
+            <ListOrdered className="h-3.5 w-3.5" />
+          </ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            active={editor.isActive("blockquote")} title={t("editor.blockquote")}
-          ><Quote className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive("blockquote")}
+            title={t("editor.blockquote")}
+          >
+            <Quote className="h-3.5 w-3.5" />
+          </ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().toggleCode().run()}
-            active={editor.isActive("code")} title={t("editor.inlineCode")}
-          ><Code className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive("code")}
+            title={t("editor.inlineCode")}
+          >
+            <Code className="h-3.5 w-3.5" />
+          </ToolbarBtn>
 
           <Divider />
 
           <ToolbarBtn
             onClick={() => editor.chain().focus().setTextAlign("left").run()}
-            active={editor.isActive({ textAlign: "left" })} title={t("editor.alignLeft")}
-          ><AlignLeft className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive({ textAlign: "left" })}
+            title={t("editor.alignLeft")}
+          >
+            <AlignLeft className="h-3.5 w-3.5" />
+          </ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().setTextAlign("center").run()}
-            active={editor.isActive({ textAlign: "center" })} title={t("editor.alignCenter")}
-          ><AlignCenter className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive({ textAlign: "center" })}
+            title={t("editor.alignCenter")}
+          >
+            <AlignCenter className="h-3.5 w-3.5" />
+          </ToolbarBtn>
           <ToolbarBtn
             onClick={() => editor.chain().focus().setTextAlign("right").run()}
-            active={editor.isActive({ textAlign: "right" })} title={t("editor.alignRight")}
-          ><AlignRight className="h-3.5 w-3.5" /></ToolbarBtn>
+            active={editor.isActive({ textAlign: "right" })}
+            title={t("editor.alignRight")}
+          >
+            <AlignRight className="h-3.5 w-3.5" />
+          </ToolbarBtn>
 
           <Divider />
 
           <ToolbarBtn onClick={setLink} active={editor.isActive("link")} title={t("editor.link")}>
             <LinkIcon className="h-3.5 w-3.5" />
           </ToolbarBtn>
+          <ToolbarBtn onClick={() => fileInputRef.current?.click()} title={t("editor.insertImage")}>
+            <ImageIcon className="h-3.5 w-3.5" />
+          </ToolbarBtn>
           <ToolbarBtn
-            onClick={() => fileInputRef.current?.click()} title={t("editor.insertImage")}
-          ><ImageIcon className="h-3.5 w-3.5" /></ToolbarBtn>
-          <ToolbarBtn
-            onClick={() => editor.chain().focus().setHorizontalRule().run()} title={t("editor.horizontalRule")}
-          ><Minus className="h-3.5 w-3.5" /></ToolbarBtn>
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            title={t("editor.horizontalRule")}
+          >
+            <Minus className="h-3.5 w-3.5" />
+          </ToolbarBtn>
         </div>
       )}
 
@@ -216,7 +266,10 @@ function RichEditor({
 }
 
 function ToolbarBtn({
-  children, onClick, active = false, title,
+  children,
+  onClick,
+  active = false,
+  title,
 }: {
   children: React.ReactNode;
   onClick: () => void;
@@ -226,13 +279,14 @@ function ToolbarBtn({
   return (
     <button
       type="button"
-      onMouseDown={(e) => { e.preventDefault(); onClick(); }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        onClick();
+      }}
       title={title}
       className={cn(
         "flex h-7 w-7 items-center justify-center rounded text-sm transition-colors",
-        active
-          ? "bg-foreground text-background"
-          : "text-muted-fg hover:bg-accent hover:text-foreground"
+        active ? "bg-foreground text-background" : "text-muted-fg hover:bg-accent hover:text-foreground",
       )}
     >
       {children}
@@ -247,9 +301,11 @@ function Divider() {
 // value 변경으로 인한 리렌더를 막는다.
 // TipTap은 내부 상태로 컨텐츠를 관리하므로 부모의 value 재전달이 불필요하며,
 // 리렌더 시 TipTap이 editorProps를 재적용해 NodeView(이미지 등)가 재생성된다.
-export default memo(RichEditor, (prev, next) =>
-  prev.disabled === next.disabled &&
-  prev.placeholder === next.placeholder &&
-  prev.className === next.className &&
-  prev.onChange === next.onChange
+export default memo(
+  RichEditor,
+  (prev, next) =>
+    prev.disabled === next.disabled &&
+    prev.placeholder === next.placeholder &&
+    prev.className === next.className &&
+    prev.onChange === next.onChange,
 );

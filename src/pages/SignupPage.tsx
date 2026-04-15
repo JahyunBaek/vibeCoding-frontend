@@ -11,15 +11,17 @@ import { api } from "@/lib/api";
 export default function SignupPage() {
   const { t } = useTranslation();
 
-  const signupSchema = z.object({
-    username: z.string().min(3, t("auth.usernameMinLength")),
-    password: z.string().min(8, t("auth.passwordMinLength")),
-    confirmPassword: z.string().min(1, t("auth.confirmPasswordRequired")),
-    name: z.string().min(1, t("auth.nameRequired")),
-  }).refine((data) => data.password === data.confirmPassword, {
-    message: t("auth.passwordMismatch"),
-    path: ["confirmPassword"],
-  });
+  const signupSchema = z
+    .object({
+      username: z.string().min(3, t("auth.usernameMinLength")),
+      password: z.string().min(8, t("auth.passwordMinLength")),
+      confirmPassword: z.string().min(1, t("auth.confirmPasswordRequired")),
+      name: z.string().min(1, t("auth.nameRequired")),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("auth.passwordMismatch"),
+      path: ["confirmPassword"],
+    });
   type SignupFormData = z.infer<typeof signupSchema>;
   const [searchParams] = useSearchParams();
   const nav = useNavigate();
@@ -32,7 +34,11 @@ export default function SignupPage() {
   const [invalidToken, setInvalidToken] = useState(false);
 
   // Form
-  const { register, handleSubmit, formState: { errors } } = useForm<SignupFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: { username: "", password: "", confirmPassword: "", name: "" },
   });
@@ -81,7 +87,6 @@ export default function SignupPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-12">
-
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-1/3 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/15 blur-[120px]" />
@@ -99,7 +104,6 @@ export default function SignupPage() {
 
       {/* Main card */}
       <div className="relative z-10 w-full max-w-[400px]">
-
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-3">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-500/30 ring-4 ring-blue-500/10">
@@ -116,7 +120,6 @@ export default function SignupPage() {
           <div className="h-px w-full bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
           <div className="p-8">
-
             {validating ? (
               <div className="flex flex-col items-center gap-4 py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
@@ -129,9 +132,7 @@ export default function SignupPage() {
                 </div>
                 <div className="text-center">
                   <h2 className="text-lg font-bold text-white">{t("auth.invalidInviteTitle")}</h2>
-                  <p className="mt-1.5 text-[13px] text-slate-500">
-                    {t("auth.invalidInviteDesc")}
-                  </p>
+                  <p className="mt-1.5 text-[13px] text-slate-500">{t("auth.invalidInviteDesc")}</p>
                 </div>
                 <Link
                   to="/login"
@@ -147,9 +148,7 @@ export default function SignupPage() {
                 </div>
                 <div className="text-center">
                   <h2 className="text-lg font-bold text-white">{t("auth.signupComplete")}</h2>
-                  <p className="mt-1.5 text-[13px] text-slate-500">
-                    {t("auth.signupCompleteDesc")}
-                  </p>
+                  <p className="mt-1.5 text-[13px] text-slate-500">{t("auth.signupCompleteDesc")}</p>
                 </div>
                 <Link
                   to="/login"
@@ -171,7 +170,6 @@ export default function SignupPage() {
                 </div>
 
                 <form className="space-y-3.5" onSubmit={onSubmit}>
-
                   {/* Email (read-only) */}
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -179,12 +177,7 @@ export default function SignupPage() {
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-600" />
-                      <input
-                        value={invitationEmail}
-                        readOnly
-                        disabled
-                        className={inputClass}
-                      />
+                      <input value={invitationEmail} readOnly disabled className={inputClass} />
                     </div>
                   </div>
 
@@ -241,7 +234,9 @@ export default function SignupPage() {
                         className={inputClass}
                       />
                     </div>
-                    {errors.confirmPassword && <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>}
+                    {errors.confirmPassword && (
+                      <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>
+                    )}
                   </div>
 
                   {/* Name */}
@@ -276,10 +271,14 @@ export default function SignupPage() {
                     className="group relative mt-1 flex h-11 w-full items-center justify-center overflow-hidden rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-all hover:bg-blue-500 hover:shadow-blue-500/30 active:scale-[0.98] disabled:opacity-60"
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 transition-opacity group-hover:opacity-100" />
-                    {loading
-                      ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("auth.processing")}</>
-                      : t("auth.signupArrow")
-                    }
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t("auth.processing")}
+                      </>
+                    ) : (
+                      t("auth.signupArrow")
+                    )}
                   </button>
                 </form>
 
@@ -294,9 +293,7 @@ export default function SignupPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-[11px] text-slate-700">
-          © 2026 BioCore System. All rights reserved.
-        </p>
+        <p className="mt-6 text-center text-[11px] text-slate-700">© 2026 BioCore System. All rights reserved.</p>
       </div>
     </div>
   );

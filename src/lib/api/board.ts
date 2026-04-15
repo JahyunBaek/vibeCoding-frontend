@@ -20,15 +20,17 @@ export const boardApi = {
     if (search) params.set("search", search);
     return apiRequest<any>("GET", `/api/boards/${boardId}/posts?${params}`);
   },
-  postDetail: (boardId: string, postId: string) =>
-    apiRequest<any>("GET", `/api/boards/${boardId}/posts/${postId}`),
+  postDetail: (boardId: string, postId: string) => apiRequest<any>("GET", `/api/boards/${boardId}/posts/${postId}`),
   postCreate: (boardId: string, title: string, content: string, fileIds: number[], idempotencyKey?: string) =>
-    apiRequest<number>("POST", `/api/boards/${boardId}/posts`, { title, content, fileIds },
-      idempotencyKey ? { headers: { "Idempotency-Key": idempotencyKey } } : undefined),
+    apiRequest<number>(
+      "POST",
+      `/api/boards/${boardId}/posts`,
+      { title, content, fileIds },
+      idempotencyKey ? { headers: { "Idempotency-Key": idempotencyKey } } : undefined,
+    ),
   postUpdate: (boardId: string, postId: string, title: string, content: string, fileIds: number[]) =>
     apiRequest<void>("PUT", `/api/boards/${boardId}/posts/${postId}`, { title, content, fileIds }),
-  postDelete: (boardId: string, postId: string) =>
-    apiRequest<void>("DELETE", `/api/boards/${boardId}/posts/${postId}`),
+  postDelete: (boardId: string, postId: string) => apiRequest<void>("DELETE", `/api/boards/${boardId}/posts/${postId}`),
 
   // Comments
   commentsList: (postId: string) => apiRequest<any[]>("GET", `/api/posts/${postId}/comments`),
@@ -54,7 +56,7 @@ export const boardApi = {
   },
   fileUploadWithProgress: async (
     file: File,
-    onProgress: (pct: number) => void
+    onProgress: (pct: number) => void,
   ): Promise<{ fileId: number; originalName: string; sizeBytes: number }> => {
     const fd = new FormData();
     fd.append("file", file);
@@ -62,9 +64,8 @@ export const boardApi = {
       "/api/files",
       fd,
       {
-        onUploadProgress: (e) =>
-          onProgress(e.total ? Math.round((e.loaded * 100) / e.total) : 0),
-      }
+        onUploadProgress: (e) => onProgress(e.total ? Math.round((e.loaded * 100) / e.total) : 0),
+      },
     );
     if (!res.data?.success) throw new Error(res.data?.error?.message ?? "Upload failed");
     return res.data.data;

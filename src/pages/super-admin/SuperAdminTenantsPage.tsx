@@ -38,7 +38,11 @@ export default function SuperAdminTenantsPage() {
 
   // --- Create ---
   const [showCreate, setShowCreate] = useState(false);
-  const [createdCreds, setCreatedCreds] = useState<{ tenantId: number; adminUsername: string; adminPassword: string } | null>(null);
+  const [createdCreds, setCreatedCreds] = useState<{
+    tenantId: number;
+    adminUsername: string;
+    adminPassword: string;
+  } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const createTenantSchema = z.object({
@@ -50,16 +54,25 @@ export default function SuperAdminTenantsPage() {
   });
   type CreateTenantFormData = z.infer<typeof createTenantSchema>;
 
-  const { register: registerCreate, handleSubmit: handleSubmitCreate, reset: resetCreate, formState: { errors: createErrors } } = useForm<CreateTenantFormData>({
+  const {
+    register: registerCreate,
+    handleSubmit: handleSubmitCreate,
+    reset: resetCreate,
+    formState: { errors: createErrors },
+  } = useForm<CreateTenantFormData>({
     resolver: zodResolver(createTenantSchema),
     defaultValues: { tenantKey: "", tenantName: "", planType: "FREE", adminUsername: "", adminPassword: "Admin1234!" },
   });
 
   const createMut = useMutation({
-    mutationFn: (data: CreateTenantFormData) => api.superAdminTenantCreate({
-      tenantKey: data.tenantKey, tenantName: data.tenantName, planType: data.planType,
-      adminUsername: data.adminUsername, adminPassword: data.adminPassword,
-    }),
+    mutationFn: (data: CreateTenantFormData) =>
+      api.superAdminTenantCreate({
+        tenantKey: data.tenantKey,
+        tenantName: data.tenantName,
+        planType: data.planType,
+        adminUsername: data.adminUsername,
+        adminPassword: data.adminPassword,
+      }),
     onSuccess: (result) => {
       resetCreate();
       setShowCreate(false);
@@ -92,7 +105,12 @@ export default function SuperAdminTenantsPage() {
   };
 
   const saveMut = useMutation({
-    mutationFn: () => api.superAdminTenantUpdate(editTenant!.tenantId, { tenantName: editName, planType: editPlan, active: editActive }),
+    mutationFn: () =>
+      api.superAdminTenantUpdate(editTenant!.tenantId, {
+        tenantName: editName,
+        planType: editPlan,
+        active: editActive,
+      }),
     onSuccess: () => {
       toast.success(t("tenant.updated"));
       setEditTenant(null);
@@ -124,10 +142,16 @@ export default function SuperAdminTenantsPage() {
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle>{t("tenant.list")}</CardTitle>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-fg">{allItems.length}{t("common.items")}</span>
+            <span className="text-xs text-muted-fg">
+              {allItems.length}
+              {t("common.items")}
+            </span>
             <Button
               variant="outline"
-              onClick={() => { setShowCreate((v) => !v); setEditTenant(null); }}
+              onClick={() => {
+                setShowCreate((v) => !v);
+                setEditTenant(null);
+              }}
             >
               {showCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
               {showCreate ? t("common.close") : t("tenant.newTenant")}
@@ -143,11 +167,21 @@ export default function SuperAdminTenantsPage() {
                 <CheckCircle2 className="h-4 w-4" />
                 {t("tenant.createdBanner")}
               </div>
-              <button onClick={() => setCreatedCreds(null)} className="text-muted-fg hover:text-foreground text-xs">{t("common.close")}</button>
+              <button onClick={() => setCreatedCreds(null)} className="text-muted-fg hover:text-foreground text-xs">
+                {t("common.close")}
+              </button>
             </div>
             <div className="rounded-md bg-surface border px-4 py-3 font-mono text-sm space-y-1">
-              <div><span className="text-muted-fg text-xs">{t("tenant.loginIdLabel")}</span><br /><span className="font-semibold">{createdCreds.adminUsername}</span></div>
-              <div><span className="text-muted-fg text-xs">{t("tenant.passwordLabel")}</span><br /><span className="font-semibold">{createdCreds.adminPassword}</span></div>
+              <div>
+                <span className="text-muted-fg text-xs">{t("tenant.loginIdLabel")}</span>
+                <br />
+                <span className="font-semibold">{createdCreds.adminUsername}</span>
+              </div>
+              <div>
+                <span className="text-muted-fg text-xs">{t("tenant.passwordLabel")}</span>
+                <br />
+                <span className="font-semibold">{createdCreds.adminPassword}</span>
+              </div>
             </div>
             <Button variant="outline" className="h-7 text-xs gap-1.5" onClick={copyCredsToClipboard}>
               {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
@@ -162,15 +196,21 @@ export default function SuperAdminTenantsPage() {
             className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-4 space-y-3"
             onSubmit={handleSubmitCreate((data) => createMut.mutate(data))}
           >
-            <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">{t("tenant.newTenantLabel")}</div>
+            <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">
+              {t("tenant.newTenantLabel")}
+            </div>
             <div className="flex gap-2 flex-wrap">
               <div>
                 <Input className="w-36" {...registerCreate("tenantKey")} placeholder={t("tenant.tenantKey")} />
-                {createErrors.tenantKey && <p className="text-xs text-red-500 mt-1">{createErrors.tenantKey.message}</p>}
+                {createErrors.tenantKey && (
+                  <p className="text-xs text-red-500 mt-1">{createErrors.tenantKey.message}</p>
+                )}
               </div>
               <div>
                 <Input className="w-48" {...registerCreate("tenantName")} placeholder={t("tenant.tenantName")} />
-                {createErrors.tenantName && <p className="text-xs text-red-500 mt-1">{createErrors.tenantName.message}</p>}
+                {createErrors.tenantName && (
+                  <p className="text-xs text-red-500 mt-1">{createErrors.tenantName.message}</p>
+                )}
               </div>
               <div>
                 <Input className="w-28" {...registerCreate("planType")} placeholder={t("tenant.tenantPlan")} />
@@ -180,15 +220,23 @@ export default function SuperAdminTenantsPage() {
               <div className="space-y-1">
                 <div className="text-xs text-muted-fg">{t("tenant.adminId")}</div>
                 <Input className="w-40" {...registerCreate("adminUsername")} placeholder="admin" />
-                {createErrors.adminUsername && <p className="text-xs text-red-500 mt-1">{createErrors.adminUsername.message}</p>}
+                {createErrors.adminUsername && (
+                  <p className="text-xs text-red-500 mt-1">{createErrors.adminUsername.message}</p>
+                )}
               </div>
               <div className="space-y-1">
                 <div className="text-xs text-muted-fg">{t("tenant.adminPassword")}</div>
                 <Input className="w-40" {...registerCreate("adminPassword")} placeholder="Admin1234!" />
-                {createErrors.adminPassword && <p className="text-xs text-red-500 mt-1">{createErrors.adminPassword.message}</p>}
+                {createErrors.adminPassword && (
+                  <p className="text-xs text-red-500 mt-1">{createErrors.adminPassword.message}</p>
+                )}
               </div>
-              <Button type="submit" disabled={createMut.isPending}>{t("common.create")}</Button>
-              <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
+              <Button type="submit" disabled={createMut.isPending}>
+                {t("common.create")}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>
+                {t("common.cancel")}
+              </Button>
             </div>
             <div className="text-xs text-muted-fg">{t("tenant.autoInitNote")}</div>
           </form>
@@ -198,11 +246,22 @@ export default function SuperAdminTenantsPage() {
         {editTenant && (
           <div className="mx-6 mb-4 rounded-lg border border-blue-500/30 bg-blue-500/5 p-4 space-y-3">
             <div className="text-xs font-medium text-blue-600 uppercase tracking-wide">
-              {t("admin.editing")} — {editTenant.tenantName} <span className="text-blue-400">(Key: {editTenant.tenantKey})</span>
+              {t("admin.editing")} — {editTenant.tenantName}{" "}
+              <span className="text-blue-400">(Key: {editTenant.tenantKey})</span>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
-              <Input className="w-48" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder={t("tenant.tenantName")} />
-              <Input className="w-28" value={editPlan} onChange={(e) => setEditPlan(e.target.value)} placeholder={t("tenant.plan")} />
+              <Input
+                className="w-48"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder={t("tenant.tenantName")}
+              />
+              <Input
+                className="w-28"
+                value={editPlan}
+                onChange={(e) => setEditPlan(e.target.value)}
+                placeholder={t("tenant.plan")}
+              />
               <label className="flex items-center gap-1.5 text-sm cursor-pointer">
                 <input
                   type="checkbox"
@@ -212,8 +271,12 @@ export default function SuperAdminTenantsPage() {
                 />
                 {t("tenant.activeLabel")}
               </label>
-              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>{t("common.save")}</Button>
-              <Button variant="outline" onClick={() => setEditTenant(null)}>{t("common.cancel")}</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>
+                {t("common.save")}
+              </Button>
+              <Button variant="outline" onClick={() => setEditTenant(null)}>
+                {t("common.cancel")}
+              </Button>
             </div>
           </div>
         )}
@@ -247,7 +310,10 @@ export default function SuperAdminTenantsPage() {
                       {t_.active ? t("tenant.active") : t("tenant.inactive")}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted-fg">{t_.userCount}{t("common.persons")}</td>
+                  <td className="px-4 py-3 text-xs text-muted-fg">
+                    {t_.userCount}
+                    {t("common.persons")}
+                  </td>
                   <td className="px-4 py-3 text-xs text-muted-fg">{t_.createdAt?.slice(0, 10) ?? "—"}</td>
                   <td className="px-4 py-3 text-right">
                     <DropdownMenu>
@@ -258,14 +324,16 @@ export default function SuperAdminTenantsPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => startEdit(t_)}>
-                          <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
+                          <Pencil className="mr-2 h-3.5 w-3.5" />
+                          {t("common.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                           onClick={() => setDeleteTarget(t_)}
                         >
-                          <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
+                          <Trash2 className="mr-2 h-3.5 w-3.5" />
+                          {t("common.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -287,7 +355,9 @@ export default function SuperAdminTenantsPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title={t("tenant.deleteTitle")}
         description={t("tenant.deleteConfirm", { name: deleteTarget?.tenantName })}
         confirmLabel={t("common.delete")}

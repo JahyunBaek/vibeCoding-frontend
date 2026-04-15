@@ -4,7 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
@@ -114,13 +120,9 @@ export default function Topbar() {
               {/* Notification list */}
               <div className="max-h-72 overflow-y-auto">
                 {notifLoading ? (
-                  <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-                    {t("common.loading")}
-                  </div>
+                  <div className="px-3 py-6 text-center text-sm text-muted-foreground">{t("common.loading")}</div>
                 ) : notifications.length === 0 ? (
-                  <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-                    {t("notification.empty")}
-                  </div>
+                  <div className="px-3 py-6 text-center text-sm text-muted-foreground">{t("notification.empty")}</div>
                 ) : (
                   notifications.map((notif: any) => (
                     <DropdownMenuItem
@@ -139,9 +141,7 @@ export default function Topbar() {
                       <div className="flex-1 overflow-hidden">
                         <p className="truncate text-sm font-medium">{notif.title}</p>
                         <p className="truncate text-xs text-muted-foreground">{notif.message}</p>
-                        <p className="mt-0.5 text-xs text-muted-foreground/70">
-                          {timeAgo(notif.createdAt, t)}
-                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground/70">{timeAgo(notif.createdAt, t)}</p>
                       </div>
                     </DropdownMenuItem>
                   ))
@@ -153,7 +153,13 @@ export default function Topbar() {
           <Button variant="ghost" size="sm" aria-label="Theme" onClick={toggle}>
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          <Button variant="ghost" size="sm" aria-label="Language" onClick={toggleLanguage} title={i18n.language === "ko" ? "English" : "한국어"}>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Language"
+            onClick={toggleLanguage}
+            title={i18n.language === "ko" ? "English" : "한국어"}
+          >
             <Globe className="h-4 w-4" />
             <span className="ml-1 text-xs">{i18n.language === "ko" ? "KO" : "EN"}</span>
           </Button>

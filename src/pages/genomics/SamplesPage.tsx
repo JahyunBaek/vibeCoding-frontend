@@ -53,27 +53,38 @@ export default function SamplesPage() {
 
   const deleteMut = useMutation({
     mutationFn: (id: number) => api.sampleDelete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["genomics", "samples"] }); toast.success(t("genomics.sample.deleted")); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["genomics", "samples"] });
+      toast.success(t("genomics.sample.deleted"));
+    },
   });
 
   const statusMut = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) => api.sampleUpdateStatus(id, status),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["genomics", "samples"] }); toast.success(t("genomics.sample.statusChanged")); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["genomics", "samples"] });
+      toast.success(t("genomics.sample.statusChanged"));
+    },
   });
 
   const createMut = useMutation({
     mutationFn: (data: any) => api.sampleCreate(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["genomics", "samples"] }); toast.success(t("genomics.sample.created")); setShowCreate(false); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["genomics", "samples"] });
+      toast.success(t("genomics.sample.created"));
+      setShowCreate(false);
+    },
   });
 
   const reportMut = useMutation({
     mutationFn: (sampleId: number) => api.reportGenerate(sampleId),
-    onSuccess: () => { toast.success(t("genomics.report.generated")); },
+    onSuccess: () => {
+      toast.success(t("genomics.report.generated"));
+    },
   });
 
   const vcfMut = useMutation({
-    mutationFn: ({ sampleId, file }: { sampleId: number; file: File }) =>
-      api.sampleUploadVcf(sampleId, file),
+    mutationFn: ({ sampleId, file }: { sampleId: number; file: File }) => api.sampleUploadVcf(sampleId, file),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["genomics", "samples"] });
       toast.success(t("genomics.sample.vcfUploaded", { count: data.variantCount }));
@@ -104,11 +115,16 @@ export default function SamplesPage() {
         <select
           className="h-9 rounded-md border bg-surface px-3 text-sm"
           value={status}
-          onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setStatus(e.target.value);
+            setPage(1);
+          }}
         >
           <option value="">{t("genomics.sample.allStatus")}</option>
           {STATUS_FLOW.map((s) => (
-            <option key={s} value={s}>{t(STATUS_KEYS[s])}</option>
+            <option key={s} value={s}>
+              {t(STATUS_KEYS[s])}
+            </option>
           ))}
         </select>
         <input
@@ -116,7 +132,10 @@ export default function SamplesPage() {
           placeholder={t("common.search")}
           className="h-9 w-60 rounded-md border bg-surface px-3 text-sm"
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
         />
       </div>
 
@@ -136,7 +155,11 @@ export default function SamplesPage() {
           </thead>
           <tbody>
             {items.length === 0 && (
-              <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">{t("common.noData")}</td></tr>
+              <tr>
+                <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                  {t("common.noData")}
+                </td>
+              </tr>
             )}
             {items.map((s: any) => {
               const next = nextStatus(s.status);
@@ -152,27 +175,54 @@ export default function SamplesPage() {
                   <td className="px-4 py-2">{s.completedDate ?? "-"}</td>
                   <td className="px-4 py-2 text-center">
                     <div className="flex items-center justify-center gap-1">
-                      <Button variant="ghost" size="sm" className="h-7 text-xs"
-                              onClick={() => { setVcfTarget(s.sampleId); vcfInputRef.current?.click(); }}>
-                        <Upload className="mr-0.5 h-3 w-3" />{t("genomics.sample.uploadVcf")}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          setVcfTarget(s.sampleId);
+                          vcfInputRef.current?.click();
+                        }}
+                      >
+                        <Upload className="mr-0.5 h-3 w-3" />
+                        {t("genomics.sample.uploadVcf")}
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 text-xs"
-                              onClick={() => navigate(`/genomics/variants?sampleId=${s.sampleId}`)}>
-                        <ExternalLink className="mr-0.5 h-3 w-3" />{t("genomics.sample.viewVariants")}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => navigate(`/genomics/variants?sampleId=${s.sampleId}`)}
+                      >
+                        <ExternalLink className="mr-0.5 h-3 w-3" />
+                        {t("genomics.sample.viewVariants")}
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 text-xs"
-                              disabled={reportMut.isPending}
-                              onClick={() => reportMut.mutate(s.sampleId)}>
-                        <FileText className="mr-0.5 h-3 w-3" />{t("genomics.report.generate")}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        disabled={reportMut.isPending}
+                        onClick={() => reportMut.mutate(s.sampleId)}
+                      >
+                        <FileText className="mr-0.5 h-3 w-3" />
+                        {t("genomics.report.generate")}
                       </Button>
                       {next && (
-                        <Button variant="ghost" size="sm" className="h-7 text-xs"
-                                onClick={() => statusMut.mutate({ id: s.sampleId, status: next })}>
-                          <ChevronRight className="mr-0.5 h-3 w-3" />{t(STATUS_KEYS[next])}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => statusMut.mutate({ id: s.sampleId, status: next })}
+                        >
+                          <ChevronRight className="mr-0.5 h-3 w-3" />
+                          {t(STATUS_KEYS[next])}
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm" className="h-7 text-destructive"
-                              onClick={() => deleteMut.mutate(s.sampleId)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-destructive"
+                        onClick={() => deleteMut.mutate(s.sampleId)}
+                      >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -187,9 +237,15 @@ export default function SamplesPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</Button>
-          <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            Prev
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {page} / {totalPages}
+          </span>
+          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+            Next
+          </Button>
         </div>
       )}
 
@@ -211,19 +267,25 @@ export default function SamplesPage() {
 
       {/* Create Dialog (simple) */}
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowCreate(false)}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setShowCreate(false)}
+        >
           <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="mb-4 text-lg font-semibold">{t("genomics.sample.createSample")}</h2>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const fd = new FormData(e.currentTarget);
-              createMut.mutate({
-                patientId: Number(fd.get("patientId")),
-                sampleType: fd.get("sampleType") as string,
-                panelId: fd.get("panelId") ? Number(fd.get("panelId")) : undefined,
-                note: fd.get("note") as string || undefined,
-              });
-            }} className="space-y-3">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const fd = new FormData(e.currentTarget);
+                createMut.mutate({
+                  patientId: Number(fd.get("patientId")),
+                  sampleType: fd.get("sampleType") as string,
+                  panelId: fd.get("panelId") ? Number(fd.get("panelId")) : undefined,
+                  note: (fd.get("note") as string) || undefined,
+                });
+              }}
+              className="space-y-3"
+            >
               <div>
                 <label className="mb-1 block text-sm font-medium">{t("genomics.sample.patientId")}</label>
                 <input name="patientId" type="number" required className="h-9 w-full rounded-md border px-3 text-sm" />
@@ -242,7 +304,9 @@ export default function SamplesPage() {
                 <select name="panelId" className="h-9 w-full rounded-md border px-3 text-sm">
                   <option value="">-</option>
                   {panels.map((p: any) => (
-                    <option key={p.panelId} value={p.panelId}>{p.name} ({p.panelCode})</option>
+                    <option key={p.panelId} value={p.panelId}>
+                      {p.name} ({p.panelCode})
+                    </option>
                   ))}
                 </select>
               </div>
@@ -251,8 +315,12 @@ export default function SamplesPage() {
                 <textarea name="note" rows={2} className="w-full rounded-md border px-3 py-2 text-sm" />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
-                <Button type="submit" disabled={createMut.isPending}>{t("common.save")}</Button>
+                <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>
+                  {t("common.cancel")}
+                </Button>
+                <Button type="submit" disabled={createMut.isPending}>
+                  {t("common.save")}
+                </Button>
               </div>
             </form>
           </div>

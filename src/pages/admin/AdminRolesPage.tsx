@@ -42,15 +42,10 @@ export default function AdminRolesPage() {
     setPage(1);
   };
 
-  const allItems: any[] = (data?.items ?? []).filter(
-    (r: any) => isSuperAdmin || r.roleKey !== "SUPER_ADMIN"
-  );
+  const allItems: any[] = (data?.items ?? []).filter((r: any) => isSuperAdmin || r.roleKey !== "SUPER_ADMIN");
   const filtered = allItems.filter((r) => {
     const q = search.toLowerCase();
-    return (
-      r.roleKey?.toLowerCase().includes(q) ||
-      r.roleName?.toLowerCase().includes(q)
-    );
+    return r.roleKey?.toLowerCase().includes(q) || r.roleName?.toLowerCase().includes(q);
   });
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -127,10 +122,16 @@ export default function AdminRolesPage() {
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
-            <span className="text-xs text-muted-fg">{filtered.length}{t("common.items")}</span>
+            <span className="text-xs text-muted-fg">
+              {filtered.length}
+              {t("common.items")}
+            </span>
             <Button
               variant="outline"
-              onClick={() => { setShowCreate((v) => !v); setEditRole(null); }}
+              onClick={() => {
+                setShowCreate((v) => !v);
+                setEditRole(null);
+              }}
             >
               {showCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
               {showCreate ? t("common.close") : t("admin.newRole")}
@@ -143,10 +144,27 @@ export default function AdminRolesPage() {
           <div className="mx-6 mb-4 rounded-lg border border-dashed border-slate-300 bg-muted p-4 space-y-3">
             <div className="text-xs font-medium text-muted-fg uppercase tracking-wide">{t("admin.newRoleLabel")}</div>
             <div className="flex gap-2">
-              <Input className="w-40" value={roleKey} onChange={(e) => setRoleKey(e.target.value)} placeholder="ROLE_KEY" />
-              <Input className="w-48" value={roleName} onChange={(e) => setRoleName(e.target.value)} placeholder={t("admin.roleName")} />
-              <Button onClick={() => createMut.mutate()} disabled={!roleKey.trim() || !roleName.trim() || createMut.isPending}>{t("common.create")}</Button>
-              <Button variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
+              <Input
+                className="w-40"
+                value={roleKey}
+                onChange={(e) => setRoleKey(e.target.value)}
+                placeholder="ROLE_KEY"
+              />
+              <Input
+                className="w-48"
+                value={roleName}
+                onChange={(e) => setRoleName(e.target.value)}
+                placeholder={t("admin.roleName")}
+              />
+              <Button
+                onClick={() => createMut.mutate()}
+                disabled={!roleKey.trim() || !roleName.trim() || createMut.isPending}
+              >
+                {t("common.create")}
+              </Button>
+              <Button variant="outline" onClick={() => setShowCreate(false)}>
+                {t("common.cancel")}
+              </Button>
             </div>
           </div>
         )}
@@ -158,13 +176,22 @@ export default function AdminRolesPage() {
               {t("admin.editing")} — <span className="font-mono">{editRole.roleKey}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Input className="w-48" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder={t("admin.roleName")} />
+              <Input
+                className="w-48"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder={t("admin.roleName")}
+              />
               <label className="flex items-center gap-2 text-sm h-9">
                 <input type="checkbox" checked={editUseYn} onChange={(e) => setEditUseYn(e.target.checked)} />
                 {t("common.use")}
               </label>
-              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>{t("common.save")}</Button>
-              <Button variant="outline" onClick={() => setEditRole(null)}>{t("common.cancel")}</Button>
+              <Button onClick={() => saveMut.mutate()} disabled={!editName.trim() || saveMut.isPending}>
+                {t("common.save")}
+              </Button>
+              <Button variant="outline" onClick={() => setEditRole(null)}>
+                {t("common.cancel")}
+              </Button>
             </div>
           </div>
         )}
@@ -200,14 +227,16 @@ export default function AdminRolesPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => startEdit(r)}>
-                          <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
+                          <Pencil className="mr-2 h-3.5 w-3.5" />
+                          {t("common.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                           onClick={() => setDeleteTarget(r)}
                         >
-                          <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
+                          <Trash2 className="mr-2 h-3.5 w-3.5" />
+                          {t("common.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -224,15 +253,15 @@ export default function AdminRolesPage() {
             </tbody>
           </table>
           <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-          <div className="border-t px-4 py-3 text-xs text-muted-fg">
-            {t("admin.roleMenuNote")}
-          </div>
+          <div className="border-t px-4 py-3 text-xs text-muted-fg">{t("admin.roleMenuNote")}</div>
         </CardContent>
       </Card>
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title={t("admin.roleDeleteTitle")}
         description={t("admin.roleDeleteConfirm", { roleKey: deleteTarget?.roleKey })}
         confirmLabel={t("common.delete")}

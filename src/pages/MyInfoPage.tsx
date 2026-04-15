@@ -21,33 +21,42 @@ function avatarColor(name: string): string {
 export default function MyInfoPage() {
   const { t } = useTranslation();
 
-  const myInfoSchema = z.object({
-    name: z.string().min(1, t("myInfo.nameRequired")),
-    changePassword: z.boolean(),
-    currentPassword: z.string(),
-    newPassword: z.string(),
-    confirmPassword: z.string(),
-  }).superRefine((data, ctx) => {
-    if (data.changePassword) {
-      if (!data.currentPassword) {
-        ctx.addIssue({ code: "custom", message: t("myInfo.currentPasswordRequired"), path: ["currentPassword"] });
+  const myInfoSchema = z
+    .object({
+      name: z.string().min(1, t("myInfo.nameRequired")),
+      changePassword: z.boolean(),
+      currentPassword: z.string(),
+      newPassword: z.string(),
+      confirmPassword: z.string(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.changePassword) {
+        if (!data.currentPassword) {
+          ctx.addIssue({ code: "custom", message: t("myInfo.currentPasswordRequired"), path: ["currentPassword"] });
+        }
+        if (!data.newPassword) {
+          ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordRequired"), path: ["newPassword"] });
+        } else if (data.newPassword.length < 8) {
+          ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordMinLength"), path: ["newPassword"] });
+        } else if (data.newPassword === data.currentPassword) {
+          ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordSameAsCurrent"), path: ["newPassword"] });
+        }
+        if (data.newPassword && data.confirmPassword !== data.newPassword) {
+          ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordMismatch"), path: ["confirmPassword"] });
+        }
       }
-      if (!data.newPassword) {
-        ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordRequired"), path: ["newPassword"] });
-      } else if (data.newPassword.length < 8) {
-        ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordMinLength"), path: ["newPassword"] });
-      } else if (data.newPassword === data.currentPassword) {
-        ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordSameAsCurrent"), path: ["newPassword"] });
-      }
-      if (data.newPassword && data.confirmPassword !== data.newPassword) {
-        ctx.addIssue({ code: "custom", message: t("myInfo.newPasswordMismatch"), path: ["confirmPassword"] });
-      }
-    }
-  });
+    });
   type MyInfoFormData = z.infer<typeof myInfoSchema>;
   const { data, refetch } = useQuery({ queryKey: ["me"], queryFn: api.me });
 
-  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<MyInfoFormData>({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<MyInfoFormData>({
     resolver: zodResolver(myInfoSchema),
     defaultValues: {
       name: "",
@@ -66,11 +75,12 @@ export default function MyInfoPage() {
   const [success, setSuccess] = useState(false);
 
   const saveMut = useMutation({
-    mutationFn: (formData: MyInfoFormData) => api.updateMe(
-      formData.name || data?.name,
-      formData.changePassword ? formData.currentPassword : undefined,
-      formData.changePassword ? formData.newPassword : undefined,
-    ),
+    mutationFn: (formData: MyInfoFormData) =>
+      api.updateMe(
+        formData.name || data?.name,
+        formData.changePassword ? formData.currentPassword : undefined,
+        formData.changePassword ? formData.newPassword : undefined,
+      ),
     onSuccess: () => {
       setSuccess(true);
       setError(null);
@@ -112,16 +122,19 @@ export default function MyInfoPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-
           {/* Avatar + Login ID */}
           <div className="flex items-center gap-4">
-            <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-2xl font-bold text-white ${avatarColor(displayName)}`}>
+            <div
+              className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-2xl font-bold text-white ${avatarColor(displayName)}`}
+            >
               {initials}
             </div>
             <div>
               <div className="text-xs text-muted-fg">{t("myInfo.loginIdLabel")}</div>
               <div className="mt-0.5 font-mono text-sm font-semibold text-foreground">{data?.username}</div>
-              <div className="mt-1 text-xs text-muted-fg">{t("myInfo.roleLabel")}: {data?.roleKey}</div>
+              <div className="mt-1 text-xs text-muted-fg">
+                {t("myInfo.roleLabel")}: {data?.roleKey}
+              </div>
             </div>
           </div>
 
@@ -135,7 +148,6 @@ export default function MyInfoPage() {
             />
             {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
           </div>
-
         </CardContent>
       </Card>
 
@@ -148,7 +160,6 @@ export default function MyInfoPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-
           {/* Toggle */}
           <label className="flex cursor-pointer items-center gap-3">
             <div className="relative">
@@ -167,8 +178,12 @@ export default function MyInfoPage() {
                 }}
                 disabled={saveMut.isPending}
               />
-              <div className={`h-5 w-9 rounded-full transition-colors ${changePassword ? "bg-slate-800" : "bg-accent"}`} />
-              <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-surface shadow transition-transform ${changePassword ? "translate-x-4" : "translate-x-0.5"}`} />
+              <div
+                className={`h-5 w-9 rounded-full transition-colors ${changePassword ? "bg-slate-800" : "bg-accent"}`}
+              />
+              <div
+                className={`absolute top-0.5 h-4 w-4 rounded-full bg-surface shadow transition-transform ${changePassword ? "translate-x-4" : "translate-x-0.5"}`}
+              />
             </div>
             <span className="text-sm font-medium text-foreground">{t("myInfo.passwordChange")}</span>
           </label>
@@ -184,7 +199,9 @@ export default function MyInfoPage() {
                   disabled={saveMut.isPending}
                   autoComplete="current-password"
                 />
-                {errors.currentPassword && <p className="text-xs text-red-500 mt-1">{errors.currentPassword.message}</p>}
+                {errors.currentPassword && (
+                  <p className="text-xs text-red-500 mt-1">{errors.currentPassword.message}</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-fg">{t("auth.newPassword")}</label>
@@ -206,19 +223,23 @@ export default function MyInfoPage() {
                   disabled={saveMut.isPending}
                   autoComplete="new-password"
                 />
-                {errors.confirmPassword && <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>}
+                {errors.confirmPassword && (
+                  <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>
+                )}
                 {!errors.confirmPassword && confirmPassword && newPassword !== confirmPassword && (
                   <p className="text-xs text-red-400">{t("auth.passwordMismatch")}</p>
                 )}
-                {!errors.confirmPassword && confirmPassword && newPassword === confirmPassword && newPassword.length >= 8 && (
-                  <p className="flex items-center gap-1 text-xs text-emerald-600">
-                    <CheckCircle2 className="h-3 w-3" /> {t("myInfo.passwordMatch")}
-                  </p>
-                )}
+                {!errors.confirmPassword &&
+                  confirmPassword &&
+                  newPassword === confirmPassword &&
+                  newPassword.length >= 8 && (
+                    <p className="flex items-center gap-1 text-xs text-emerald-600">
+                      <CheckCircle2 className="h-3 w-3" /> {t("myInfo.passwordMatch")}
+                    </p>
+                  )}
               </div>
             </div>
           )}
-
         </CardContent>
       </Card>
 

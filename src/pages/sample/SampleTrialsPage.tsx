@@ -66,21 +66,31 @@ export default function SampleTrialsPage() {
             <select
               className="h-9 rounded-md border bg-surface px-3 text-sm"
               value={phase}
-              onChange={(e) => { setPhase(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setPhase(e.target.value);
+                setPage(1);
+              }}
             >
               <option value="">{t("sample.allPhases")}</option>
               {(phases ?? []).map((p) => (
-                <option key={p.code} value={p.code}>{p.name}</option>
+                <option key={p.code} value={p.code}>
+                  {p.name}
+                </option>
               ))}
             </select>
             <select
               className="h-9 rounded-md border bg-surface px-3 text-sm"
               value={status}
-              onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setPage(1);
+              }}
             >
               <option value="">{t("sample.allStatuses")}</option>
               {(statuses ?? []).map((s) => (
-                <option key={s.code} value={s.code}>{s.name}</option>
+                <option key={s.code} value={s.code}>
+                  {s.name}
+                </option>
               ))}
             </select>
             <div className="relative">

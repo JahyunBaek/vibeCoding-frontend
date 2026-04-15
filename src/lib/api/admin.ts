@@ -49,8 +49,7 @@ export const adminApi = {
     apiRequest<void>("POST", "/api/admin/roles", { roleKey, roleName, useYn }),
   roleUpdate: (roleKey: string, roleName: string, useYn: boolean) =>
     apiRequest<void>("PUT", `/api/admin/roles/${roleKey}`, { roleName, useYn }),
-  roleDelete: (roleKey: string) =>
-    apiRequest<void>("DELETE", `/api/admin/roles/${roleKey}`),
+  roleDelete: (roleKey: string) => apiRequest<void>("DELETE", `/api/admin/roles/${roleKey}`),
 
   // Menus
   menusMy: () => apiRequest<any[]>("GET", "/api/menus/my"),
@@ -72,8 +71,7 @@ export const adminApi = {
     apiRequest<void>("POST", `/api/admin/codes/groups/${groupKey}/items`, payload),
   codesUpdateGroup: (groupKey: string, groupName: string, useYn: boolean) =>
     apiRequest<void>("PUT", `/api/admin/codes/groups/${groupKey}`, { groupName, useYn }),
-  codesDeleteGroup: (groupKey: string) =>
-    apiRequest<void>("DELETE", `/api/admin/codes/groups/${groupKey}`),
+  codesDeleteGroup: (groupKey: string) => apiRequest<void>("DELETE", `/api/admin/codes/groups/${groupKey}`),
   codesUpdateItem: (groupKey: string, code: string, name: string, value: string, sortOrder: number, useYn: boolean) =>
     apiRequest<void>("PUT", `/api/admin/codes/groups/${groupKey}/items/${code}`, { name, value, sortOrder, useYn }),
   codesDeleteItem: (groupKey: string, code: string) =>
@@ -86,16 +84,13 @@ export const adminApi = {
     apiRequest<void>("POST", "/api/admin/permissions/screens", { screenKey, screenName }),
   permUpdateScreen: (screenId: number, screenName: string, useYn: boolean) =>
     apiRequest<void>("PUT", `/api/admin/permissions/screens/${screenId}`, { screenName, useYn }),
-  permDeleteScreen: (screenId: number) =>
-    apiRequest<void>("DELETE", `/api/admin/permissions/screens/${screenId}`),
-  permActions: (screenId: number) =>
-    apiRequest<any[]>("GET", `/api/admin/permissions/screens/${screenId}/actions`),
+  permDeleteScreen: (screenId: number) => apiRequest<void>("DELETE", `/api/admin/permissions/screens/${screenId}`),
+  permActions: (screenId: number) => apiRequest<any[]>("GET", `/api/admin/permissions/screens/${screenId}/actions`),
   permCreateAction: (screenId: number, actionKey: string, actionName: string) =>
     apiRequest<void>("POST", `/api/admin/permissions/screens/${screenId}/actions`, { actionKey, actionName }),
   permUpdateAction: (actionId: number, actionName: string, useYn: boolean) =>
     apiRequest<void>("PUT", `/api/admin/permissions/actions/${actionId}`, { actionName, useYn }),
-  permDeleteAction: (actionId: number) =>
-    apiRequest<void>("DELETE", `/api/admin/permissions/actions/${actionId}`),
+  permDeleteAction: (actionId: number) => apiRequest<void>("DELETE", `/api/admin/permissions/actions/${actionId}`),
   permRolesByAction: (actionId: number) =>
     apiRequest<string[]>("GET", `/api/admin/permissions/actions/${actionId}/roles`),
   permSetRoles: (actionId: number, roleKeys: string[]) =>
@@ -120,7 +115,13 @@ export const adminApi = {
   },
 
   // Audit
-  auditList: (params: { tenantId?: number | null; action?: string; targetType?: string; page?: number; size?: number }) => {
+  auditList: (params: {
+    tenantId?: number | null;
+    action?: string;
+    targetType?: string;
+    page?: number;
+    size?: number;
+  }) => {
     const q = new URLSearchParams();
     if (params.tenantId != null) q.set("tenantId", String(params.tenantId));
     if (params.action) q.set("action", params.action);

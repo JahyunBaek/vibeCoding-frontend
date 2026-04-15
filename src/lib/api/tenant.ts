@@ -25,10 +25,9 @@ export const tenantApi = {
     apiRequest<{ tenantId: number; adminUsername: string; adminPassword: string }>(
       "POST",
       "/api/super-admin/tenants",
-      payload
+      payload,
     ),
   superAdminTenantUpdate: (tenantId: number, payload: { tenantName: string; planType: string; active: boolean }) =>
     apiRequest<void>("PUT", `/api/super-admin/tenants/${tenantId}`, payload),
-  superAdminTenantDelete: (tenantId: number) =>
-    apiRequest<void>("DELETE", `/api/super-admin/tenants/${tenantId}`),
+  superAdminTenantDelete: (tenantId: number) => apiRequest<void>("DELETE", `/api/super-admin/tenants/${tenantId}`),
 };

@@ -11,18 +11,24 @@ import { api } from "@/lib/api";
 export default function ResetPasswordPage() {
   const { t } = useTranslation();
 
-  const resetPasswordSchema = z.object({
-    newPassword: z.string().min(8, t("auth.passwordMinLength")),
-    confirmPassword: z.string().min(1, t("auth.confirmPasswordRequired")),
-  }).refine((data) => data.newPassword === data.confirmPassword, {
-    message: t("auth.passwordMismatch"),
-    path: ["confirmPassword"],
-  });
+  const resetPasswordSchema = z
+    .object({
+      newPassword: z.string().min(8, t("auth.passwordMinLength")),
+      confirmPassword: z.string().min(1, t("auth.confirmPasswordRequired")),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: t("auth.passwordMismatch"),
+      path: ["confirmPassword"],
+    });
   type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") ?? "";
 
-  const { register, handleSubmit, formState: { errors } } = useForm<ResetPasswordFormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { newPassword: "", confirmPassword: "" },
   });
@@ -55,7 +61,6 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-12">
-
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-1/3 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/15 blur-[120px]" />
@@ -73,7 +78,6 @@ export default function ResetPasswordPage() {
 
       {/* Main card */}
       <div className="relative z-10 w-full max-w-[400px]">
-
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-3">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-500/30 ring-4 ring-blue-500/10">
@@ -90,7 +94,6 @@ export default function ResetPasswordPage() {
           <div className="h-px w-full bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
           <div className="p-8">
-
             {success ? (
               /* Success state */
               <div className="flex flex-col items-center gap-4 py-4">
@@ -99,9 +102,7 @@ export default function ResetPasswordPage() {
                 </div>
                 <div className="text-center">
                   <h2 className="text-lg font-bold text-white">{t("auth.resetPasswordComplete")}</h2>
-                  <p className="mt-1.5 text-[13px] text-slate-500">
-                    {t("auth.resetPasswordCompleteDesc")}
-                  </p>
+                  <p className="mt-1.5 text-[13px] text-slate-500">{t("auth.resetPasswordCompleteDesc")}</p>
                 </div>
                 <Link
                   to="/login"
@@ -119,7 +120,6 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <form className="space-y-3.5" onSubmit={onSubmit}>
-
                   {/* New Password */}
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -155,7 +155,9 @@ export default function ResetPasswordPage() {
                         className="h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.06] pl-9 pr-4 text-sm text-white placeholder:text-slate-600 outline-none transition-all focus:border-blue-500/60 focus:bg-white/[0.08] focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50"
                       />
                     </div>
-                    {errors.confirmPassword && <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>}
+                    {errors.confirmPassword && (
+                      <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>
+                    )}
                   </div>
 
                   {/* Error */}
@@ -173,10 +175,14 @@ export default function ResetPasswordPage() {
                     className="group relative mt-1 flex h-11 w-full items-center justify-center overflow-hidden rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-all hover:bg-blue-500 hover:shadow-blue-500/30 active:scale-[0.98] disabled:opacity-60"
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 transition-opacity group-hover:opacity-100" />
-                    {loading
-                      ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("auth.processing")}</>
-                      : t("auth.changePasswordArrow")
-                    }
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t("auth.processing")}
+                      </>
+                    ) : (
+                      t("auth.changePasswordArrow")
+                    )}
                   </button>
                 </form>
 
@@ -191,9 +197,7 @@ export default function ResetPasswordPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-[11px] text-slate-700">
-          © 2026 BioCore System. All rights reserved.
-        </p>
+        <p className="mt-6 text-center text-[11px] text-slate-700">© 2026 BioCore System. All rights reserved.</p>
       </div>
     </div>
   );

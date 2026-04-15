@@ -34,12 +34,18 @@ function getExt(name: string): string {
 function extColor(ext: string): string {
   const map: Record<string, string> = {
     PDF: "bg-red-500/20 text-red-400",
-    DOC: "bg-blue-500/20 text-blue-400", DOCX: "bg-blue-500/20 text-blue-400",
-    XLS: "bg-emerald-500/20 text-emerald-400", XLSX: "bg-emerald-500/20 text-emerald-400",
-    PPT: "bg-orange-500/20 text-orange-400", PPTX: "bg-orange-500/20 text-orange-400",
-    JPG: "bg-purple-500/20 text-purple-400", JPEG: "bg-purple-500/20 text-purple-400",
-    PNG: "bg-purple-500/20 text-purple-400", GIF: "bg-purple-500/20 text-purple-400",
-    ZIP: "bg-yellow-500/20 text-yellow-400", RAR: "bg-yellow-500/20 text-yellow-400",
+    DOC: "bg-blue-500/20 text-blue-400",
+    DOCX: "bg-blue-500/20 text-blue-400",
+    XLS: "bg-emerald-500/20 text-emerald-400",
+    XLSX: "bg-emerald-500/20 text-emerald-400",
+    PPT: "bg-orange-500/20 text-orange-400",
+    PPTX: "bg-orange-500/20 text-orange-400",
+    JPG: "bg-purple-500/20 text-purple-400",
+    JPEG: "bg-purple-500/20 text-purple-400",
+    PNG: "bg-purple-500/20 text-purple-400",
+    GIF: "bg-purple-500/20 text-purple-400",
+    ZIP: "bg-yellow-500/20 text-yellow-400",
+    RAR: "bg-yellow-500/20 text-yellow-400",
   };
   return map[ext] ?? "bg-accent text-muted-fg";
 }
@@ -67,8 +73,7 @@ export default function BoardWritePage() {
     setFileItems((prev) => [...prev, ...items]);
   }, []);
 
-  const removeFile = (uid: string) =>
-    setFileItems((prev) => prev.filter((f) => f.uid !== uid));
+  const removeFile = (uid: string) => setFileItems((prev) => prev.filter((f) => f.uid !== uid));
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -82,7 +87,7 @@ export default function BoardWritePage() {
       setSubmitError(null);
 
       setFileItems((prev) =>
-        prev.map((f) => ({ ...f, status: "staged" as FileStatus, progress: 0, errorMsg: undefined }))
+        prev.map((f) => ({ ...f, status: "staged" as FileStatus, progress: 0, errorMsg: undefined })),
       );
 
       const uploadedIds: number[] = [];
@@ -91,27 +96,25 @@ export default function BoardWritePage() {
         const currentItems = fileItems;
         for (const item of currentItems) {
           setFileItems((prev) =>
-            prev.map((f) => f.uid === item.uid ? { ...f, status: "uploading", progress: 0 } : f)
+            prev.map((f) => (f.uid === item.uid ? { ...f, status: "uploading", progress: 0 } : f)),
           );
 
           try {
             const result = await api.fileUploadWithProgress(item.file, (pct) => {
-              setFileItems((prev) =>
-                prev.map((f) => f.uid === item.uid ? { ...f, progress: pct } : f)
-              );
+              setFileItems((prev) => prev.map((f) => (f.uid === item.uid ? { ...f, progress: pct } : f)));
             });
 
             uploadedIds.push(result.fileId);
             setFileItems((prev) =>
               prev.map((f) =>
-                f.uid === item.uid ? { ...f, status: "done", progress: 100, fileId: result.fileId } : f
-              )
+                f.uid === item.uid ? { ...f, status: "done", progress: 100, fileId: result.fileId } : f,
+              ),
             );
           } catch (e: any) {
             setFileItems((prev) =>
               prev.map((f) =>
-                f.uid === item.uid ? { ...f, status: "error", errorMsg: e.message ?? t("board.uploadFailed") } : f
-              )
+                f.uid === item.uid ? { ...f, status: "error", errorMsg: e.message ?? t("board.uploadFailed") } : f,
+              ),
             );
             throw new Error(`"${item.file.name}" ${t("board.uploadFailed")}: ${e.message ?? ""}`);
           }
@@ -128,10 +131,8 @@ export default function BoardWritePage() {
 
         setFileItems((prev) =>
           prev.map((f) =>
-            f.fileId && uploadedIds.includes(f.fileId)
-              ? { ...f, status: "staged", progress: 0, fileId: undefined }
-              : f
-          )
+            f.fileId && uploadedIds.includes(f.fileId) ? { ...f, status: "staged", progress: 0, fileId: undefined } : f,
+          ),
         );
 
         setIdempotencyKey(crypto.randomUUID());
@@ -157,7 +158,6 @@ export default function BoardWritePage() {
           <CardTitle>{t("board.newPost")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
-
           {/* Title */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-fg">{t("board.title")}</label>
@@ -187,27 +187,33 @@ export default function BoardWritePage() {
             {/* Drop Zone */}
             <div
               onClick={() => !submitMut.isPending && inputRef.current?.click()}
-              onDragOver={(e) => { e.preventDefault(); if (!submitMut.isPending) setDragging(true); }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (!submitMut.isPending) setDragging(true);
+              }}
               onDragLeave={() => setDragging(false)}
-              onDrop={(e) => { if (!submitMut.isPending) handleDrop(e); else e.preventDefault(); }}
+              onDrop={(e) => {
+                if (!submitMut.isPending) handleDrop(e);
+                else e.preventDefault();
+              }}
               className={`flex flex-col items-center justify-center gap-2.5 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-all ${
                 submitMut.isPending
                   ? "cursor-not-allowed opacity-50 border-base"
                   : dragging
-                  ? "cursor-pointer border-blue-500/50 bg-blue-500/5 scale-[1.01]"
-                  : "cursor-pointer border-base hover:border-blue-500/30 hover:bg-accent"
+                    ? "cursor-pointer border-blue-500/50 bg-blue-500/5 scale-[1.01]"
+                    : "cursor-pointer border-base hover:border-blue-500/30 hover:bg-accent"
               }`}
             >
-              <div className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${dragging ? "bg-blue-500/20" : "bg-accent"}`}>
+              <div
+                className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${dragging ? "bg-blue-500/20" : "bg-accent"}`}
+              >
                 <Upload className={`h-5 w-5 transition-colors ${dragging ? "text-blue-400" : "text-muted-fg"}`} />
               </div>
               <div>
                 <div className="text-sm font-medium text-foreground">
                   {dragging ? t("board.dropHere") : t("board.dragOrClick")}
                 </div>
-                <div className="mt-0.5 text-xs text-muted-fg">
-                  {t("board.uploadOnSave")}
-                </div>
+                <div className="mt-0.5 text-xs text-muted-fg">{t("board.uploadOnSave")}</div>
               </div>
               <input
                 ref={inputRef}
@@ -232,7 +238,9 @@ export default function BoardWritePage() {
                       key={item.uid}
                       className="flex items-center gap-3 rounded-lg border border-base bg-surface p-3"
                     >
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold ${extColor(ext)}`}>
+                      <div
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold ${extColor(ext)}`}
+                      >
                         {ext.slice(0, 4)}
                       </div>
 
@@ -254,7 +262,9 @@ export default function BoardWritePage() {
                                 style={{ width: `${item.progress}%` }}
                               />
                             </div>
-                            <div className="mt-0.5 text-xs text-muted-fg">{t("board.uploading", { progress: item.progress })}</div>
+                            <div className="mt-0.5 text-xs text-muted-fg">
+                              {t("board.uploading", { progress: item.progress })}
+                            </div>
                           </div>
                         )}
 
@@ -286,7 +296,10 @@ export default function BoardWritePage() {
                 })}
 
                 <div className="px-1 text-xs text-muted-fg">
-                  {t("board.totalFiles", { count: fileItems.length, size: formatSize(fileItems.reduce((s, f) => s + f.file.size, 0)) })}
+                  {t("board.totalFiles", {
+                    count: fileItems.length,
+                    size: formatSize(fileItems.reduce((s, f) => s + f.file.size, 0)),
+                  })}
                 </div>
               </div>
             )}
@@ -314,13 +327,14 @@ export default function BoardWritePage() {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {t("common.saving")}
                 </>
-              ) : t("common.save")}
+              ) : (
+                t("common.save")
+              )}
             </Button>
             <Button variant="outline" onClick={() => nav(-1)} disabled={submitMut.isPending}>
               {t("common.cancel")}
             </Button>
           </div>
-
         </CardContent>
       </Card>
     </div>

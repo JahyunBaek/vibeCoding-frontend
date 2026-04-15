@@ -8,9 +8,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev        # 개발 서버 실행 (port 5173)
 npm run build      # 프로덕션 빌드
 npm run preview    # 빌드 결과물 미리보기
+npm run lint       # ESLint 검사
+npm run lint:fix   # ESLint 자동 수정
+npm run format     # Prettier 포맷 적용
+npm run format:check # Prettier 포맷 검사
+npm run typecheck  # 타입 체크 (tsc --noEmit)
+npm run check      # typecheck + lint + format:check (전체 품질 검사)
 ```
 
-테스트 프레임워크 없음. 타입 체크는 `npx tsc --noEmit`.
+테스트 프레임워크 없음.
 
 ## 백엔드 프록시
 

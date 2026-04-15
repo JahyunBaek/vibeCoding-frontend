@@ -5,15 +5,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth";
 import TenantSelector from "@/components/TenantSelector";
-import {
-  Shield,
-  Plus,
-  X,
-  Pencil,
-  Trash2,
-  MoreHorizontal,
-  ChevronRight,
-} from "lucide-react";
+import { Shield, Plus, X, Pencil, Trash2, MoreHorizontal, ChevronRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,15 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 // ------------- Role checkboxes for an action -------------
-function ActionRoleRow({
-  action,
-  allRoles,
-  isSuperAdmin,
-}: {
-  action: any;
-  allRoles: any[];
-  isSuperAdmin: boolean;
-}) {
+function ActionRoleRow({ action, allRoles, isSuperAdmin }: { action: any; allRoles: any[]; isSuperAdmin: boolean }) {
   const { t } = useTranslation();
   const { data: assignedRoles = [], refetch } = useQuery<string[]>({
     queryKey: ["perm", "action", action.actionId, "roles"],
@@ -64,10 +48,7 @@ function ActionRoleRow({
       {visibleRoles.map((role: any) => {
         const checked = assignedRoles.includes(role.roleKey);
         return (
-          <label
-            key={role.roleKey}
-            className="flex items-center gap-1.5 cursor-pointer text-xs select-none"
-          >
+          <label key={role.roleKey} className="flex items-center gap-1.5 cursor-pointer text-xs select-none">
             <input
               type="checkbox"
               checked={checked}
@@ -75,15 +56,11 @@ function ActionRoleRow({
               disabled={toggleMut.isPending}
               className="rounded"
             />
-            <span className={checked ? "font-medium text-foreground" : "text-muted-fg"}>
-              {role.roleKey}
-            </span>
+            <span className={checked ? "font-medium text-foreground" : "text-muted-fg"}>{role.roleKey}</span>
           </label>
         );
       })}
-      {visibleRoles.length === 0 && (
-        <span className="text-xs text-muted-fg">{t("admin.noRolesAvailable")}</span>
-      )}
+      {visibleRoles.length === 0 && <span className="text-xs text-muted-fg">{t("admin.noRolesAvailable")}</span>}
     </div>
   );
 }
@@ -171,7 +148,10 @@ function ActionsPanel({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => { setShowCreate((v) => !v); setEditAction(null); }}
+            onClick={() => {
+              setShowCreate((v) => !v);
+              setEditAction(null);
+            }}
           >
             {showCreate ? <X className="mr-1.5 h-3.5 w-3.5" /> : <Plus className="mr-1.5 h-3.5 w-3.5" />}
             {showCreate ? t("common.close") : t("admin.actionAdd")}
@@ -205,7 +185,9 @@ function ActionsPanel({
             >
               {t("common.create")}
             </Button>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>
+              {t("common.cancel")}
+            </Button>
           </div>
         </div>
       )}
@@ -224,15 +206,15 @@ function ActionsPanel({
               placeholder={t("admin.actionName")}
             />
             <label className="flex items-center gap-2 text-sm h-9">
-              <input
-                type="checkbox"
-                checked={editActionUseYn}
-                onChange={(e) => setEditActionUseYn(e.target.checked)}
-              />
+              <input type="checkbox" checked={editActionUseYn} onChange={(e) => setEditActionUseYn(e.target.checked)} />
               {t("common.use")}
             </label>
-            <Button onClick={() => saveMut.mutate()} disabled={!editActionName.trim() || saveMut.isPending}>{t("common.save")}</Button>
-            <Button variant="outline" onClick={() => setEditAction(null)}>{t("common.cancel")}</Button>
+            <Button onClick={() => saveMut.mutate()} disabled={!editActionName.trim() || saveMut.isPending}>
+              {t("common.save")}
+            </Button>
+            <Button variant="outline" onClick={() => setEditAction(null)}>
+              {t("common.cancel")}
+            </Button>
           </div>
         </div>
       )}
@@ -257,7 +239,9 @@ function ActionsPanel({
                       </Badge>
                     </div>
                     <div className="mt-2">
-                      <div className="text-[10px] text-muted-fg mb-1 uppercase tracking-wide">{t("admin.roleAssignment")}</div>
+                      <div className="text-[10px] text-muted-fg mb-1 uppercase tracking-wide">
+                        {t("admin.roleAssignment")}
+                      </div>
                       <ActionRoleRow action={a} allRoles={allRoles} isSuperAdmin={isSuperAdmin} />
                     </div>
                   </div>
@@ -269,14 +253,16 @@ function ActionsPanel({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => startEditAction(a)}>
-                        <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
+                        <Pencil className="mr-2 h-3.5 w-3.5" />
+                        {t("common.edit")}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                         onClick={() => setDeleteActionTarget(a)}
                       >
-                        <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
+                        <Trash2 className="mr-2 h-3.5 w-3.5" />
+                        {t("common.delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -289,7 +275,9 @@ function ActionsPanel({
 
       <ConfirmDialog
         open={!!deleteActionTarget}
-        onOpenChange={(open) => { if (!open) setDeleteActionTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteActionTarget(null);
+        }}
         title={t("admin.actionDeleteTitle")}
         description={t("admin.actionDeleteConfirm", { actionKey: deleteActionTarget?.actionKey })}
         confirmLabel={t("common.delete")}
@@ -397,7 +385,10 @@ export default function AdminScreensPage() {
             <CardTitle>{t("admin.screenList")}</CardTitle>
             <Button
               variant="outline"
-              onClick={() => { setShowCreate((v) => !v); setEditScreen(null); }}
+              onClick={() => {
+                setShowCreate((v) => !v);
+                setEditScreen(null);
+              }}
             >
               {showCreate ? <X className="mr-1.5 h-4 w-4" /> : <Plus className="mr-1.5 h-4 w-4" />}
               {showCreate ? t("common.close") : t("admin.screenAdd")}
@@ -427,7 +418,9 @@ export default function AdminScreensPage() {
                 >
                   {t("common.create")}
                 </Button>
-                <Button variant="outline" onClick={() => setShowCreate(false)}>{t("common.cancel")}</Button>
+                <Button variant="outline" onClick={() => setShowCreate(false)}>
+                  {t("common.cancel")}
+                </Button>
               </div>
             </div>
           )}
@@ -453,8 +446,15 @@ export default function AdminScreensPage() {
                   />
                   {t("common.use")}
                 </label>
-                <Button onClick={() => saveScreenMut.mutate()} disabled={!editScreenName.trim() || saveScreenMut.isPending}>{t("common.save")}</Button>
-                <Button variant="outline" onClick={() => setEditScreen(null)}>{t("common.cancel")}</Button>
+                <Button
+                  onClick={() => saveScreenMut.mutate()}
+                  disabled={!editScreenName.trim() || saveScreenMut.isPending}
+                >
+                  {t("common.save")}
+                </Button>
+                <Button variant="outline" onClick={() => setEditScreen(null)}>
+                  {t("common.cancel")}
+                </Button>
               </div>
             </div>
           )}
@@ -474,15 +474,9 @@ export default function AdminScreensPage() {
                   <tr
                     key={s.screenId}
                     className={`cursor-pointer transition-colors hover:bg-muted/60 ${
-                      selectedScreen?.screenId === s.screenId
-                        ? "bg-blue-500/10/40 border-l-2 border-l-blue-500"
-                        : ""
+                      selectedScreen?.screenId === s.screenId ? "bg-blue-500/10/40 border-l-2 border-l-blue-500" : ""
                     } ${editScreen?.screenId === s.screenId ? "bg-blue-500/10/30" : ""}`}
-                    onClick={() =>
-                      setSelectedScreen(
-                        selectedScreen?.screenId === s.screenId ? null : s
-                      )
-                    }
+                    onClick={() => setSelectedScreen(selectedScreen?.screenId === s.screenId ? null : s)}
                   >
                     <td className="px-4 py-3 font-mono text-xs font-semibold">{s.screenKey}</td>
                     <td className="px-4 py-3 text-foreground">{s.screenName}</td>
@@ -498,14 +492,16 @@ export default function AdminScreensPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => startEditScreen(s)}>
-                            <Pencil className="mr-2 h-3.5 w-3.5" />{t("common.edit")}
+                            <Pencil className="mr-2 h-3.5 w-3.5" />
+                            {t("common.edit")}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-400 focus:text-red-400 focus:bg-red-500/10"
                             onClick={() => setDeleteScreenTarget(s)}
                           >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" />{t("common.delete")}
+                            <Trash2 className="mr-2 h-3.5 w-3.5" />
+                            {t("common.delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -521,9 +517,7 @@ export default function AdminScreensPage() {
                 )}
               </tbody>
             </table>
-            <div className="border-t px-4 py-3 text-xs text-muted-fg">
-              {t("admin.screenClickGuide")}
-            </div>
+            <div className="border-t px-4 py-3 text-xs text-muted-fg">{t("admin.screenClickGuide")}</div>
           </CardContent>
         </Card>
 
@@ -549,7 +543,9 @@ export default function AdminScreensPage() {
 
       <ConfirmDialog
         open={!!deleteScreenTarget}
-        onOpenChange={(open) => { if (!open) setDeleteScreenTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteScreenTarget(null);
+        }}
         title={t("admin.screenDeleteTitle")}
         description={t("admin.screenDeleteConfirm", { screenKey: deleteScreenTarget?.screenKey })}
         confirmLabel={t("common.delete")}

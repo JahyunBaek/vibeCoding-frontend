@@ -9,15 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthStore } from "@/stores/auth";
 import type { MenuNode } from "@/types/menu";
 
-function MenuItem({
-  node,
-  depth = 0,
-  collapsed,
-}: {
-  node: MenuNode;
-  depth?: number;
-  collapsed: boolean;
-}) {
+function MenuItem({ node, depth = 0, collapsed }: { node: MenuNode; depth?: number; collapsed: boolean }) {
   const loc = useLocation();
   const active = node.path && loc.pathname === node.path;
 
@@ -27,11 +19,7 @@ function MenuItem({
   if (!node.path && node.children?.length) {
     return (
       <div className="mt-2">
-        {!collapsed && (
-          <div className="px-3 text-xs font-semibold text-muted-fg">
-            {node.name}
-          </div>
-        )}
+        {!collapsed && <div className="px-3 text-xs font-semibold text-muted-fg">{node.name}</div>}
         {collapsed && <div className="my-1 h-px bg-border" />}
         <div className="mt-1 space-y-1">
           {node.children.map((c) => (
@@ -51,7 +39,7 @@ function MenuItem({
         title={node.name}
         className={cn(
           "flex h-9 w-9 mx-auto items-center justify-center rounded-md text-sm font-medium text-foreground hover:bg-accent",
-          active && "bg-accent"
+          active && "bg-accent",
         )}
       >
         {node.name.charAt(0)}
@@ -66,7 +54,7 @@ function MenuItem({
       className={cn(
         "block rounded-md py-2 text-sm text-foreground hover:bg-accent",
         padding,
-        active && "bg-accent font-medium"
+        active && "bg-accent font-medium",
       )}
     >
       {node.name}
@@ -103,7 +91,7 @@ export default function Sidebar() {
     <aside
       className={cn(
         "hidden h-screen shrink-0 border-r border-base bg-surface md:flex flex-col transition-[width] duration-200",
-        collapsed ? "w-16" : "w-[280px]"
+        collapsed ? "w-16" : "w-[280px]",
       )}
     >
       {/* 로고 + 토글 */}
@@ -112,31 +100,22 @@ export default function Sidebar() {
           <img src={logoUrl} alt={companyName} className="h-7 w-7 shrink-0 rounded-md object-cover" />
         ) : (
           <Avatar className="h-7 w-7 shrink-0 rounded-md">
-            <AvatarFallback className="rounded-md text-xs font-bold">
-              {companyName.charAt(0)}
-            </AvatarFallback>
+            <AvatarFallback className="rounded-md text-xs font-bold">{companyName.charAt(0)}</AvatarFallback>
           </Avatar>
         )}
-        {!collapsed && (
-          <div className="flex-1 text-sm font-semibold text-foreground">{companyName}</div>
-        )}
+        {!collapsed && <div className="flex-1 text-sm font-semibold text-foreground">{companyName}</div>}
         <button
           onClick={() => setCollapsed((v) => !v)}
           className="ml-auto shrink-0 rounded-md p-1 text-muted-fg hover:bg-accent hover:text-foreground"
           title={collapsed ? t("sidebar.expand") : t("sidebar.collapse")}
         >
-          {collapsed
-            ? <PanelLeftOpen className="h-4 w-4" />
-            : <PanelLeftClose className="h-4 w-4" />
-          }
+          {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
         </button>
       </div>
 
       {/* 메뉴 */}
       <div className={cn("flex-1 overflow-y-auto px-2", collapsed && "px-1")}>
-        {!collapsed && (
-          <div className="px-3 text-xs font-semibold text-muted-fg">{t("sidebar.navigation")}</div>
-        )}
+        {!collapsed && <div className="px-3 text-xs font-semibold text-muted-fg">{t("sidebar.navigation")}</div>}
         <div className="mt-2 space-y-1">
           {(data ?? []).map((n: MenuNode) => (
             <MenuItem key={n.menuId} node={n} collapsed={collapsed} />
@@ -146,14 +125,9 @@ export default function Sidebar() {
 
       {/* 사용자 */}
       {user && (
-        <div className={cn(
-          "border-t border-base p-3",
-          collapsed ? "flex justify-center" : "flex items-center gap-2"
-        )}>
+        <div className={cn("border-t border-base p-3", collapsed ? "flex justify-center" : "flex items-center gap-2")}>
           <Avatar className="h-7 w-7 shrink-0">
-            <AvatarFallback className="text-xs">
-              {user.name?.slice(0, 1) ?? "U"}
-            </AvatarFallback>
+            <AvatarFallback className="text-xs">{user.name?.slice(0, 1) ?? "U"}</AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="min-w-0">

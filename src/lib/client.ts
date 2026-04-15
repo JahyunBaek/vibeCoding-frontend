@@ -6,8 +6,8 @@ import type { ApiResponse } from "@/types/api";
 // axios instance
 // --------------------------------------------
 const client: AxiosInstance = axios.create({
-  baseURL: "",            // same-origin
-  withCredentials: true,  // ✅ refresh cookie 전송
+  baseURL: "", // same-origin
+  withCredentials: true, // ✅ refresh cookie 전송
   timeout: 15000,
 });
 
@@ -26,21 +26,14 @@ let pendingQueue: Pending[] = [];
 
 function isAuthUrl(url: string | undefined) {
   if (!url) return false;
-  return (
-    url.includes("/api/auth/login") ||
-    url.includes("/api/auth/logout") ||
-    url.includes("/api/auth/refresh")
-  );
+  return url.includes("/api/auth/login") || url.includes("/api/auth/logout") || url.includes("/api/auth/refresh");
 }
 
 function flushQueueSuccess() {
   const q = pendingQueue;
   pendingQueue = [];
   for (const item of q) {
-    client
-      .request(item.config)
-      .then(item.resolve)
-      .catch(item.reject);
+    client.request(item.config).then(item.resolve).catch(item.reject);
   }
 }
 
@@ -70,11 +63,9 @@ export async function refresh(): Promise<boolean> {
 
   refreshPromise = (async () => {
     try {
-      const res = await axios.post<ApiResponse<{ accessToken: string; user: any }>>(
-        "/api/auth/refresh",
-        null,
-        { withCredentials: true }
-      );
+      const res = await axios.post<ApiResponse<{ accessToken: string; user: any }>>("/api/auth/refresh", null, {
+        withCredentials: true,
+      });
 
       if (!res.data?.success) return false;
 
@@ -127,7 +118,7 @@ client.interceptors.response.use(
       flushQueueFail(err);
       throw error;
     }
-  }
+  },
 );
 
 // --------------------------------------------
@@ -137,16 +128,14 @@ export async function apiRequest<T>(
   method: string,
   url: string,
   body?: any,
-  opts?: { isFormData?: boolean; headers?: Record<string, string> }
+  opts?: { isFormData?: boolean; headers?: Record<string, string> },
 ): Promise<T> {
   try {
     const res = await client.request<ApiResponse<T>>({
       method,
       url,
       data: body,
-      headers: opts?.isFormData
-        ? opts?.headers
-        : { "Content-Type": "application/json", ...opts?.headers },
+      headers: opts?.isFormData ? opts?.headers : { "Content-Type": "application/json", ...opts?.headers },
     });
     const json = res.data;
     if (!json?.success) {
@@ -157,10 +146,7 @@ export async function apiRequest<T>(
   } catch (e: any) {
     if (axios.isAxiosError(e)) {
       const data = e.response?.data as ApiResponse<any> | undefined;
-      const msg =
-        data?.error?.message ||
-        e.message ||
-        `Request failed (${e.response?.status ?? "unknown"})`;
+      const msg = data?.error?.message || e.message || `Request failed (${e.response?.status ?? "unknown"})`;
       throw new Error(msg);
     }
     throw e;

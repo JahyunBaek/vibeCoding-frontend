@@ -20,9 +20,9 @@ export default function AdminSettingsPage() {
 
   const CONFIG_META: { key: string; label: string; placeholder: string; type?: string }[] = [
     { key: "company_name", label: t("admin.settingsCompanyName"), placeholder: "My Company" },
-    { key: "logo_url",     label: t("admin.settingsLogoUrl"),     placeholder: "https://..." },
-    { key: "timezone",     label: t("admin.settingsTimezone"),    placeholder: "Asia/Seoul" },
-    { key: "locale",       label: t("admin.settingsLocale"),      placeholder: "ko", type: "locale" },
+    { key: "logo_url", label: t("admin.settingsLogoUrl"), placeholder: "https://..." },
+    { key: "timezone", label: t("admin.settingsTimezone"), placeholder: "Asia/Seoul" },
+    { key: "locale", label: t("admin.settingsLocale"), placeholder: "ko", type: "locale" },
   ];
 
   const { data, refetch } = useQuery({
@@ -37,7 +37,9 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     if (!data) return;
     const map: Record<string, string> = {};
-    data.forEach((c) => { map[c.configKey] = c.configValue ?? ""; });
+    data.forEach((c) => {
+      map[c.configKey] = c.configValue ?? "";
+    });
     setForm(map);
     setSuccess(false);
   }, [data]);
@@ -64,7 +66,13 @@ export default function AdminSettingsPage() {
     <div className="mx-auto max-w-2xl space-y-5">
       <div className="flex items-center justify-between">
         <div className="text-xl font-semibold">{t("admin.settingsPageTitle")}</div>
-        <TenantSelector value={selectedTenantId} onChange={(id) => { setSelectedTenantId(id); setSuccess(false); }} />
+        <TenantSelector
+          value={selectedTenantId}
+          onChange={(id) => {
+            setSelectedTenantId(id);
+            setSuccess(false);
+          }}
+        />
       </div>
 
       <Card>
@@ -86,7 +94,9 @@ export default function AdminSettingsPage() {
                   disabled={saveMut.isPending}
                 >
                   {LOCALE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
                   ))}
                 </select>
               ) : (

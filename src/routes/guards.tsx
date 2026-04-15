@@ -7,11 +7,12 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { accessToken, initialized } = useAuthStore();
   const loc = useLocation();
 
-  if (!initialized) return (
-    <div className="flex h-screen items-center justify-center">
-      <Spinner size="lg" />
-    </div>
-  );
+  if (!initialized)
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
   if (!accessToken) return <Navigate to="/login" replace state={{ from: loc.pathname }} />;
   return <>{children}</>;
 }

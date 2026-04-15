@@ -9,13 +9,13 @@ const badgeVariants = cva(
       variant: {
         default: "border-transparent bg-foreground text-background",
         secondary: "border-transparent bg-accent text-foreground",
-        outline: "border-base text-foreground"
-      }
+        outline: "border-base text-foreground",
+      },
     },
     defaultVariants: {
-      variant: "secondary"
-    }
-  }
+      variant: "secondary",
+    },
+  },
 );
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}

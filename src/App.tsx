@@ -22,10 +22,7 @@ export default function App() {
 
     (async () => {
       try {
-        const data = await apiRequest<{ accessToken: string; user: UserSummary }>(
-          "POST",
-          "/api/auth/refresh"
-        );
+        const data = await apiRequest<{ accessToken: string; user: UserSummary }>("POST", "/api/auth/refresh");
         if (data?.accessToken) {
           setAuth(data.accessToken, data.user);
           try {
@@ -33,7 +30,9 @@ export default function App() {
             const permMap: Record<string, string[]> = {};
             for (const p of perms) permMap[p.screenKey] = p.actions;
             setPermissions(permMap);
-          } catch { /* ignore, permissions will be empty */ }
+          } catch {
+            /* ignore, permissions will be empty */
+          }
         } else {
           clear();
         }

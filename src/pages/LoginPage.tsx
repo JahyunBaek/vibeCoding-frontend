@@ -27,13 +27,18 @@ export default function LoginPage() {
     nav(from, { replace: true });
   }, [initialized, accessToken, nav, location.state]);
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<LoginFormData>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { username: "superadmin", password: "Admin1234!" },
   });
 
-  const [error, setError]       = useState<string | null>(null);
-  const [loading, setLoading]   = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit = handleSubmit(async (data) => {
     setError(null);
@@ -46,7 +51,9 @@ export default function LoginPage() {
         const permMap: Record<string, string[]> = {};
         for (const p of perms) permMap[p.screenKey] = p.actions;
         setPermissions(permMap);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       nav("/dashboard");
     } catch (err: any) {
       const msg = err?.message ?? t("auth.loginFailed");
@@ -59,7 +66,6 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-12">
-
       {/* ── 배경 그라디언트 & 장식 ─────────────────────────────── */}
       <div className="pointer-events-none absolute inset-0">
         {/* 중앙 빛 */}
@@ -79,7 +85,6 @@ export default function LoginPage() {
 
       {/* ── 메인 카드 ────────────────────────────────────────────── */}
       <div className="relative z-10 w-full max-w-[400px]">
-
         {/* 로고 */}
         <div className="mb-8 flex flex-col items-center gap-3">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg shadow-blue-500/30 ring-4 ring-blue-500/10">
@@ -93,12 +98,10 @@ export default function LoginPage() {
 
         {/* 카드 본체 */}
         <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] shadow-2xl shadow-black/40 backdrop-blur-xl">
-
           {/* 카드 상단 강조선 */}
           <div className="h-px w-full bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
           <div className="p-8">
-
             {/* 헤더 */}
             <div className="mb-6">
               <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-400">
@@ -114,7 +117,6 @@ export default function LoginPage() {
 
             {/* 폼 */}
             <form className="space-y-3.5" onSubmit={onSubmit}>
-
               {/* 아이디 */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -167,10 +169,14 @@ export default function LoginPage() {
                 className="group relative mt-1 flex h-11 w-full items-center justify-center overflow-hidden rounded-xl bg-blue-600 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 transition-all hover:bg-blue-500 hover:shadow-blue-500/30 active:scale-[0.98] disabled:opacity-60"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 transition-opacity group-hover:opacity-100" />
-                {loading
-                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t("auth.loginLoading")}</>
-                  : t("auth.loginArrow")
-                }
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t("auth.loginLoading")}
+                  </>
+                ) : (
+                  t("auth.loginArrow")
+                )}
               </button>
 
               {/* 구분선 */}
@@ -184,7 +190,7 @@ export default function LoginPage() {
               <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { label: "Google", mark: "G" },
-                  { label: "Kakao",  mark: "K" },
+                  { label: "Kakao", mark: "K" },
                 ].map((s) => (
                   <button
                     key={s.label}
@@ -208,22 +214,27 @@ export default function LoginPage() {
             <div className="grid grid-cols-3 gap-2">
               {[
                 { role: t("auth.superAdmin"), id: "superadmin", pw: "Admin1234!", accent: "violet" },
-                { role: t("auth.admin"),      id: "admin",      pw: "Admin1234!",  accent: "blue"   },
-                { role: t("auth.user"),        id: "user",       pw: "User1234!",   accent: "slate"  },
+                { role: t("auth.admin"), id: "admin", pw: "Admin1234!", accent: "blue" },
+                { role: t("auth.user"), id: "user", pw: "User1234!", accent: "slate" },
               ].map((a) => (
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => { setValue("username", a.id); setValue("password", a.pw); }}
+                  onClick={() => {
+                    setValue("username", a.id);
+                    setValue("password", a.pw);
+                  }}
                   className={`flex flex-col items-start rounded-lg border px-3 py-2.5 text-left transition-all ${
                     a.accent === "violet"
                       ? "border-violet-500/20 bg-violet-500/[0.06] hover:border-violet-500/40 hover:bg-violet-500/10"
                       : a.accent === "blue"
-                      ? "border-white/[0.07] bg-white/[0.04] hover:border-blue-500/30 hover:bg-blue-500/10"
-                      : "border-white/[0.07] bg-white/[0.04] hover:border-white/[0.12] hover:bg-white/[0.07]"
+                        ? "border-white/[0.07] bg-white/[0.04] hover:border-blue-500/30 hover:bg-blue-500/10"
+                        : "border-white/[0.07] bg-white/[0.04] hover:border-white/[0.12] hover:bg-white/[0.07]"
                   }`}
                 >
-                  <span className={`text-[11px] font-semibold ${a.accent === "violet" ? "text-violet-300" : "text-slate-300"}`}>
+                  <span
+                    className={`text-[11px] font-semibold ${a.accent === "violet" ? "text-violet-300" : "text-slate-300"}`}
+                  >
                     {a.role}
                   </span>
                   <span className="mt-0.5 font-mono text-[10px] text-slate-600">{a.id}</span>
@@ -233,9 +244,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-[11px] text-slate-700">
-          © 2026 BioCore System. All rights reserved.
-        </p>
+        <p className="mt-6 text-center text-[11px] text-slate-700">© 2026 BioCore System. All rights reserved.</p>
       </div>
     </div>
   );

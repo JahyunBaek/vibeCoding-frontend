@@ -78,8 +78,14 @@ export default function VariantsPage() {
     setPage(1);
   };
 
-  const hasActiveFilters = filters.sampleId || filters.geneSymbol || filters.variantType ||
-    filters.impact || filters.acmgClass || filters.gnomadAfMax || filters.search;
+  const hasActiveFilters =
+    filters.sampleId ||
+    filters.geneSymbol ||
+    filters.variantType ||
+    filters.impact ||
+    filters.acmgClass ||
+    filters.gnomadAfMax ||
+    filters.search;
 
   return (
     <div className="space-y-4">
@@ -94,24 +100,33 @@ export default function VariantsPage() {
           value={filters.geneSymbol}
           onChange={(e) => updateFilter("geneSymbol", e.target.value)}
         />
-        <select className="h-8 rounded-md border px-2 text-xs" value={filters.variantType}
-                onChange={(e) => updateFilter("variantType", e.target.value)}>
+        <select
+          className="h-8 rounded-md border px-2 text-xs"
+          value={filters.variantType}
+          onChange={(e) => updateFilter("variantType", e.target.value)}
+        >
           <option value="">{t("genomics.variant.allType")}</option>
           <option value="SNV">SNV</option>
           <option value="INDEL">InDel</option>
           <option value="CNV">CNV</option>
           <option value="SV">SV</option>
         </select>
-        <select className="h-8 rounded-md border px-2 text-xs" value={filters.impact}
-                onChange={(e) => updateFilter("impact", e.target.value)}>
+        <select
+          className="h-8 rounded-md border px-2 text-xs"
+          value={filters.impact}
+          onChange={(e) => updateFilter("impact", e.target.value)}
+        >
           <option value="">{t("genomics.variant.allImpact")}</option>
           <option value="HIGH">HIGH</option>
           <option value="MODERATE">MODERATE</option>
           <option value="LOW">LOW</option>
           <option value="MODIFIER">MODIFIER</option>
         </select>
-        <select className="h-8 rounded-md border px-2 text-xs" value={filters.acmgClass}
-                onChange={(e) => updateFilter("acmgClass", e.target.value)}>
+        <select
+          className="h-8 rounded-md border px-2 text-xs"
+          value={filters.acmgClass}
+          onChange={(e) => updateFilter("acmgClass", e.target.value)}
+        >
           <option value="">{t("genomics.variant.allAcmg")}</option>
           <option value="PATHOGENIC">Pathogenic</option>
           <option value="LIKELY_PATHOGENIC">Likely Pathogenic</option>
@@ -137,17 +152,18 @@ export default function VariantsPage() {
         {filters.sampleId && (
           <Badge variant="outline" className="flex items-center gap-1 text-xs">
             {t("genomics.variant.sampleFilter")}: #{filters.sampleId}
-            <button onClick={() => updateFilter("sampleId", undefined)} className="ml-1 hover:text-destructive">x</button>
+            <button onClick={() => updateFilter("sampleId", undefined)} className="ml-1 hover:text-destructive">
+              x
+            </button>
           </Badge>
         )}
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={resetFilters}>
-            <RotateCcw className="mr-1 h-3 w-3" />{t("genomics.variant.resetFilters")}
+            <RotateCcw className="mr-1 h-3 w-3" />
+            {t("genomics.variant.resetFilters")}
           </Button>
         )}
-        <span className="ml-auto self-center text-xs text-muted-foreground">
-          {total} results
-        </span>
+        <span className="ml-auto self-center text-xs text-muted-foreground">{total} results</span>
       </div>
 
       {/* Table */}
@@ -170,17 +186,24 @@ export default function VariantsPage() {
           </thead>
           <tbody>
             {items.length === 0 && (
-              <tr><td colSpan={11} className="py-8 text-center text-sm text-muted-foreground">
-                {hasActiveFilters ? t("genomics.variant.noResults") : t("common.noData")}
-              </td></tr>
+              <tr>
+                <td colSpan={11} className="py-8 text-center text-sm text-muted-foreground">
+                  {hasActiveFilters ? t("genomics.variant.noResults") : t("common.noData")}
+                </td>
+              </tr>
             )}
             {items.map((v: any) => (
-              <tr key={v.variantId} className="border-t hover:bg-muted/30 cursor-pointer"
-                  onClick={() => setDetailId(v.variantId)}>
+              <tr
+                key={v.variantId}
+                className="border-t hover:bg-muted/30 cursor-pointer"
+                onClick={() => setDetailId(v.variantId)}
+              >
                 <td className="px-3 py-1.5 font-mono font-semibold">{v.geneSymbol}</td>
                 <td className="px-3 py-1.5 font-mono">{v.hgvsC ?? "-"}</td>
                 <td className="px-3 py-1.5 font-mono">{v.hgvsP ?? "-"}</td>
-                <td className="px-3 py-1.5"><Badge variant="outline">{v.variantType}</Badge></td>
+                <td className="px-3 py-1.5">
+                  <Badge variant="outline">{v.variantType}</Badge>
+                </td>
                 <td className="px-3 py-1.5">{v.consequence ?? "-"}</td>
                 <td className="px-3 py-1.5">
                   {v.impact && <Badge className={IMPACT_COLORS[v.impact] ?? ""}>{v.impact}</Badge>}
@@ -189,9 +212,7 @@ export default function VariantsPage() {
                   {v.acmgClass && <Badge className={ACMG_COLORS[v.acmgClass] ?? ""}>{v.acmgClass}</Badge>}
                 </td>
                 <td className="px-3 py-1.5">{v.zygosity ?? "-"}</td>
-                <td className="px-3 py-1.5 text-right font-mono">
-                  {v.gnomadAf != null ? v.gnomadAf.toFixed(4) : "-"}
-                </td>
+                <td className="px-3 py-1.5 text-right font-mono">{v.gnomadAf != null ? v.gnomadAf.toFixed(4) : "-"}</td>
                 <td className="px-3 py-1.5">{v.clinvarId ?? "-"}</td>
                 <td className="px-3 py-1.5 font-mono text-muted-foreground">{v.sampleNo}</td>
               </tr>
@@ -202,41 +223,113 @@ export default function VariantsPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</Button>
-          <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            Prev
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {page} / {totalPages}
+          </span>
+          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+            Next
+          </Button>
         </div>
       )}
 
       {/* Variant Detail Modal */}
       {detailId !== null && detail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => { setDetailId(null); setAiResult(null); }}>
-          <div className="w-full max-w-2xl rounded-lg bg-background p-6 shadow-xl max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => {
+            setDetailId(null);
+            setAiResult(null);
+          }}
+        >
+          <div
+            className="w-full max-w-2xl rounded-lg bg-background p-6 shadow-xl max-h-[85vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">{t("genomics.variant.detail")}: {detail.geneSymbol}</h2>
-              <Button variant="ghost" size="sm" onClick={() => { setDetailId(null); setAiResult(null); }}><X className="h-4 w-4" /></Button>
+              <h2 className="text-lg font-semibold">
+                {t("genomics.variant.detail")}: {detail.geneSymbol}
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setDetailId(null);
+                  setAiResult(null);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
 
             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.gene")}:</span> <span className="font-mono font-semibold">{detail.geneSymbol}</span></div>
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.chromosome")}:</span> {detail.chromosome}:{detail.position?.toLocaleString()}</div>
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.refAllele")} / {t("genomics.variant.altAllele")}:</span> <span className="font-mono">{detail.refAllele} &rarr; {detail.altAllele}</span></div>
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.variantType")}:</span> <Badge variant="outline">{detail.variantType}</Badge></div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.gene")}:</span>{" "}
+                <span className="font-mono font-semibold">{detail.geneSymbol}</span>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.chromosome")}:</span>{" "}
+                {detail.chromosome}:{detail.position?.toLocaleString()}
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">
+                  {t("genomics.variant.refAllele")} / {t("genomics.variant.altAllele")}:
+                </span>{" "}
+                <span className="font-mono">
+                  {detail.refAllele} &rarr; {detail.altAllele}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.variantType")}:</span>{" "}
+                <Badge variant="outline">{detail.variantType}</Badge>
+              </div>
 
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.hgvsC")}:</span> <span className="font-mono text-xs">{detail.hgvsC ?? "-"}</span></div>
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.hgvsP")}:</span> <span className="font-mono text-xs">{detail.hgvsP ?? "-"}</span></div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.hgvsC")}:</span>{" "}
+                <span className="font-mono text-xs">{detail.hgvsC ?? "-"}</span>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.hgvsP")}:</span>{" "}
+                <span className="font-mono text-xs">{detail.hgvsP ?? "-"}</span>
+              </div>
 
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.consequence")}:</span> {detail.consequence ?? "-"}</div>
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.impact")}:</span> {detail.impact && <Badge className={IMPACT_COLORS[detail.impact] ?? ""}>{detail.impact}</Badge>}</div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.consequence")}:</span>{" "}
+                {detail.consequence ?? "-"}
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.impact")}:</span>{" "}
+                {detail.impact && <Badge className={IMPACT_COLORS[detail.impact] ?? ""}>{detail.impact}</Badge>}
+              </div>
 
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.acmgClass")}:</span> {detail.acmgClass && <Badge className={ACMG_COLORS[detail.acmgClass] ?? ""}>{detail.acmgClass}</Badge>}</div>
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.zygosity")}:</span> {detail.zygosity ?? "-"}</div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.acmgClass")}:</span>{" "}
+                {detail.acmgClass && <Badge className={ACMG_COLORS[detail.acmgClass] ?? ""}>{detail.acmgClass}</Badge>}
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.zygosity")}:</span>{" "}
+                {detail.zygosity ?? "-"}
+              </div>
 
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.quality")}:</span> {detail.quality?.toFixed(1) ?? "-"}</div>
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.readDepth")}:</span> {detail.readDepth ?? "-"}</div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.quality")}:</span>{" "}
+                {detail.quality?.toFixed(1) ?? "-"}
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.readDepth")}:</span>{" "}
+                {detail.readDepth ?? "-"}
+              </div>
 
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.alleleFreq")}:</span> {detail.alleleFreq != null ? (detail.alleleFreq * 100).toFixed(1) + "%" : "-"}</div>
-              <div><span className="font-medium text-muted-foreground">{t("genomics.variant.gnomadAf")}:</span> {detail.gnomadAf != null ? detail.gnomadAf.toFixed(6) : "-"}</div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.alleleFreq")}:</span>{" "}
+                {detail.alleleFreq != null ? (detail.alleleFreq * 100).toFixed(1) + "%" : "-"}
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">{t("genomics.variant.gnomadAf")}:</span>{" "}
+                {detail.gnomadAf != null ? detail.gnomadAf.toFixed(6) : "-"}
+              </div>
             </div>
 
             {/* External DB Links */}
@@ -244,32 +337,47 @@ export default function VariantsPage() {
               <h3 className="mb-2 text-sm font-semibold">{t("genomics.variant.externalLinks")}</h3>
               <div className="flex flex-wrap gap-2">
                 {detail.clinvarId && (
-                  <a href={`https://www.ncbi.nlm.nih.gov/clinvar/variation/${detail.clinvarId}/`}
-                     target="_blank" rel="noopener noreferrer"
-                     className="inline-flex items-center gap-1 rounded border px-2.5 py-1 text-xs hover:bg-muted transition-colors">
+                  <a
+                    href={`https://www.ncbi.nlm.nih.gov/clinvar/variation/${detail.clinvarId}/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded border px-2.5 py-1 text-xs hover:bg-muted transition-colors"
+                  >
                     <ExternalLink className="h-3 w-3" /> ClinVar: {detail.clinvarId}
                   </a>
                 )}
                 {detail.cosmicId && (
-                  <a href={`https://cancer.sanger.ac.uk/cosmic/mutation/overview?id=${detail.cosmicId.replace("COSM", "")}`}
-                     target="_blank" rel="noopener noreferrer"
-                     className="inline-flex items-center gap-1 rounded border px-2.5 py-1 text-xs hover:bg-muted transition-colors">
+                  <a
+                    href={`https://cancer.sanger.ac.uk/cosmic/mutation/overview?id=${detail.cosmicId.replace("COSM", "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded border px-2.5 py-1 text-xs hover:bg-muted transition-colors"
+                  >
                     <ExternalLink className="h-3 w-3" /> COSMIC: {detail.cosmicId}
                   </a>
                 )}
-                <a href={`https://gnomad.broadinstitute.org/region/${detail.chromosome?.replace("chr", "")}-${detail.position}-${(detail.position ?? 0) + 1}?dataset=gnomad_r4`}
-                   target="_blank" rel="noopener noreferrer"
-                   className="inline-flex items-center gap-1 rounded border px-2.5 py-1 text-xs hover:bg-muted transition-colors">
+                <a
+                  href={`https://gnomad.broadinstitute.org/region/${detail.chromosome?.replace("chr", "")}-${detail.position}-${(detail.position ?? 0) + 1}?dataset=gnomad_r4`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded border px-2.5 py-1 text-xs hover:bg-muted transition-colors"
+                >
                   <ExternalLink className="h-3 w-3" /> gnomAD
                 </a>
-                <a href={`https://www.genenames.org/tools/search/#!/genes?query=${detail.geneSymbol}`}
-                   target="_blank" rel="noopener noreferrer"
-                   className="inline-flex items-center gap-1 rounded border px-2.5 py-1 text-xs hover:bg-muted transition-colors">
+                <a
+                  href={`https://www.genenames.org/tools/search/#!/genes?query=${detail.geneSymbol}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded border px-2.5 py-1 text-xs hover:bg-muted transition-colors"
+                >
                   <ExternalLink className="h-3 w-3" /> HGNC: {detail.geneSymbol}
                 </a>
-                <a href={`https://www.ncbi.nlm.nih.gov/gene/?term=${detail.geneSymbol}`}
-                   target="_blank" rel="noopener noreferrer"
-                   className="inline-flex items-center gap-1 rounded border px-2.5 py-1 text-xs hover:bg-muted transition-colors">
+                <a
+                  href={`https://www.ncbi.nlm.nih.gov/gene/?term=${detail.geneSymbol}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded border px-2.5 py-1 text-xs hover:bg-muted transition-colors"
+                >
                   <ExternalLink className="h-3 w-3" /> NCBI Gene
                 </a>
               </div>
@@ -279,13 +387,26 @@ export default function VariantsPage() {
             <div className="mt-4 border-t pt-4">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-semibold">{t("genomics.variant.aiInterpretation")}</h3>
-                <Button size="sm" variant="outline"
-                        disabled={aiMut.isPending}
-                        onClick={() => { setAiResult(null); aiMut.mutate(detail.variantId); }}>
-                  {aiMut.isPending
-                    ? <><Loader2 className="mr-1 h-3 w-3 animate-spin" />{t("genomics.variant.aiInterpreting")}</>
-                    : <><Sparkles className="mr-1 h-3 w-3" />{t("genomics.variant.aiInterpret")}</>
-                  }
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={aiMut.isPending}
+                  onClick={() => {
+                    setAiResult(null);
+                    aiMut.mutate(detail.variantId);
+                  }}
+                >
+                  {aiMut.isPending ? (
+                    <>
+                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      {t("genomics.variant.aiInterpreting")}
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-1 h-3 w-3" />
+                      {t("genomics.variant.aiInterpret")}
+                    </>
+                  )}
                 </Button>
               </div>
               {aiResult && (

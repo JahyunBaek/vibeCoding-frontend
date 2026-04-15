@@ -11,7 +11,7 @@ export const sampleApi = {
     if (search) params.set("search", search);
     return apiRequest<{ items: any[]; page: number; size: number; total: number }>(
       "GET",
-      `/api/sample/patients?${params}`
+      `/api/sample/patients?${params}`,
     );
   },
 
@@ -25,7 +25,7 @@ export const sampleApi = {
     if (search) params.set("search", search);
     return apiRequest<{ items: any[]; page: number; size: number; total: number }>(
       "GET",
-      `/api/sample/trials?${params}`
+      `/api/sample/trials?${params}`,
     );
   },
 

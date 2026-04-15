@@ -23,8 +23,13 @@ function formatRelativeTime(dateStr: string, t: (key: string, opts?: any) => str
 
 function avatarColor(name: string): string {
   const colors = [
-    "bg-blue-500", "bg-emerald-500", "bg-violet-500",
-    "bg-orange-500", "bg-rose-500", "bg-cyan-500", "bg-amber-500",
+    "bg-blue-500",
+    "bg-emerald-500",
+    "bg-violet-500",
+    "bg-orange-500",
+    "bg-rose-500",
+    "bg-cyan-500",
+    "bg-amber-500",
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -80,21 +85,16 @@ export default function BoardListPage() {
   const isToday = (dateStr: string) => {
     const d = new Date(dateStr);
     const now = new Date();
-    return d.getFullYear() === now.getFullYear() &&
-      d.getMonth() === now.getMonth() &&
-      d.getDate() === now.getDate();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
   };
 
   return (
     <div className="space-y-5">
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground">{menuName}</h1>
-          {total > 0 && (
-            <p className="mt-0.5 text-sm text-muted-fg">{t("board.totalCount", { count: total })}</p>
-          )}
+          {total > 0 && <p className="mt-0.5 text-sm text-muted-fg">{t("board.totalCount", { count: total })}</p>}
         </div>
         <Can screen={SCREENS.BOARD_POST} action={ACTIONS.CREATE}>
           <Link to={`/boards/${boardId}/new`}>
@@ -127,12 +127,13 @@ export default function BoardListPage() {
             </button>
           )}
         </div>
-        <Button type="submit" variant="outline" size="sm" className="shrink-0">{t("common.search")}</Button>
+        <Button type="submit" variant="outline" size="sm" className="shrink-0">
+          {t("common.search")}
+        </Button>
       </form>
 
       {/* List */}
       <div className="overflow-hidden rounded-xl border border-base bg-surface shadow-sm">
-
         {/* Table header */}
         <div className="grid grid-cols-[1fr_auto] gap-4 border-b border-base bg-muted px-5 py-2.5 text-xs font-medium text-muted-fg sm:grid-cols-[auto_1fr_auto_auto]">
           <span className="hidden sm:block w-10 text-center">{t("board.number")}</span>
@@ -160,9 +161,7 @@ export default function BoardListPage() {
 
                   {/* Title */}
                   <div className="flex min-w-0 items-center gap-2">
-                    <span className="truncate text-sm font-medium text-foreground">
-                      {p.title}
-                    </span>
+                    <span className="truncate text-sm font-medium text-foreground">{p.title}</span>
                     {today && (
                       <span className="shrink-0 rounded-full bg-blue-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-blue-400">
                         NEW
@@ -183,7 +182,9 @@ export default function BoardListPage() {
 
                   {/* Author */}
                   <div className="hidden sm:flex items-center gap-2">
-                    <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ${avatarColor(p.authorName ?? "")}`}>
+                    <div
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ${avatarColor(p.authorName ?? "")}`}
+                    >
                       {(p.authorName ?? "?").charAt(0).toUpperCase()}
                     </div>
                     <span className="text-xs text-muted-fg">{p.authorName}</span>
@@ -202,7 +203,9 @@ export default function BoardListPage() {
             <FileText className="h-10 w-10 opacity-30" />
             <p className="text-sm">{t("board.noPosts")}</p>
             <Link to={`/boards/${boardId}/new`}>
-              <Button variant="outline" size="sm">{t("board.writeFirst")}</Button>
+              <Button variant="outline" size="sm">
+                {t("board.writeFirst")}
+              </Button>
             </Link>
           </div>
         )}
@@ -227,20 +230,20 @@ export default function BoardListPage() {
           }, [])
           .map((p, i) =>
             p === "..." ? (
-              <span key={`ellipsis-${i}`} className="px-1 text-xs text-muted-fg">…</span>
+              <span key={`ellipsis-${i}`} className="px-1 text-xs text-muted-fg">
+                …
+              </span>
             ) : (
               <button
                 key={p}
                 onClick={() => setSp(search ? { page: String(p), search } : { page: String(p) })}
                 className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium transition-colors ${
-                  p === page
-                    ? "bg-blue-600 text-white"
-                    : "border border-base text-muted-fg hover:bg-accent"
+                  p === page ? "bg-blue-600 text-white" : "border border-base text-muted-fg hover:bg-accent"
                 }`}
               >
                 {p}
               </button>
-            )
+            ),
           )}
 
         <button

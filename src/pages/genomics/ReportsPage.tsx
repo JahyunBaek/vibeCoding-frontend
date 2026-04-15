@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FileText, Trash2, X, CheckCircle, Loader2 } from "lucide-react";
+import { Trash2, X, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,10 @@ export default function ReportsPage() {
 
   const deleteMut = useMutation({
     mutationFn: (id: number) => api.reportDelete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["genomics", "reports"] }); toast.success(t("genomics.report.deleted")); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["genomics", "reports"] });
+      toast.success(t("genomics.report.deleted"));
+    },
   });
 
   const finalizeMut = useMutation({
@@ -67,25 +70,37 @@ export default function ReportsPage() {
           </thead>
           <tbody>
             {items.length === 0 && (
-              <tr><td colSpan={7} className="py-8 text-center text-muted-foreground">{t("common.noData")}</td></tr>
+              <tr>
+                <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                  {t("common.noData")}
+                </td>
+              </tr>
             )}
             {items.map((r: any) => (
-              <tr key={r.reportId} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setDetailId(r.reportId)}>
+              <tr
+                key={r.reportId}
+                className="border-t hover:bg-muted/30 cursor-pointer"
+                onClick={() => setDetailId(r.reportId)}
+              >
                 <td className="px-4 py-2 font-medium">{r.title}</td>
                 <td className="px-4 py-2 font-mono text-xs">{r.sampleNo}</td>
                 <td className="px-4 py-2 text-center">{r.variantCount}</td>
                 <td className="px-4 py-2 text-center">
-                  {r.pathogenicCount > 0
-                    ? <Badge className="bg-red-100 text-red-700">{r.pathogenicCount}</Badge>
-                    : "0"}
+                  {r.pathogenicCount > 0 ? <Badge className="bg-red-100 text-red-700">{r.pathogenicCount}</Badge> : "0"}
                 </td>
                 <td className="px-4 py-2">
-                  <Badge className={STATUS_COLORS[r.status] ?? ""}>{r.status === "DRAFT" ? t("genomics.report.draft") : t("genomics.report.final")}</Badge>
+                  <Badge className={STATUS_COLORS[r.status] ?? ""}>
+                    {r.status === "DRAFT" ? t("genomics.report.draft") : t("genomics.report.final")}
+                  </Badge>
                 </td>
                 <td className="px-4 py-2 text-xs text-muted-foreground">{r.createdAt?.slice(0, 10)}</td>
                 <td className="px-4 py-2 text-center" onClick={(e) => e.stopPropagation()}>
-                  <Button variant="ghost" size="sm" className="h-7 text-destructive"
-                          onClick={() => deleteMut.mutate(r.reportId)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-destructive"
+                    onClick={() => deleteMut.mutate(r.reportId)}
+                  >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </td>
@@ -97,29 +112,46 @@ export default function ReportsPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</Button>
-          <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            Prev
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {page} / {totalPages}
+          </span>
+          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+            Next
+          </Button>
         </div>
       )}
 
       {/* Report Detail Modal */}
       {detailId !== null && detail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDetailId(null)}>
-          <div className="w-full max-w-3xl rounded-lg bg-background p-6 shadow-xl max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={() => setDetailId(null)}
+        >
+          <div
+            className="w-full max-w-3xl rounded-lg bg-background p-6 shadow-xl max-h-[85vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-lg font-semibold">{detail.title}</h2>
-                <p className="text-xs text-muted-foreground">Sample: {detail.sampleNo} | {detail.createdAt?.slice(0, 10)}</p>
+                <p className="text-xs text-muted-foreground">
+                  Sample: {detail.sampleNo} | {detail.createdAt?.slice(0, 10)}
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 {detail.status === "DRAFT" && (
                   <Button size="sm" variant="outline" onClick={() => finalizeMut.mutate(detail.reportId)}>
-                    <CheckCircle className="mr-1 h-3 w-3" />{t("genomics.report.makeFinal")}
+                    <CheckCircle className="mr-1 h-3 w-3" />
+                    {t("genomics.report.makeFinal")}
                   </Button>
                 )}
                 <Badge className={STATUS_COLORS[detail.status] ?? ""}>{detail.status}</Badge>
-                <Button variant="ghost" size="sm" onClick={() => setDetailId(null)}><X className="h-4 w-4" /></Button>
+                <Button variant="ghost" size="sm" onClick={() => setDetailId(null)}>
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
 
@@ -140,9 +172,7 @@ export default function ReportsPage() {
 
             <div>
               <h3 className="mb-2 text-sm font-semibold">{t("genomics.report.summary")}</h3>
-              <div className="rounded-lg bg-muted/50 p-4 text-sm whitespace-pre-wrap">
-                {detail.summary || "-"}
-              </div>
+              <div className="rounded-lg bg-muted/50 p-4 text-sm whitespace-pre-wrap">{detail.summary || "-"}</div>
             </div>
           </div>
         </div>
