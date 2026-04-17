@@ -600,6 +600,36 @@
       "locus": "Locus (e.g. chr17:41,196,312-41,277,500)",
       "loadVariants": "Load Variants",
       "noSample": "Select a sample to display its variants in the genome browser."
+    },
+    "consent": {
+      "pageTitle": "Consent Management",
+      "patientId": "Patient ID",
+      "consentType": "Consent Type",
+      "status": "Status",
+      "signedAt": "Signed At",
+      "signedBy": "Signed By",
+      "witness": "Witness",
+      "expiresAt": "Expires At",
+      "createConsent": "Create Consent",
+      "sign": "Sign",
+      "revoke": "Revoke",
+      "pending": "Pending",
+      "signed": "Signed",
+      "revoked": "Revoked",
+      "expired": "Expired",
+      "geneticTest": "Genetic Test Consent",
+      "researchUse": "Research Use Consent",
+      "dataSharing": "Data Sharing Consent",
+      "biobank": "Biobank Consent",
+      "allStatus": "All Status",
+      "created": "Consent created successfully.",
+      "deleted": "Consent deleted.",
+      "signedMsg": "Consent signed successfully.",
+      "revokedMsg": "Consent revoked."
+    },
+    "export": {
+      "deidentify": "De-identified Export",
+      "deidentifyDesc": "Download CSV with patient identifiers removed."
     }
   },
   "editor": {

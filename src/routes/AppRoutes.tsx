@@ -30,6 +30,7 @@ import ReportsPage from "@/pages/genomics/ReportsPage";
 import PgxPage from "@/pages/genomics/PgxPage";
 import GenomicsDashboardPage from "@/pages/genomics/GenomicsDashboardPage";
 import BrowserPage from "@/pages/genomics/BrowserPage";
+import ConsentsPage from "@/pages/genomics/ConsentsPage";
 
 export default function AppRoutes() {
   return (
@@ -61,6 +62,7 @@ export default function AppRoutes() {
         <Route path="genomics/reports" element={<ReportsPage />} />
         <Route path="genomics/pgx" element={<PgxPage />} />
         <Route path="genomics/browser" element={<BrowserPage />} />
+        <Route path="genomics/consents" element={<ConsentsPage />} />
 
         <Route path="boards/:boardId" element={<BoardListPage />} />
         <Route path="boards/:boardId/new" element={<BoardWritePage />} />

@@ -84,4 +84,42 @@ export const genomicsApi = {
     const params = sampleId ? `?sampleId=${sampleId}` : "";
     return apiRequest<any>("GET", `/api/genomics/stats${params}`);
   },
+
+  // ── Consents ──
+  consentList: (page = 1, size = 20, patientId?: number, status?: string) => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (patientId) params.set("patientId", String(patientId));
+    if (status) params.set("status", status);
+    return apiRequest<any>("GET", `/api/genomics/consents?${params}`);
+  },
+  consentCreate: (data: {
+    patientId: number;
+    sampleId?: number;
+    consentType: string;
+    expiresAt?: string;
+    note?: string;
+  }) => apiRequest<void>("POST", "/api/genomics/consents", data),
+  consentSign: (consentId: number, data: { signedByName: string; witnessName?: string }) =>
+    apiRequest<void>("PATCH", `/api/genomics/consents/${consentId}/sign`, data),
+  consentRevoke: (consentId: number) => apiRequest<void>("PATCH", `/api/genomics/consents/${consentId}/revoke`),
+  consentDelete: (consentId: number) => apiRequest<void>("DELETE", `/api/genomics/consents/${consentId}`),
+
+  // ── De-identification Export ──
+  exportDeidentified: async (sampleId: number) => {
+    const res = await client.get(`/api/genomics/export/deidentify/${sampleId}`, { responseType: "blob" });
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `deidentified_sample_${sampleId}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  },
+
+  // ── Genomic Audit ──
+  genomicAuditList: (page = 1, size = 20, action?: string, resourceType?: string) => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (action) params.set("action", action);
+    if (resourceType) params.set("resourceType", resourceType);
+    return apiRequest<any>("GET", `/api/genomics/audit?${params}`);
+  },
 };

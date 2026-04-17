@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2, ChevronRight, Upload, ExternalLink, FileText } from "lucide-react";
+import { Plus, Trash2, ChevronRight, Upload, ExternalLink, FileText, Download } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -205,6 +205,15 @@ export default function SamplesPage() {
                       >
                         <FileText className="mr-0.5 h-3 w-3" />
                         {t("genomics.report.generate")}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => api.exportDeidentified(s.sampleId)}
+                      >
+                        <Download className="mr-0.5 h-3 w-3" />
+                        {t("genomics.export.deidentify")}
                       </Button>
                       {next && (
                         <Button

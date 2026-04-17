@@ -16,7 +16,9 @@
       "Bash(find C:/Users/jahyun/Downloads/common-system-starter/frontend/src -type f \\\\\\(-name *i18n* -o -name *.json \\\\\\))",
       "Bash(grep:*)",
       "Bash(./gradlew bootRun --args='--spring.profiles.active=local -Dspring.flyway.repair-on-migrate=true')",
-      "Bash(./gradlew bootRun --args='--spring.profiles.active=local --spring.flyway.repair-on-migrate=true')"
+      "Bash(./gradlew bootRun --args='--spring.profiles.active=local --spring.flyway.repair-on-migrate=true')",
+      "Read(//c/Git/vibeCoding-backend/**)",
+      "Bash(./gradlew spotlessApply compileJava)"
     ],
     "additionalDirectories": [
       "C:/Users/jahyun/Downloads/common-system-starter/backend"
