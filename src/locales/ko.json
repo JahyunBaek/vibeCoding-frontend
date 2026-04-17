@@ -406,7 +406,21 @@
     "justNow": "방금 전",
     "minutesAgo": "{{count}}분 전",
     "hoursAgo": "{{count}}시간 전",
-    "daysAgo": "{{count}}일 전"
+    "daysAgo": "{{count}}일 전",
+    "preferences": {
+      "title": "알림 채널 설정",
+      "channel": "채널",
+      "enabled": "활성화",
+      "consented": "수신 동의",
+      "email": "이메일",
+      "sms": "SMS",
+      "kakao": "카카오톡",
+      "push": "앱 푸시",
+      "unavailable": "준비 중",
+      "saved": "알림 설정이 저장되었습니다.",
+      "consentRequired": "수신 동의가 필요합니다.",
+      "consentDesc": "활성화하려면 먼저 수신 동의를 해주세요."
+    }
   },
   "error": {
     "title": "오류가 발생했습니다",

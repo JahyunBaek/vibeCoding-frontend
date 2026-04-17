@@ -406,7 +406,21 @@
     "justNow": "just now",
     "minutesAgo": "{{count}}m ago",
     "hoursAgo": "{{count}}h ago",
-    "daysAgo": "{{count}}d ago"
+    "daysAgo": "{{count}}d ago",
+    "preferences": {
+      "title": "Notification Channels",
+      "channel": "Channel",
+      "enabled": "Enabled",
+      "consented": "Consent",
+      "email": "Email",
+      "sms": "SMS",
+      "kakao": "KakaoTalk",
+      "push": "App Push",
+      "unavailable": "Coming soon",
+      "saved": "Notification preferences saved.",
+      "consentRequired": "Consent is required.",
+      "consentDesc": "Please consent first to enable this channel."
+    }
   },
   "error": {
     "title": "An error occurred",

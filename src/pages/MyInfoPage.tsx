@@ -1,15 +1,16 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { AlertCircle, CheckCircle2, KeyRound, User as UserIcon } from "lucide-react";
+import { AlertCircle, Bell, CheckCircle2, KeyRound, User as UserIcon } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 function avatarColor(name: string): string {
   const colors = ["bg-blue-500", "bg-emerald-500", "bg-violet-500", "bg-orange-500", "bg-rose-500"];
@@ -263,6 +264,105 @@ export default function MyInfoPage() {
           {saveMut.isPending ? t("common.saving") : t("common.save")}
         </Button>
       </div>
+
+      {/* Notification Preferences */}
+      <NotificationPreferencesCard />
     </div>
+  );
+}
+
+const CHANNEL_LABELS: Record<string, string> = {
+  EMAIL: "notification.preferences.email",
+  SMS: "notification.preferences.sms",
+  KAKAO: "notification.preferences.kakao",
+  PUSH: "notification.preferences.push",
+};
+
+function NotificationPreferencesCard() {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+
+  const { data: prefs = [] } = useQuery({
+    queryKey: ["notification", "preferences"],
+    queryFn: () => api.notificationPreferences(),
+  });
+
+  const updateMut = useMutation({
+    mutationFn: (data: { channel: string; enabled: boolean; consented: boolean }) =>
+      api.notificationPreferenceUpdate(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["notification", "preferences"] });
+      toast.success(t("notification.preferences.saved"));
+    },
+  });
+
+  const toggleConsent = (pref: any) => {
+    const newConsented = !pref.consented;
+    updateMut.mutate({
+      channel: pref.channel,
+      enabled: newConsented ? pref.enabled : false,
+      consented: newConsented,
+    });
+  };
+
+  const toggleEnabled = (pref: any) => {
+    if (!pref.consented) {
+      toast.error(t("notification.preferences.consentDesc"));
+      return;
+    }
+    updateMut.mutate({
+      channel: pref.channel,
+      enabled: !pref.enabled,
+      consented: pref.consented,
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Bell className="h-4 w-4 text-muted-fg" />
+          {t("notification.preferences.title")}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {prefs.map((pref: any) => (
+            <div key={pref.channel} className="flex items-center justify-between rounded-lg border p-3">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">{t(CHANNEL_LABELS[pref.channel] ?? pref.channel)}</span>
+                {!pref.available && (
+                  <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                    {t("notification.preferences.unavailable")}
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-1.5 text-xs">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-300"
+                    checked={pref.consented}
+                    onChange={() => toggleConsent(pref)}
+                    disabled={updateMut.isPending}
+                  />
+                  {t("notification.preferences.consented")}
+                </label>
+                <label className="flex items-center gap-1.5 text-xs">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-300"
+                    checked={pref.enabled}
+                    onChange={() => toggleEnabled(pref)}
+                    disabled={updateMut.isPending || !pref.consented || !pref.available}
+                  />
+                  {t("notification.preferences.enabled")}
+                </label>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
