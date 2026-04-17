@@ -23,14 +23,6 @@ import SuperAdminTenantsPage from "@/pages/super-admin/SuperAdminTenantsPage";
 import SamplePatientsPage from "@/pages/sample/SamplePatientsPage";
 import SampleTrialsPage from "@/pages/sample/SampleTrialsPage";
 import AgentChatPage from "@/pages/analysis/AgentChatPage";
-import SamplesPage from "@/pages/genomics/SamplesPage";
-import PanelsPage from "@/pages/genomics/PanelsPage";
-import VariantsPage from "@/pages/genomics/VariantsPage";
-import ReportsPage from "@/pages/genomics/ReportsPage";
-import PgxPage from "@/pages/genomics/PgxPage";
-import GenomicsDashboardPage from "@/pages/genomics/GenomicsDashboardPage";
-import BrowserPage from "@/pages/genomics/BrowserPage";
-import ConsentsPage from "@/pages/genomics/ConsentsPage";
 
 export default function AppRoutes() {
   return (
@@ -54,15 +46,6 @@ export default function AppRoutes() {
         <Route path="sample/trials" element={<SampleTrialsPage />} />
 
         <Route path="analysis/agent" element={<AgentChatPage />} />
-
-        <Route path="genomics/dashboard" element={<GenomicsDashboardPage />} />
-        <Route path="genomics/samples" element={<SamplesPage />} />
-        <Route path="genomics/panels" element={<PanelsPage />} />
-        <Route path="genomics/variants" element={<VariantsPage />} />
-        <Route path="genomics/reports" element={<ReportsPage />} />
-        <Route path="genomics/pgx" element={<PgxPage />} />
-        <Route path="genomics/browser" element={<BrowserPage />} />
-        <Route path="genomics/consents" element={<ConsentsPage />} />
 
         <Route path="boards/:boardId" element={<BoardListPage />} />
         <Route path="boards/:boardId/new" element={<BoardWritePage />} />

@@ -18,7 +18,15 @@
       "Bash(./gradlew bootRun --args='--spring.profiles.active=local -Dspring.flyway.repair-on-migrate=true')",
       "Bash(./gradlew bootRun --args='--spring.profiles.active=local --spring.flyway.repair-on-migrate=true')",
       "Read(//c/Git/vibeCoding-backend/**)",
-      "Bash(./gradlew spotlessApply compileJava)"
+      "Bash(./gradlew spotlessApply compileJava)",
+      "Bash(rm -rf src/main/java/com/example/commonsystem/genomics)",
+      "Bash(rm -rf src/main/resources/mappers/genomics)",
+      "Bash(rm -f src/main/resources/db/migration/V16__genomics_tables.sql)",
+      "Bash(rm -f src/main/resources/db/migration/V17__genomics_phase3_4.sql)",
+      "Bash(rm -f src/main/resources/db/migration/V18__genomics_dashboard_menu.sql)",
+      "Bash(rm -rf src/pages/genomics)",
+      "Bash(rm -f src/lib/api/genomics.ts)",
+      "Bash(rm -f docs/phase1-*.md docs/phase2-*.md docs/phase3-*.md docs/phase4-*.md docs/phase5-*.md docs/phase6-*.md)"
     ],
     "additionalDirectories": [
       "C:/Users/jahyun/Downloads/common-system-starter/backend"
