@@ -247,13 +247,25 @@ export const approvalApi = {
     apiRequest<void>("POST", `/api/approval/documents/${documentId}/steps/${stepId}/reject`, { comment }),
   documentWithdraw: (documentId: number) => apiRequest<void>("POST", `/api/approval/documents/${documentId}/withdraw`),
 
-  // --- 사용자 디렉토리 (결재선 사용자 지정용) ---
-  usersDirectory: (orgId?: number, limit = 50) => {
-    const q = new URLSearchParams({ limit: String(limit) });
-    if (orgId) q.set("orgId", String(orgId));
-    return apiRequest<Array<{ userId: number; username: string; name: string; orgId?: number; orgName?: string }>>(
-      "GET",
-      `/api/users/search?${q}`,
-    );
+  // --- 사용자 디렉토리 (결재선 사용자 지정용) - 검색 + 페이징 ---
+  usersDirectory: (params: { keyword?: string; orgId?: number | null; page?: number; size?: number } = {}) => {
+    const q = new URLSearchParams();
+    if (params.keyword) q.set("keyword", params.keyword);
+    if (params.orgId) q.set("orgId", String(params.orgId));
+    q.set("page", String(params.page ?? 1));
+    q.set("size", String(params.size ?? 30));
+    return apiRequest<{
+      items: Array<{
+        userId: number;
+        username: string;
+        name: string;
+        roleKey?: string;
+        orgId?: number;
+        orgName?: string;
+      }>;
+      page: number;
+      size: number;
+      total: number;
+    }>("GET", `/api/users/search?${q}`);
   },
 };
