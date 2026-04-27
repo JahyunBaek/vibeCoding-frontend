@@ -552,7 +552,8 @@
       "deleted": "Template deleted.",
       "deleteTitle": "Delete Template",
       "deleteConfirm": "Delete \"{{name}}\" template?",
-      "typeUser": "Specific User"
+      "typeUser": "Specific User",
+      "selectUser": "Select user..."
     },
     "my": {
       "pageTitle": "My Approvals",
@@ -638,5 +639,11 @@
     "horizontalRule": "Horizontal Rule",
     "linkPrompt": "Enter link URL",
     "uploadFailed": "Image upload failed."
+  },
+  "userPicker": {
+    "title": "Select User",
+    "searchPlaceholder": "Search by name or ID",
+    "allDepts": "All departments",
+    "noResults": "No results found."
   }
 }

@@ -2,9 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Star, MoreHorizontal, X, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, Pencil, Star, MoreHorizontal, X, ArrowUp, ArrowDown, User } from "lucide-react";
 import { api } from "@/lib/api";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import UserPickerDialog from "@/components/UserPickerDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,7 @@ export default function MyApprovalLinesPage() {
 
   const { data: defs = [] } = useQuery({
     queryKey: ["approval", "defs", "active"],
-    queryFn: () => api.adminDefinitions(true),
+    queryFn: () => api.approvalDefinitions(),
   });
 
   const [approvalCode, setApprovalCode] = useState<string>("");
@@ -41,12 +42,7 @@ export default function MyApprovalLinesPage() {
 
   const { data: orgs = [] } = useQuery({
     queryKey: ["my", "orgs"],
-    queryFn: () => api.orgTree(null),
-  });
-
-  const { data: users = [] } = useQuery({
-    queryKey: ["users", "directory"],
-    queryFn: () => api.usersDirectory(undefined, 200),
+    queryFn: () => api.orgsDirectoryTree(),
   });
 
   const [showEdit, setShowEdit] = useState(false);
@@ -56,6 +52,7 @@ export default function MyApprovalLinesPage() {
   const [activeYn, setActiveYn] = useState(true);
   const [steps, setSteps] = useState<TemplateStep[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<TemplateListRow | null>(null);
+  const [userPickerStep, setUserPickerStep] = useState<number | null>(null);
 
   const orgOptions = flattenOrgs(orgs);
 
@@ -259,22 +256,19 @@ export default function MyApprovalLinesPage() {
                       ))}
                     </select>
                   ) : s.targetDepartmentType === "USER" ? (
-                    <select
-                      className="col-span-3 h-9 rounded-md border bg-surface px-2 text-sm"
-                      value={s.targetUserId ?? ""}
-                      onChange={(e) =>
-                        updateStep(i, {
-                          targetUserId: e.target.value ? Number(e.target.value) : null,
-                        })
-                      }
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="col-span-3 h-9 justify-start text-sm"
+                      onClick={() => setUserPickerStep(i)}
                     >
-                      <option value="">—</option>
-                      {users.map((u: any) => (
-                        <option key={u.userId} value={u.userId}>
-                          {u.name} ({u.username}){u.orgName ? ` · ${u.orgName}` : ""}
-                        </option>
-                      ))}
-                    </select>
+                      <User className="mr-1.5 h-3.5 w-3.5" />
+                      {s.targetUserName ? (
+                        <span className="truncate">{s.targetUserName}</span>
+                      ) : (
+                        <span className="text-muted-fg">{t("approval.line.selectUser")}</span>
+                      )}
+                    </Button>
                   ) : (
                     <div className="col-span-3 text-xs text-muted-fg self-center">{t("approval.line.autoDept")}</div>
                   )}
@@ -374,6 +368,17 @@ export default function MyApprovalLinesPage() {
         title={t("approval.line.deleteTitle")}
         description={t("approval.line.deleteConfirm", { name: deleteTarget?.templateName ?? "" })}
         onConfirm={() => deleteMut.mutate()}
+      />
+
+      <UserPickerDialog
+        open={userPickerStep !== null}
+        onClose={() => setUserPickerStep(null)}
+        selectedUserId={userPickerStep !== null ? steps[userPickerStep]?.targetUserId : null}
+        onSelect={(u) => {
+          if (userPickerStep !== null) {
+            updateStep(userPickerStep, { targetUserId: u.userId, targetUserName: u.name });
+          }
+        }}
       />
     </div>
   );

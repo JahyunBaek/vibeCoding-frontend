@@ -552,7 +552,8 @@
       "deleted": "양식이 삭제되었습니다.",
       "deleteTitle": "양식 삭제",
       "deleteConfirm": "\"{{name}}\" 양식을 삭제하시겠습니까?",
-      "typeUser": "특정 사용자"
+      "typeUser": "특정 사용자",
+      "selectUser": "사용자 선택..."
     },
     "my": {
       "pageTitle": "내 결재함",
@@ -638,5 +639,11 @@
     "horizontalRule": "구분선",
     "linkPrompt": "링크 URL 입력",
     "uploadFailed": "이미지 업로드에 실패했습니다."
+  },
+  "userPicker": {
+    "title": "사용자 선택",
+    "searchPlaceholder": "이름 또는 아이디로 검색",
+    "allDepts": "전체 부서",
+    "noResults": "검색 결과가 없습니다."
   }
 }

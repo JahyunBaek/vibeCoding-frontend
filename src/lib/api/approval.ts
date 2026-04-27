@@ -173,6 +173,15 @@ export const approvalApi = {
     return apiRequest<void>("DELETE", `/api/admin/approval/definitions/authorities/${ruleId}${q}`);
   },
 
+  // --- 결재 정책 (사용자 조회용) ---
+  approvalDefinitions: (keyword?: string) => {
+    const q = keyword ? `?keyword=${encodeURIComponent(keyword)}` : "";
+    return apiRequest<DefinitionListRow[]>("GET", `/api/approval/definitions${q}`);
+  },
+
+  // --- 조직 디렉토리 (사용자용) ---
+  orgsDirectoryTree: () => apiRequest<any[]>("GET", "/api/orgs/tree"),
+
   // --- 내 결재선 양식 ---
   myLines: (approvalCode?: string) => {
     const q = approvalCode ? `?approvalCode=${encodeURIComponent(approvalCode)}` : "";
