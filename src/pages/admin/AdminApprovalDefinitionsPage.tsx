@@ -165,41 +165,59 @@ export default function AdminApprovalDefinitionsPage() {
           <div className="mx-4 mb-4 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4 space-y-3">
             <div className="text-sm font-medium">{editId ? t("approval.def.editing") : t("approval.def.new")}</div>
             <div className="grid grid-cols-2 gap-3">
-              <LabeledInput label={t("approval.def.code")} required
+              <LabeledInput
+                label={t("approval.def.code")}
+                required
                 disabled={!!editId}
                 value={form.approvalCode}
                 onChange={(v) => setForm({ ...form, approvalCode: v })}
               />
-              <LabeledInput label={t("approval.def.name")} required
+              <LabeledInput
+                label={t("approval.def.name")}
+                required
                 value={form.approvalName}
                 onChange={(v) => setForm({ ...form, approvalName: v })}
               />
-              <LabeledInput label={t("approval.def.description")} className="col-span-2"
+              <LabeledInput
+                label={t("approval.def.description")}
+                className="col-span-2"
                 value={form.description}
                 onChange={(v) => setForm({ ...form, description: v })}
               />
               <div className="flex items-center gap-3 text-sm">
                 <label className="flex items-center gap-1.5">
-                  <input type="checkbox" checked={form.useRequestDepartment}
+                  <input
+                    type="checkbox"
+                    checked={form.useRequestDepartment}
                     onChange={(e) => setForm({ ...form, useRequestDepartment: e.target.checked })}
-                  /> {t("approval.def.useRequestDept")}
+                  />{" "}
+                  {t("approval.def.useRequestDept")}
                 </label>
                 <label className="flex items-center gap-1.5">
-                  <input type="checkbox" checked={form.useSupervisingDepartment}
+                  <input
+                    type="checkbox"
+                    checked={form.useSupervisingDepartment}
                     onChange={(e) => setForm({ ...form, useSupervisingDepartment: e.target.checked })}
-                  /> {t("approval.def.useSupervisingDept")}
+                  />{" "}
+                  {t("approval.def.useSupervisingDept")}
                 </label>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <label className="flex items-center gap-1.5">
-                  <input type="checkbox" checked={form.useGroupApproval}
+                  <input
+                    type="checkbox"
+                    checked={form.useGroupApproval}
                     onChange={(e) => setForm({ ...form, useGroupApproval: e.target.checked })}
-                  /> {t("approval.def.useGroupApproval")}
+                  />{" "}
+                  {t("approval.def.useGroupApproval")}
                 </label>
                 <label className="flex items-center gap-1.5">
-                  <input type="checkbox" checked={form.usePersonalLineTemplate}
+                  <input
+                    type="checkbox"
+                    checked={form.usePersonalLineTemplate}
                     onChange={(e) => setForm({ ...form, usePersonalLineTemplate: e.target.checked })}
-                  /> {t("approval.def.usePersonalTemplate")}
+                  />{" "}
+                  {t("approval.def.usePersonalTemplate")}
                 </label>
               </div>
               {form.useSupervisingDepartment && (
@@ -226,20 +244,28 @@ export default function AdminApprovalDefinitionsPage() {
               )}
               <div className="flex items-center gap-3 text-sm">
                 <label className="flex items-center gap-1.5">
-                  <input type="checkbox" checked={form.activeYn}
+                  <input
+                    type="checkbox"
+                    checked={form.activeYn}
                     onChange={(e) => setForm({ ...form, activeYn: e.target.checked })}
-                  /> {t("approval.def.active")}
+                  />{" "}
+                  {t("approval.def.active")}
                 </label>
                 <label className="flex items-center gap-1.5 text-xs">
                   {t("approval.def.sortOrder")}
-                  <Input type="number" className="h-7 w-20" value={form.sortOrder}
+                  <Input
+                    type="number"
+                    className="h-7 w-20"
+                    value={form.sortOrder}
                     onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })}
                   />
                 </label>
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={resetForm}>{t("common.cancel")}</Button>
+              <Button variant="ghost" size="sm" onClick={resetForm}>
+                {t("common.cancel")}
+              </Button>
               <Button size="sm" onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
                 {saveMut.isPending ? t("common.saving") : t("common.save")}
               </Button>
@@ -271,9 +297,11 @@ export default function AdminApprovalDefinitionsPage() {
                   <td className="px-4 py-3 text-muted-fg">{d.defaultSupervisingDepartmentName ?? "—"}</td>
                   <td className="px-4 py-3">{d.useGroupApproval ? "✓" : "—"}</td>
                   <td className="px-4 py-3">
-                    {d.activeYn
-                      ? <Badge>{t("approval.def.active")}</Badge>
-                      : <Badge variant="outline">{t("approval.def.inactive")}</Badge>}
+                    {d.activeYn ? (
+                      <Badge>{t("approval.def.active")}</Badge>
+                    ) : (
+                      <Badge variant="outline">{t("approval.def.inactive")}</Badge>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <DropdownMenu>
@@ -318,7 +346,12 @@ export default function AdminApprovalDefinitionsPage() {
 }
 
 function LabeledInput({
-  label, value, onChange, required, className, disabled,
+  label,
+  value,
+  onChange,
+  required,
+  className,
+  disabled,
 }: {
   label: string;
   value: string;
@@ -332,9 +365,7 @@ function LabeledInput({
       <label className="text-xs text-muted-fg">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
-      <Input className="mt-1 h-9" value={value} disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <Input className="mt-1 h-9" value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }

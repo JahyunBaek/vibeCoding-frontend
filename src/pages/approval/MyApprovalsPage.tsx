@@ -36,13 +36,14 @@ export default function MyApprovalsPage() {
 
   const { data } = useQuery({
     queryKey: ["approval", "inbox", tab, page, keyword, approvalCode],
-    queryFn: () => api.documentList({
-      inbox: tab,
-      page,
-      size: PAGE_SIZE,
-      keyword: keyword || undefined,
-      approvalCode: approvalCode || undefined,
-    }),
+    queryFn: () =>
+      api.documentList({
+        inbox: tab,
+        page,
+        size: PAGE_SIZE,
+        keyword: keyword || undefined,
+        approvalCode: approvalCode || undefined,
+      }),
   });
 
   const items: DocumentListRow[] = data?.items ?? [];
@@ -58,11 +59,12 @@ export default function MyApprovalsPage() {
         {(["pending", "requested", "processed"] as InboxTab[]).map((key) => (
           <button
             key={key}
-            onClick={() => { setTab(key); setPage(1); }}
+            onClick={() => {
+              setTab(key);
+              setPage(1);
+            }}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              tab === key
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-fg hover:text-foreground"
+              tab === key ? "border-primary text-primary" : "border-transparent text-muted-fg hover:text-foreground"
             }`}
           >
             {t(`approval.my.tab.${key}`)}
@@ -75,11 +77,16 @@ export default function MyApprovalsPage() {
         <select
           className="h-9 rounded-md border bg-surface px-3 text-sm min-w-[200px]"
           value={approvalCode}
-          onChange={(e) => { setApprovalCode(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setApprovalCode(e.target.value);
+            setPage(1);
+          }}
         >
           <option value="">{t("approval.my.allCodes")}</option>
           {defs.map((d) => (
-            <option key={d.approvalCode} value={d.approvalCode}>{d.approvalName}</option>
+            <option key={d.approvalCode} value={d.approvalCode}>
+              {d.approvalName}
+            </option>
           ))}
         </select>
         <div className="relative">
@@ -88,12 +95,13 @@ export default function MyApprovalsPage() {
             className="pl-9 w-72"
             placeholder={t("approval.my.searchPlaceholder")}
             value={keyword}
-            onChange={(e) => { setKeyword(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setKeyword(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
-        <span className="text-xs text-muted-fg ml-auto">
-          {t("approval.my.totalCount", { count: total })}
-        </span>
+        <span className="text-xs text-muted-fg ml-auto">{t("approval.my.totalCount", { count: total })}</span>
       </div>
 
       <Card>
@@ -114,8 +122,10 @@ export default function MyApprovalsPage() {
               {items.map((d) => (
                 <tr key={d.documentId} className="hover:bg-muted/60">
                   <td className="px-4 py-3">
-                    <Link to={`/approval/documents/${d.documentId}`}
-                      className="font-mono text-xs text-primary hover:underline">
+                    <Link
+                      to={`/approval/documents/${d.documentId}`}
+                      className="font-mono text-xs text-primary hover:underline"
+                    >
                       {d.documentNo}
                     </Link>
                   </td>
@@ -127,17 +137,13 @@ export default function MyApprovalsPage() {
                   </td>
                   <td className="px-4 py-3 text-muted-fg">
                     {d.requesterName}
-                    {d.requesterDepartmentName && (
-                      <span className="text-xs"> · {d.requesterDepartmentName}</span>
-                    )}
+                    {d.requesterDepartmentName && <span className="text-xs"> · {d.requesterDepartmentName}</span>}
                   </td>
                   <td className="px-4 py-3 text-muted-fg">
                     {d.currentStepName ? `${d.currentStepOrder}. ${d.currentStepName}` : "—"}
                   </td>
                   <td className="px-4 py-3">
-                    <Badge className={STATUS_COLORS[d.status] ?? ""}>
-                      {t(`approval.status.${d.status}`)}
-                    </Badge>
+                    <Badge className={STATUS_COLORS[d.status] ?? ""}>{t(`approval.status.${d.status}`)}</Badge>
                   </td>
                   <td className="px-4 py-3 text-muted-fg text-xs">
                     {d.requestedAt ? new Date(d.requestedAt).toLocaleString() : "—"}

@@ -57,7 +57,9 @@ export default function ApprovalDetailPage() {
     mutationFn: () => api.documentApprove(docId, currentStep!.stepId, comment),
     onSuccess: () => {
       toast.success(t("approval.detail.approved"));
-      setComment(""); setActionMode(null); invalidate();
+      setComment("");
+      setActionMode(null);
+      invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -65,7 +67,9 @@ export default function ApprovalDetailPage() {
     mutationFn: () => api.documentReject(docId, currentStep!.stepId, comment),
     onSuccess: () => {
       toast.success(t("approval.detail.rejected"));
-      setComment(""); setActionMode(null); invalidate();
+      setComment("");
+      setActionMode(null);
+      invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -73,7 +77,8 @@ export default function ApprovalDetailPage() {
     mutationFn: () => api.documentWithdraw(docId),
     onSuccess: () => {
       toast.success(t("approval.detail.withdrawn"));
-      setWithdrawOpen(false); invalidate();
+      setWithdrawOpen(false);
+      invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -87,9 +92,7 @@ export default function ApprovalDetailPage() {
           <ArrowLeft className="mr-1 h-4 w-4" />
           {t("approval.detail.back")}
         </Button>
-        <Badge className={STATUS_COLORS[doc.status]}>
-          {t(`approval.status.${doc.status}`)}
-        </Badge>
+        <Badge className={STATUS_COLORS[doc.status]}>{t(`approval.status.${doc.status}`)}</Badge>
       </div>
 
       <Card>
@@ -99,7 +102,9 @@ export default function ApprovalDetailPage() {
               <div className="text-xs font-mono text-muted-fg">{doc.documentNo}</div>
               <CardTitle className="mt-1">{doc.title}</CardTitle>
               <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-fg">
-                <span>{t("approval.detail.approvalName")}: {doc.approvalName ?? doc.approvalCode}</span>
+                <span>
+                  {t("approval.detail.approvalName")}: {doc.approvalName ?? doc.approvalCode}
+                </span>
                 <span>
                   {t("approval.detail.requester")}:
                   <User className="inline h-3 w-3 mx-1" />
@@ -107,7 +112,9 @@ export default function ApprovalDetailPage() {
                   {doc.requesterDepartmentName && ` · ${doc.requesterDepartmentName}`}
                 </span>
                 {doc.supervisingDepartmentName && (
-                  <span>{t("approval.detail.supervisingDept")}: {doc.supervisingDepartmentName}</span>
+                  <span>
+                    {t("approval.detail.supervisingDept")}: {doc.supervisingDepartmentName}
+                  </span>
                 )}
                 <span>
                   <Clock className="inline h-3 w-3 mr-1" />
@@ -145,13 +152,17 @@ export default function ApprovalDetailPage() {
                   <td className="px-4 py-2 font-mono text-xs">{s.stepOrder}</td>
                   <td className="px-4 py-2 font-medium">{s.stepName}</td>
                   <td className="px-4 py-2 text-muted-fg text-xs">
-                    {s.targetDepartmentName ?? `(${s.targetDepartmentType})`}
-                    {s.groupApprovalYn && <span className="ml-1 text-[10px] text-primary">[Group]</span>}
+                    {s.targetDepartmentType === "USER"
+                      ? s.targetUserName
+                        ? `👤 ${s.targetUserName}`
+                        : `(USER)`
+                      : (s.targetDepartmentName ?? `(${s.targetDepartmentType})`)}
+                    {s.groupApprovalYn && s.targetDepartmentType !== "USER" && (
+                      <span className="ml-1 text-[10px] text-primary">[Group]</span>
+                    )}
                   </td>
                   <td className="px-4 py-2">
-                    <Badge className={STATUS_COLORS[s.status] ?? ""}>
-                      {t(`approval.stepStatus.${s.status}`)}
-                    </Badge>
+                    <Badge className={STATUS_COLORS[s.status] ?? ""}>{t(`approval.stepStatus.${s.status}`)}</Badge>
                   </td>
                   <td className="px-4 py-2 text-xs text-muted-fg">
                     {s.actedByName ? (
@@ -159,7 +170,9 @@ export default function ApprovalDetailPage() {
                         {s.actedByName}
                         <div>{s.actedAt && new Date(s.actedAt).toLocaleString()}</div>
                       </>
-                    ) : "—"}
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="px-4 py-2 text-xs">{s.comment ?? "—"}</td>
                 </tr>
@@ -194,9 +207,7 @@ export default function ApprovalDetailPage() {
             {canAct && actionMode !== null && (
               <div className="space-y-2">
                 <div className="text-sm font-medium">
-                  {actionMode === "APPROVE"
-                    ? t("approval.detail.approveComment")
-                    : t("approval.detail.rejectComment")}
+                  {actionMode === "APPROVE" ? t("approval.detail.approveComment") : t("approval.detail.rejectComment")}
                 </div>
                 <textarea
                   className="w-full resize-none rounded-md border bg-surface px-3 py-2 text-sm"
@@ -206,16 +217,26 @@ export default function ApprovalDetailPage() {
                   placeholder={t("approval.detail.commentPlaceholder")}
                 />
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" size="sm"
-                    onClick={() => { setActionMode(null); setComment(""); }}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setActionMode(null);
+                      setComment("");
+                    }}
+                  >
                     {t("common.cancel")}
                   </Button>
-                  <Button size="sm"
-                    className={actionMode === "APPROVE"
-                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                      : "bg-red-600 hover:bg-red-700 text-white"}
+                  <Button
+                    size="sm"
+                    className={
+                      actionMode === "APPROVE"
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        : "bg-red-600 hover:bg-red-700 text-white"
+                    }
                     onClick={() => (actionMode === "APPROVE" ? approveMut.mutate() : rejectMut.mutate())}
-                    disabled={approveMut.isPending || rejectMut.isPending}>
+                    disabled={approveMut.isPending || rejectMut.isPending}
+                  >
                     {t(`approval.detail.${actionMode === "APPROVE" ? "approve" : "reject"}`)}
                   </Button>
                 </div>

@@ -551,7 +551,8 @@
       "updated": "양식이 수정되었습니다.",
       "deleted": "양식이 삭제되었습니다.",
       "deleteTitle": "양식 삭제",
-      "deleteConfirm": "\"{{name}}\" 양식을 삭제하시겠습니까?"
+      "deleteConfirm": "\"{{name}}\" 양식을 삭제하시겠습니까?",
+      "typeUser": "특정 사용자"
     },
     "my": {
       "pageTitle": "내 결재함",

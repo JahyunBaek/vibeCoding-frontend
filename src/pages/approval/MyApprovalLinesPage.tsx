@@ -44,6 +44,11 @@ export default function MyApprovalLinesPage() {
     queryFn: () => api.orgTree(null),
   });
 
+  const { data: users = [] } = useQuery({
+    queryKey: ["users", "directory"],
+    queryFn: () => api.usersDirectory(undefined, 200),
+  });
+
   const [showEdit, setShowEdit] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [templateName, setTemplateName] = useState("");
@@ -133,9 +138,7 @@ export default function MyApprovalLinesPage() {
       {/* Approval Code 선택 */}
       <Card>
         <CardContent className="py-4 flex flex-wrap items-center gap-3">
-          <label className="text-sm font-medium text-muted-foreground">
-            {t("approval.line.approvalCode")}:
-          </label>
+          <label className="text-sm font-medium text-muted-foreground">{t("approval.line.approvalCode")}:</label>
           <select
             className="h-9 rounded-md border bg-surface px-3 text-sm min-w-[260px]"
             value={approvalCode}
@@ -151,7 +154,9 @@ export default function MyApprovalLinesPage() {
             ))}
           </select>
           {selectedDef && selectedDef.useSupervisingDepartment && (
-            <Badge variant="outline" className="text-xs">{t("approval.line.usesSupervising")}</Badge>
+            <Badge variant="outline" className="text-xs">
+              {t("approval.line.usesSupervising")}
+            </Badge>
           )}
         </CardContent>
       </Card>
@@ -182,20 +187,16 @@ export default function MyApprovalLinesPage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-muted-fg">{t("approval.line.templateName")} *</label>
-                <Input className="mt-1 h-9" value={templateName}
-                  onChange={(e) => setTemplateName(e.target.value)}
-                />
+                <Input className="mt-1 h-9" value={templateName} onChange={(e) => setTemplateName(e.target.value)} />
               </div>
               <div className="flex items-center gap-3 mt-5 text-sm">
                 <label className="flex items-center gap-1.5">
-                  <input type="checkbox" checked={defaultYn}
-                    onChange={(e) => setDefaultYn(e.target.checked)}
-                  /> {t("approval.line.setAsDefault")}
+                  <input type="checkbox" checked={defaultYn} onChange={(e) => setDefaultYn(e.target.checked)} />{" "}
+                  {t("approval.line.setAsDefault")}
                 </label>
                 <label className="flex items-center gap-1.5">
-                  <input type="checkbox" checked={activeYn}
-                    onChange={(e) => setActiveYn(e.target.checked)}
-                  /> {t("approval.line.active")}
+                  <input type="checkbox" checked={activeYn} onChange={(e) => setActiveYn(e.target.checked)} />{" "}
+                  {t("approval.line.active")}
                 </label>
               </div>
             </div>
@@ -218,27 +219,37 @@ export default function MyApprovalLinesPage() {
                   <div className="col-span-1 flex items-center justify-center text-xs font-mono text-muted-fg">
                     {i + 1}
                   </div>
-                  <Input className="col-span-3 h-9" placeholder={t("approval.line.stepName")}
+                  <Input
+                    className="col-span-3 h-9"
+                    placeholder={t("approval.line.stepName")}
                     value={s.stepName}
                     onChange={(e) => updateStep(i, { stepName: e.target.value })}
                   />
-                  <select className="col-span-2 h-9 rounded-md border bg-surface px-2 text-sm"
+                  <select
+                    className="col-span-2 h-9 rounded-md border bg-surface px-2 text-sm"
                     value={s.targetDepartmentType}
-                    onChange={(e) => updateStep(i, {
-                      targetDepartmentType: e.target.value as any,
-                      targetDepartmentId: null,
-                    })}
+                    onChange={(e) =>
+                      updateStep(i, {
+                        targetDepartmentType: e.target.value as any,
+                        targetDepartmentId: null,
+                        targetUserId: null,
+                      })
+                    }
                   >
                     <option value="REQUEST">{t("approval.line.typeRequest")}</option>
                     <option value="SUPERVISING">{t("approval.line.typeSupervising")}</option>
                     <option value="CUSTOM">{t("approval.line.typeCustom")}</option>
+                    <option value="USER">{t("approval.line.typeUser")}</option>
                   </select>
                   {s.targetDepartmentType === "CUSTOM" ? (
-                    <select className="col-span-3 h-9 rounded-md border bg-surface px-2 text-sm"
+                    <select
+                      className="col-span-3 h-9 rounded-md border bg-surface px-2 text-sm"
                       value={s.targetDepartmentId ?? ""}
-                      onChange={(e) => updateStep(i, {
-                        targetDepartmentId: e.target.value ? Number(e.target.value) : null,
-                      })}
+                      onChange={(e) =>
+                        updateStep(i, {
+                          targetDepartmentId: e.target.value ? Number(e.target.value) : null,
+                        })
+                      }
                     >
                       <option value="">—</option>
                       {orgOptions.map((o) => (
@@ -247,27 +258,42 @@ export default function MyApprovalLinesPage() {
                         </option>
                       ))}
                     </select>
+                  ) : s.targetDepartmentType === "USER" ? (
+                    <select
+                      className="col-span-3 h-9 rounded-md border bg-surface px-2 text-sm"
+                      value={s.targetUserId ?? ""}
+                      onChange={(e) =>
+                        updateStep(i, {
+                          targetUserId: e.target.value ? Number(e.target.value) : null,
+                        })
+                      }
+                    >
+                      <option value="">—</option>
+                      {users.map((u: any) => (
+                        <option key={u.userId} value={u.userId}>
+                          {u.name} ({u.username}){u.orgName ? ` · ${u.orgName}` : ""}
+                        </option>
+                      ))}
+                    </select>
                   ) : (
-                    <div className="col-span-3 text-xs text-muted-fg self-center">
-                      {t("approval.line.autoDept")}
-                    </div>
+                    <div className="col-span-3 text-xs text-muted-fg self-center">{t("approval.line.autoDept")}</div>
                   )}
                   <label className="col-span-2 flex items-center gap-1.5 text-xs self-center">
-                    <input type="checkbox" checked={s.groupApprovalYn ?? true}
+                    <input
+                      type="checkbox"
+                      checked={s.groupApprovalYn ?? true}
                       onChange={(e) => updateStep(i, { groupApprovalYn: e.target.checked })}
-                    /> {t("approval.line.groupApproval")}
+                    />{" "}
+                    {t("approval.line.groupApproval")}
                   </label>
                   <div className="col-span-1 flex gap-1 justify-end">
-                    <Button variant="ghost" className="h-7 w-7 p-0"
-                      onClick={() => moveStep(i, -1)}>
+                    <Button variant="ghost" className="h-7 w-7 p-0" onClick={() => moveStep(i, -1)}>
                       <ArrowUp className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" className="h-7 w-7 p-0"
-                      onClick={() => moveStep(i, 1)}>
+                    <Button variant="ghost" className="h-7 w-7 p-0" onClick={() => moveStep(i, 1)}>
                       <ArrowDown className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" className="h-7 w-7 p-0 text-red-600"
-                      onClick={() => removeStep(i)}>
+                    <Button variant="ghost" className="h-7 w-7 p-0 text-red-600" onClick={() => removeStep(i)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -276,9 +302,14 @@ export default function MyApprovalLinesPage() {
             </div>
 
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={resetForm}>{t("common.cancel")}</Button>
-              <Button size="sm" onClick={() => saveMut.mutate()}
-                disabled={saveMut.isPending || !templateName || steps.length === 0}>
+              <Button variant="ghost" size="sm" onClick={resetForm}>
+                {t("common.cancel")}
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => saveMut.mutate()}
+                disabled={saveMut.isPending || !templateName || steps.length === 0}
+              >
                 {saveMut.isPending ? t("common.saving") : t("common.save")}
               </Button>
             </div>
@@ -348,13 +379,14 @@ export default function MyApprovalLinesPage() {
   );
 }
 
-function newStep(order: number, type: "REQUEST" | "SUPERVISING" | "CUSTOM"): TemplateStep {
+function newStep(order: number, type: "REQUEST" | "SUPERVISING" | "CUSTOM" | "USER"): TemplateStep {
   return {
     stepOrder: order,
     stepName: "",
     approvalType: "APPROVE",
     targetDepartmentType: type,
     targetDepartmentId: null,
+    targetUserId: null,
     groupApprovalYn: true,
     requiredYn: true,
   };

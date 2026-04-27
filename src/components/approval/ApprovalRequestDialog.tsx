@@ -39,8 +39,7 @@ type Props = {
  *   />
  */
 export default function ApprovalRequestDialog(props: Props) {
-  const { open, onOpenChange, approvalCode, businessType, businessId,
-          defaultTitle, defaultBody, onSuccess } = props;
+  const { open, onOpenChange, approvalCode, businessType, businessId, defaultTitle, defaultBody, onSuccess } = props;
   const { t } = useTranslation();
 
   const [title, setTitle] = useState(defaultTitle ?? "");
@@ -80,9 +79,10 @@ export default function ApprovalRequestDialog(props: Props) {
   }, [init]);
 
   const selectedTemplate = init?.templates.find((t) => t.templateId === templateId);
-  const previewSteps: TemplateStep[] = templateId && init?.defaultTemplate?.templateId === templateId
-    ? init?.defaultTemplate?.steps ?? []
-    : (init?.previewSteps ?? []);
+  const previewSteps: TemplateStep[] =
+    templateId && init?.defaultTemplate?.templateId === templateId
+      ? (init?.defaultTemplate?.steps ?? [])
+      : (init?.previewSteps ?? []);
   // 선택한 양식이 default와 다르면 추가 조회 필요 — 간단화를 위해 기본 양식의 단계만 표시
   // (추후 선택 양식 상세 조회 확장)
 
@@ -90,8 +90,11 @@ export default function ApprovalRequestDialog(props: Props) {
     mutationFn: () => {
       if (!title.trim()) throw new Error(t("approval.dialog.titleRequired"));
       return api.documentRequest({
-        approvalCode, businessType, businessId,
-        title, body,
+        approvalCode,
+        businessType,
+        businessId,
+        title,
+        body,
         supervisingDepartmentId: supervisingDeptId,
         templateId: templateId ?? undefined,
       });
@@ -140,7 +143,9 @@ export default function ApprovalRequestDialog(props: Props) {
             {/* 제목 */}
             <div>
               <label className="text-xs text-muted-fg">{t("approval.dialog.docTitle")} *</label>
-              <Input className="mt-1 h-9" value={title}
+              <Input
+                className="mt-1 h-9"
+                value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t("approval.dialog.docTitlePlaceholder")}
               />
@@ -188,7 +193,8 @@ export default function ApprovalRequestDialog(props: Props) {
                   <option value="">{t("approval.dialog.noTemplate")}</option>
                   {init.templates.map((tpl) => (
                     <option key={tpl.templateId} value={tpl.templateId}>
-                      {tpl.defaultYn ? "★ " : ""}{tpl.templateName}
+                      {tpl.defaultYn ? "★ " : ""}
+                      {tpl.templateName}
                     </option>
                   ))}
                 </select>
@@ -212,20 +218,16 @@ export default function ApprovalRequestDialog(props: Props) {
                         {s.targetDepartmentType === "REQUEST"
                           ? t("approval.line.typeRequest")
                           : s.targetDepartmentType === "SUPERVISING"
-                          ? t("approval.line.typeSupervising")
-                          : s.targetDepartmentName ?? t("approval.line.typeCustom")}
+                            ? t("approval.line.typeSupervising")
+                            : (s.targetDepartmentName ?? t("approval.line.typeCustom"))}
                       </Badge>
-                      {s.groupApprovalYn && (
-                        <span className="text-[10px] text-primary">[Group]</span>
-                      )}
+                      {s.groupApprovalYn && <span className="text-[10px] text-primary">[Group]</span>}
                     </li>
                   ))}
                 </ol>
               )}
               {selectedTemplate?.templateId !== init.defaultTemplate?.templateId && selectedTemplate && (
-                <div className="mt-2 text-[11px] text-amber-600">
-                  {t("approval.dialog.previewNote")}
-                </div>
+                <div className="mt-2 text-[11px] text-amber-600">{t("approval.dialog.previewNote")}</div>
               )}
             </div>
 
@@ -233,7 +235,8 @@ export default function ApprovalRequestDialog(props: Props) {
               <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
                 {t("common.cancel")}
               </Button>
-              <Button size="sm"
+              <Button
+                size="sm"
                 onClick={() => requestMut.mutate()}
                 disabled={requestMut.isPending || !def?.activeYn || !title.trim()}
               >

@@ -551,7 +551,8 @@
       "updated": "Template updated.",
       "deleted": "Template deleted.",
       "deleteTitle": "Delete Template",
-      "deleteConfirm": "Delete \"{{name}}\" template?"
+      "deleteConfirm": "Delete \"{{name}}\" template?",
+      "typeUser": "Specific User"
     },
     "my": {
       "pageTitle": "My Approvals",

@@ -38,10 +38,12 @@ export type TemplateStep = {
   stepOrder: number;
   stepName: string;
   approvalType?: string;
-  targetDepartmentType: "REQUEST" | "SUPERVISING" | "CUSTOM";
+  targetDepartmentType: "REQUEST" | "SUPERVISING" | "CUSTOM" | "USER";
   targetDepartmentId?: number | null;
   targetDepartmentName?: string | null;
   targetRoleKey?: string | null;
+  targetUserId?: number | null;
+  targetUserName?: string | null;
   groupApprovalYn?: boolean;
   requiredYn?: boolean;
 };
@@ -135,13 +137,18 @@ export const approvalApi = {
     const q = tenantId != null ? `?tenantId=${tenantId}` : "";
     return apiRequest<DefinitionDetail>("GET", `/api/admin/approval/definitions/${definitionId}${q}`);
   },
-  adminDefinitionCreate: (payload: Partial<DefinitionListRow> & { approvalCode: string; approvalName: string },
-                           tenantId?: number | null) => {
+  adminDefinitionCreate: (
+    payload: Partial<DefinitionListRow> & { approvalCode: string; approvalName: string },
+    tenantId?: number | null,
+  ) => {
     const q = tenantId != null ? `?tenantId=${tenantId}` : "";
     return apiRequest<number>("POST", `/api/admin/approval/definitions${q}`, payload);
   },
-  adminDefinitionUpdate: (definitionId: number, payload: Partial<DefinitionListRow> & { approvalName: string },
-                           tenantId?: number | null) => {
+  adminDefinitionUpdate: (
+    definitionId: number,
+    payload: Partial<DefinitionListRow> & { approvalName: string },
+    tenantId?: number | null,
+  ) => {
     const q = tenantId != null ? `?tenantId=${tenantId}` : "";
     return apiRequest<void>("PUT", `/api/admin/approval/definitions/${definitionId}${q}`, payload);
   },
@@ -149,11 +156,15 @@ export const approvalApi = {
     const q = tenantId != null ? `?tenantId=${tenantId}` : "";
     return apiRequest<void>("DELETE", `/api/admin/approval/definitions/${definitionId}${q}`);
   },
-  adminAuthorityRuleAdd: (approvalCode: string, payload: {
-    targetDepartmentId?: number | null;
-    targetRoleKey?: string | null;
-    stepType: string;
-  }, tenantId?: number | null) => {
+  adminAuthorityRuleAdd: (
+    approvalCode: string,
+    payload: {
+      targetDepartmentId?: number | null;
+      targetRoleKey?: string | null;
+      stepType: string;
+    },
+    tenantId?: number | null,
+  ) => {
     const q = tenantId != null ? `?tenantId=${tenantId}` : "";
     return apiRequest<void>("POST", `/api/admin/approval/definitions/${approvalCode}/authorities${q}`, payload);
   },
@@ -167,26 +178,26 @@ export const approvalApi = {
     const q = approvalCode ? `?approvalCode=${encodeURIComponent(approvalCode)}` : "";
     return apiRequest<TemplateListRow[]>("GET", `/api/approval/lines${q}`);
   },
-  myLineDetail: (templateId: number) =>
-    apiRequest<TemplateDetail>("GET", `/api/approval/lines/${templateId}`),
-  myLineCreate: (payload: {
-    approvalCode: string;
-    templateName: string;
-    defaultYn: boolean;
-    steps: TemplateStep[];
-  }) => apiRequest<number>("POST", "/api/approval/lines", payload),
-  myLineUpdate: (templateId: number, payload: {
-    templateName: string;
-    defaultYn: boolean;
-    activeYn: boolean;
-    steps: TemplateStep[];
-  }) => apiRequest<void>("PUT", `/api/approval/lines/${templateId}`, payload),
-  myLineDelete: (templateId: number) =>
-    apiRequest<void>("DELETE", `/api/approval/lines/${templateId}`),
+  myLineDetail: (templateId: number) => apiRequest<TemplateDetail>("GET", `/api/approval/lines/${templateId}`),
+  myLineCreate: (payload: { approvalCode: string; templateName: string; defaultYn: boolean; steps: TemplateStep[] }) =>
+    apiRequest<number>("POST", "/api/approval/lines", payload),
+  myLineUpdate: (
+    templateId: number,
+    payload: {
+      templateName: string;
+      defaultYn: boolean;
+      activeYn: boolean;
+      steps: TemplateStep[];
+    },
+  ) => apiRequest<void>("PUT", `/api/approval/lines/${templateId}`, payload),
+  myLineDelete: (templateId: number) => apiRequest<void>("DELETE", `/api/approval/lines/${templateId}`),
 
   // --- 결재 문서 ---
   popupInit: (approvalCode: string) =>
-    apiRequest<PopupInitResponse>("GET", `/api/approval/documents/popup-init?approvalCode=${encodeURIComponent(approvalCode)}`),
+    apiRequest<PopupInitResponse>(
+      "GET",
+      `/api/approval/documents/popup-init?approvalCode=${encodeURIComponent(approvalCode)}`,
+    ),
 
   documentRequest: (payload: {
     approvalCode: string;
@@ -199,8 +210,7 @@ export const approvalApi = {
     steps?: TemplateStep[];
   }) => apiRequest<number>("POST", "/api/approval/documents", payload),
 
-  documentDetail: (documentId: number) =>
-    apiRequest<DocumentDetail>("GET", `/api/approval/documents/${documentId}`),
+  documentDetail: (documentId: number) => apiRequest<DocumentDetail>("GET", `/api/approval/documents/${documentId}`),
 
   documentList: (params: {
     inbox?: "requested" | "pending" | "processed" | "all";
@@ -217,13 +227,24 @@ export const approvalApi = {
       if (v !== undefined && v !== null && v !== "") q.set(k, String(v));
     });
     return apiRequest<{ items: DocumentListRow[]; page: number; size: number; total: number }>(
-      "GET", `/api/approval/documents?${q}`);
+      "GET",
+      `/api/approval/documents?${q}`,
+    );
   },
 
   documentApprove: (documentId: number, stepId: number, comment?: string) =>
     apiRequest<void>("POST", `/api/approval/documents/${documentId}/steps/${stepId}/approve`, { comment }),
   documentReject: (documentId: number, stepId: number, comment?: string) =>
     apiRequest<void>("POST", `/api/approval/documents/${documentId}/steps/${stepId}/reject`, { comment }),
-  documentWithdraw: (documentId: number) =>
-    apiRequest<void>("POST", `/api/approval/documents/${documentId}/withdraw`),
+  documentWithdraw: (documentId: number) => apiRequest<void>("POST", `/api/approval/documents/${documentId}/withdraw`),
+
+  // --- 사용자 디렉토리 (결재선 사용자 지정용) ---
+  usersDirectory: (orgId?: number, limit = 50) => {
+    const q = new URLSearchParams({ limit: String(limit) });
+    if (orgId) q.set("orgId", String(orgId));
+    return apiRequest<Array<{ userId: number; username: string; name: string; orgId?: number; orgName?: string }>>(
+      "GET",
+      `/api/users/search?${q}`,
+    );
+  },
 };
