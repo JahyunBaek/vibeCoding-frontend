@@ -35,6 +35,10 @@ export default function Breadcrumb() {
     trials: t("sample.trials"),
     analysis: t("agent.analysis"),
     agent: t("agent.agent"),
+    approval: t("approval.nav"),
+    my: t("approval.my.tabShort"),
+    lines: t("approval.line.navShort"),
+    documents: t("approval.detail.navShort"),
   };
 
   const crumbs: { label: string; path: string }[] = [];

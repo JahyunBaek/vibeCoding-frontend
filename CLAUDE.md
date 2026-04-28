@@ -115,3 +115,34 @@ src/
 - 큰 단위의 신규 기능 개발 시 `feature/xxxx` 브랜치(원격 포함)를 생성하여 개발 및 테스트한다.
 - 문제없으면 `dev` 브랜치에 merge 한다.
 - `main` 브랜치로의 merge는 **사용자가 직접** 진행한다. (Claude가 main에 merge하지 않는다.)
+
+### 🔍 main/dev가 아닌 브랜치 작업 시 검증 절차 (필수)
+
+`feature/xxx`, `common/xxx`, `hotfix/xxx` 등에서 작업할 때는 다음을 반드시 확인하라.
+
+**작업 시작 전**:
+```bash
+git fetch origin
+git branch --show-current                       # 현재 브랜치 확인
+git log HEAD..origin/dev --oneline              # dev가 내 브랜치보다 앞선 커밋
+git log origin/dev..HEAD --oneline              # 내 브랜치가 dev보다 앞선 커밋
+```
+- dev가 앞서 있으면 머지/리베이스로 동기화 후 작업
+- 너무 오래 격리되면 머지 비용이 폭증한다 — 가급적 자주 dev를 끌어와라
+
+**작업 중간**:
+- i18n 키 추가/수정했다면: `bash scripts/check-i18n.sh` (ko/en 동기화)
+- 컴포넌트 추가했다면 해당 디렉토리 `CLAUDE.md` 규칙 준수
+- `npx tsc --noEmit` 으로 타입 검증
+
+**머지 직전**:
+```bash
+git fetch origin
+npx tsc --noEmit                                 # 타입 검증
+bash scripts/check-i18n.sh                       # i18n 동기화
+bash scripts/check.sh                            # 전체 품질 검사
+```
+
+**백엔드 마이그레이션과의 연계**:
+- 백엔드 마이그레이션이 추가됐다면 프론트 dev 머지보다 **백엔드 dev 머지를 먼저** 진행
+- 프론트만 먼저 머지되면 새 API 호출은 실패한다

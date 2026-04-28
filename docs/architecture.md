@@ -33,7 +33,7 @@ src/
 │       ├── admin.ts    # 관리자
 │       ├── sample.ts   # 샘플
 │       ├── agent.ts    # AI Agent
-│       └── genomics.ts # 유전체 분석
+│       └── (도메인별 추가)
 ├── stores/         # Zustand 스토어 (auth, theme)
 ├── hooks/          # 커스텀 훅
 ├── locales/        # 번역 JSON (ko.json, en.json)
@@ -43,9 +43,8 @@ src/
 ├── pages/
 │   ├── LoginPage, DashboardPage, ...
 │   ├── boards/     # 게시판
-│   ├── sample/     # 의료 샘플
+│   ├── sample/     # 샘플 데이터 (데모)
 │   ├── analysis/   # AI Agent
-│   ├── genomics/   # 유전체 분석 (아래 상세)
 │   ├── admin/      # 관리자
 │   └── super-admin/
 └── routes/
@@ -63,16 +62,6 @@ src/
   → apiRequest() (src/lib/client.ts)
   → axios → Backend REST API
   → 응답 → TanStack Query 캐시 → UI 자동 업데이트
-```
-
-## Genomics 페이지 구조
-
-```
-/genomics/samples   → SamplesPage    # 샘플 CRUD + VCF 업로드 + 보고서 생성
-/genomics/panels    → PanelsPage     # 패널 CRUD + 유전자 관리
-/genomics/variants  → VariantsPage   # 변이 필터링 + 상세 모달 + AI 해석
-/genomics/reports   → ReportsPage    # 보고서 목록/상세(AI 요약)
-/genomics/pgx       → PgxPage        # PGx DB + 샘플 기반 매칭
 ```
 
 ## 상태 관리 전략

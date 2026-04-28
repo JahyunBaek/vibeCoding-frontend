@@ -23,6 +23,10 @@ import SuperAdminTenantsPage from "@/pages/super-admin/SuperAdminTenantsPage";
 import SamplePatientsPage from "@/pages/sample/SamplePatientsPage";
 import SampleTrialsPage from "@/pages/sample/SampleTrialsPage";
 import AgentChatPage from "@/pages/analysis/AgentChatPage";
+import MyApprovalLinesPage from "@/pages/approval/MyApprovalLinesPage";
+import MyApprovalsPage from "@/pages/approval/MyApprovalsPage";
+import ApprovalDetailPage from "@/pages/approval/ApprovalDetailPage";
+import AdminApprovalDefinitionsPage from "@/pages/admin/AdminApprovalDefinitionsPage";
 import SamplesPage from "@/pages/genomics/SamplesPage";
 import PanelsPage from "@/pages/genomics/PanelsPage";
 import VariantsPage from "@/pages/genomics/VariantsPage";
@@ -63,6 +67,10 @@ export default function AppRoutes() {
         <Route path="genomics/pgx" element={<PgxPage />} />
         <Route path="genomics/browser" element={<BrowserPage />} />
         <Route path="genomics/consents" element={<ConsentsPage />} />
+
+        <Route path="approval/my" element={<MyApprovalsPage />} />
+        <Route path="approval/lines" element={<MyApprovalLinesPage />} />
+        <Route path="approval/documents/:documentId" element={<ApprovalDetailPage />} />
 
         <Route path="boards/:boardId" element={<BoardListPage />} />
         <Route path="boards/:boardId/new" element={<BoardWritePage />} />
@@ -140,6 +148,14 @@ export default function AppRoutes() {
           element={
             <RequireAdmin>
               <AdminAuditPage />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="admin/approval"
+          element={
+            <RequireAdmin>
+              <AdminApprovalDefinitionsPage />
             </RequireAdmin>
           }
         />
