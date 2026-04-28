@@ -522,7 +522,13 @@
       "updated": "Approval definition updated.",
       "deleted": "Approval definition deleted.",
       "deleteTitle": "Delete Definition",
-      "deleteConfirm": "Delete \"{{code}}\" approval definition?"
+      "deleteConfirm": "Delete \"{{code}}\" approval definition?",
+      "requiredSteps": "Required Steps (Mandatory)",
+      "requiredStepsDesc": "Steps automatically appended after user-defined approval line. Users cannot edit or remove these.",
+      "addRequiredStep": "Add Required Step",
+      "noRequiredSteps": "No required steps.",
+      "requiredStepAdded": "Required step added.",
+      "requiredStepDeleted": "Required step deleted."
     },
     "line": {
       "navShort": "Lines",
@@ -553,7 +559,11 @@
       "deleteTitle": "Delete Template",
       "deleteConfirm": "Delete \"{{name}}\" template?",
       "typeUser": "Specific User",
-      "selectUser": "Select user..."
+      "selectUser": "Select user...",
+      "pickUser": "Pick User",
+      "policyRequired": "Policy Required Steps (Auto)",
+      "policyRequiredDesc": "Admin-defined steps — locked, automatically appended to your approval line",
+      "locked": "Required"
     },
     "my": {
       "pageTitle": "My Approvals",
@@ -616,7 +626,8 @@
       "submit": "Submit",
       "submitting": "Submitting...",
       "submitted": "Approval has been submitted.",
-      "titleRequired": "Please enter a title."
+      "titleRequired": "Please enter a title.",
+      "policyRequiredBadge": "Policy"
     }
   },
   "editor": {

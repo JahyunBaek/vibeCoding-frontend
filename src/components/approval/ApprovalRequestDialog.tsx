@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Send, Info, X } from "lucide-react";
+import { Send, Info, X, Lock } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -204,14 +204,14 @@ export default function ApprovalRequestDialog(props: Props) {
             {/* 결재선 미리보기 */}
             <div className="rounded-md border bg-muted/40 p-3">
               <div className="text-xs font-medium mb-2">{t("approval.dialog.linePreview")}</div>
-              {previewSteps.length === 0 ? (
+              {previewSteps.length === 0 && (init.requiredSteps ?? []).length === 0 ? (
                 <div className="text-xs text-muted-fg">{t("approval.dialog.noLine")}</div>
               ) : (
                 <ol className="space-y-1.5">
                   {previewSteps.map((s, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm">
+                    <li key={`u-${i}`} className="flex items-center gap-2 text-sm">
                       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-xs font-mono text-primary">
-                        {s.stepOrder}
+                        {i + 1}
                       </span>
                       <span className="font-medium">{s.stepName}</span>
                       <Badge variant="outline" className="text-[10px]">
@@ -219,9 +219,37 @@ export default function ApprovalRequestDialog(props: Props) {
                           ? t("approval.line.typeRequest")
                           : s.targetDepartmentType === "SUPERVISING"
                             ? t("approval.line.typeSupervising")
-                            : (s.targetDepartmentName ?? t("approval.line.typeCustom"))}
+                            : s.targetDepartmentType === "USER"
+                              ? `👤 ${s.targetUserName ?? `#${s.targetUserId}`}`
+                              : (s.targetDepartmentName ?? t("approval.line.typeCustom"))}
                       </Badge>
                       {s.groupApprovalYn && <span className="text-[10px] text-primary">[Group]</span>}
+                    </li>
+                  ))}
+                  {/* 정책 필수 단계 — 사용자 단계 뒤에 자동 추가됨 */}
+                  {(init.requiredSteps ?? []).map((rs, i) => (
+                    <li
+                      key={`r-${rs.requiredStepId}`}
+                      className="flex items-center gap-2 text-sm rounded bg-amber-500/10 px-1.5 py-1"
+                    >
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/20 text-xs font-mono text-amber-700">
+                        {previewSteps.length + i + 1}
+                      </span>
+                      <Lock className="h-3 w-3 text-amber-600" />
+                      <span className="font-medium">{rs.stepName}</span>
+                      <Badge variant="outline" className="text-[10px]">
+                        {rs.targetDepartmentType === "REQUEST"
+                          ? t("approval.line.typeRequest")
+                          : rs.targetDepartmentType === "SUPERVISING"
+                            ? t("approval.line.typeSupervising")
+                            : rs.targetDepartmentType === "USER"
+                              ? `👤 ${rs.targetUserName ?? `#${rs.targetUserId}`}`
+                              : (rs.targetDepartmentName ?? t("approval.line.typeCustom"))}
+                      </Badge>
+                      {rs.groupApprovalYn && <span className="text-[10px] text-primary">[Group]</span>}
+                      <span className="ml-auto text-[10px] text-amber-700">
+                        {t("approval.dialog.policyRequiredBadge")}
+                      </span>
                     </li>
                   ))}
                 </ol>

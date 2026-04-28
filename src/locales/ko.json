@@ -522,7 +522,13 @@
       "updated": "결재 정책이 수정되었습니다.",
       "deleted": "결재 정책이 삭제되었습니다.",
       "deleteTitle": "결재 정책 삭제",
-      "deleteConfirm": "\"{{code}}\" 결재 정책을 삭제하시겠습니까?"
+      "deleteConfirm": "\"{{code}}\" 결재 정책을 삭제하시겠습니까?",
+      "requiredSteps": "필수 결재 단계 (강제)",
+      "requiredStepsDesc": "사용자 결재선 뒤에 자동으로 강제 추가되는 단계입니다. 사용자는 이 단계를 수정/삭제할 수 없습니다.",
+      "addRequiredStep": "필수 단계 추가",
+      "noRequiredSteps": "필수 단계가 없습니다.",
+      "requiredStepAdded": "필수 단계가 추가되었습니다.",
+      "requiredStepDeleted": "필수 단계가 삭제되었습니다."
     },
     "line": {
       "navShort": "결재선 양식",
@@ -553,7 +559,11 @@
       "deleteTitle": "양식 삭제",
       "deleteConfirm": "\"{{name}}\" 양식을 삭제하시겠습니까?",
       "typeUser": "특정 사용자",
-      "selectUser": "사용자 선택..."
+      "selectUser": "사용자 선택...",
+      "pickUser": "사용자 선택",
+      "policyRequired": "정책 필수 단계 (자동 추가)",
+      "policyRequiredDesc": "관리자가 등록한 단계 — 수정/삭제 불가, 결재선 끝에 자동 추가됨",
+      "locked": "필수"
     },
     "my": {
       "pageTitle": "내 결재함",
@@ -616,7 +626,8 @@
       "submit": "상신",
       "submitting": "상신 중...",
       "submitted": "결재가 상신되었습니다.",
-      "titleRequired": "제목을 입력해주세요."
+      "titleRequired": "제목을 입력해주세요.",
+      "policyRequiredBadge": "정책 필수"
     }
   },
   "editor": {

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Plus, Trash2, Pencil, Star, MoreHorizontal, X, ArrowUp, ArrowDown, User } from "lucide-react";
+import { Plus, Trash2, Pencil, Star, MoreHorizontal, X, ArrowUp, ArrowDown, User, Lock } from "lucide-react";
 import { api } from "@/lib/api";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import UserPickerDialog from "@/components/UserPickerDialog";
@@ -44,6 +44,14 @@ export default function MyApprovalLinesPage() {
     queryKey: ["my", "orgs"],
     queryFn: () => api.orgsDirectoryTree(),
   });
+
+  // 정책 필수 단계 — 사용자 단계 뒤에 자동으로 붙는 readonly 영역
+  const { data: popupInit } = useQuery({
+    queryKey: ["approval", "popup-init", approvalCode],
+    queryFn: () => api.popupInit(approvalCode),
+    enabled: !!approvalCode,
+  });
+  const requiredSteps = popupInit?.requiredSteps ?? [];
 
   const [showEdit, setShowEdit] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -293,6 +301,48 @@ export default function MyApprovalLinesPage() {
                   </div>
                 </div>
               ))}
+
+              {/* 정책 필수 단계 — 사용자 단계 뒤에 강제로 붙는 영역 (readonly) */}
+              {requiredSteps.length > 0 && (
+                <div className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/5 p-2.5 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-amber-700">
+                    <Lock className="h-3 w-3" />
+                    {t("approval.line.policyRequired")}
+                    <span className="text-[10px] text-muted-fg font-normal">
+                      ({t("approval.line.policyRequiredDesc")})
+                    </span>
+                  </div>
+                  {requiredSteps.map((rs) => (
+                    <div
+                      key={rs.requiredStepId}
+                      className="grid grid-cols-12 gap-2 items-center rounded bg-background px-2 py-1.5 text-sm"
+                    >
+                      <div className="col-span-1 flex items-center justify-center text-xs font-mono text-amber-700">
+                        {steps.length + rs.stepOrder}
+                      </div>
+                      <div className="col-span-3 font-medium">{rs.stepName}</div>
+                      <div className="col-span-2 text-xs text-muted-fg">
+                        {rs.targetDepartmentType === "REQUEST"
+                          ? t("approval.line.typeRequest")
+                          : rs.targetDepartmentType === "SUPERVISING"
+                            ? t("approval.line.typeSupervising")
+                            : rs.targetDepartmentType === "USER"
+                              ? t("approval.line.typeUser")
+                              : t("approval.line.typeCustom")}
+                      </div>
+                      <div className="col-span-4 text-xs text-muted-fg truncate">
+                        {rs.targetDepartmentType === "USER"
+                          ? `👤 ${rs.targetUserName ?? `#${rs.targetUserId}`}`
+                          : (rs.targetDepartmentName ?? t("approval.line.autoDept"))}
+                      </div>
+                      <div className="col-span-2 text-xs text-amber-700 self-center">
+                        {rs.groupApprovalYn ? `[Group] ` : ""}
+                        🔒 {t("approval.line.locked")}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-2">

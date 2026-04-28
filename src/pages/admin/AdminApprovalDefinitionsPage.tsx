@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+// 헬퍼 컴포넌트 RequiredStepsSection에서 사용
 import { toast } from "sonner";
-import { MoreHorizontal, Pencil, Trash2, Plus, X, Search } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Plus, X, Search, Lock } from "lucide-react";
 import { api } from "@/lib/api";
 import TenantSelector from "@/components/TenantSelector";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -16,7 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { DefinitionListRow } from "@/lib/api/approval";
+import UserPickerDialog from "@/components/UserPickerDialog";
+import type { DefinitionListRow, RequiredStepRow } from "@/lib/api/approval";
 
 type FormState = {
   approvalCode: string;
@@ -270,6 +272,15 @@ export default function AdminApprovalDefinitionsPage() {
                 {saveMut.isPending ? t("common.saving") : t("common.save")}
               </Button>
             </div>
+
+            {/* 편집 모드(=이미 저장된 정책)에서만 필수 단계 관리 */}
+            {editId && (
+              <RequiredStepsSection
+                definitionId={editId}
+                tenantId={tenantId}
+                orgOptions={orgOptions}
+              />
+            )}
           </div>
         )}
 
@@ -377,4 +388,252 @@ function flattenOrgs(tree: any[], depth = 0): { orgId: number; name: string; dep
     if (n.children?.length) out.push(...flattenOrgs(n.children, depth + 1));
   }
   return out;
+}
+
+// ────────────────────────────────────────────────────────────
+// 정책 필수 단계 관리 섹션
+// ────────────────────────────────────────────────────────────
+
+type NewStep = {
+  stepName: string;
+  targetDepartmentType: "REQUEST" | "SUPERVISING" | "CUSTOM" | "USER";
+  targetDepartmentId: number | null;
+  targetUserId: number | null;
+  targetUserName: string | null;
+  groupApprovalYn: boolean;
+};
+
+const initialNewStep: NewStep = {
+  stepName: "",
+  targetDepartmentType: "SUPERVISING",
+  targetDepartmentId: null,
+  targetUserId: null,
+  targetUserName: null,
+  groupApprovalYn: true,
+};
+
+function RequiredStepsSection({
+  definitionId,
+  tenantId,
+  orgOptions,
+}: {
+  definitionId: number;
+  tenantId: number | null;
+  orgOptions: { orgId: number; name: string; depth: number }[];
+}) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+
+  const { data: detail, refetch } = useQuery({
+    queryKey: ["approval", "definition", definitionId, tenantId],
+    queryFn: () => api.adminDefinitionDetail(definitionId, tenantId),
+  });
+
+  const requiredSteps: RequiredStepRow[] = detail?.requiredSteps ?? [];
+
+  const [showAdd, setShowAdd] = useState(false);
+  const [newStep, setNewStep] = useState<NewStep>(initialNewStep);
+  const [pickUserOpen, setPickUserOpen] = useState(false);
+
+  const addMut = useMutation({
+    mutationFn: () =>
+      api.adminRequiredStepAdd(
+        definitionId,
+        {
+          stepName: newStep.stepName,
+          targetDepartmentType: newStep.targetDepartmentType,
+          targetDepartmentId:
+            newStep.targetDepartmentType === "CUSTOM" ? newStep.targetDepartmentId : null,
+          targetUserId: newStep.targetDepartmentType === "USER" ? newStep.targetUserId : null,
+          groupApprovalYn: newStep.groupApprovalYn,
+        },
+        tenantId,
+      ),
+    onSuccess: () => {
+      toast.success(t("approval.def.requiredStepAdded"));
+      setNewStep(initialNewStep);
+      setShowAdd(false);
+      refetch();
+      qc.invalidateQueries({ queryKey: ["approval"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (requiredStepId: number) =>
+      api.adminRequiredStepDelete(definitionId, requiredStepId, tenantId),
+    onSuccess: () => {
+      toast.success(t("approval.def.requiredStepDeleted"));
+      refetch();
+      qc.invalidateQueries({ queryKey: ["approval"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const canSubmit =
+    newStep.stepName.trim() !== "" &&
+    (newStep.targetDepartmentType !== "CUSTOM" || newStep.targetDepartmentId != null) &&
+    (newStep.targetDepartmentType !== "USER" || newStep.targetUserId != null);
+
+  return (
+    <div className="mt-4 rounded-md border bg-surface p-3">
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-sm font-medium flex items-center gap-1.5">
+          <Lock className="h-3.5 w-3.5 text-amber-600" />
+          {t("approval.def.requiredSteps")}
+        </div>
+        {!showAdd && (
+          <Button size="sm" variant="outline" onClick={() => setShowAdd(true)}>
+            <Plus className="mr-1 h-3.5 w-3.5" />
+            {t("approval.def.addRequiredStep")}
+          </Button>
+        )}
+      </div>
+      <p className="text-xs text-muted-fg mb-2">{t("approval.def.requiredStepsDesc")}</p>
+
+      {/* 기존 필수 단계 목록 */}
+      <div className="space-y-1.5">
+        {requiredSteps.length === 0 ? (
+          <div className="text-xs text-muted-fg py-3 text-center border border-dashed rounded">
+            {t("approval.def.noRequiredSteps")}
+          </div>
+        ) : (
+          requiredSteps.map((s) => (
+            <div
+              key={s.requiredStepId}
+              className="flex items-center gap-2 rounded border bg-amber-500/5 px-3 py-2 text-sm"
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/20 text-xs font-mono text-amber-700">
+                {s.stepOrder}
+              </span>
+              <span className="font-medium">{s.stepName}</span>
+              <Badge variant="outline" className="text-[10px]">
+                {s.targetDepartmentType === "REQUEST"
+                  ? t("approval.line.typeRequest")
+                  : s.targetDepartmentType === "SUPERVISING"
+                    ? t("approval.line.typeSupervising")
+                    : s.targetDepartmentType === "USER"
+                      ? `👤 ${s.targetUserName ?? `#${s.targetUserId}`}`
+                      : (s.targetDepartmentName ?? t("approval.line.typeCustom"))}
+              </Badge>
+              {s.groupApprovalYn && <span className="text-[10px] text-primary">[Group]</span>}
+              <Button
+                variant="ghost"
+                className="ml-auto h-6 w-6 p-0 text-red-600"
+                onClick={() => deleteMut.mutate(s.requiredStepId)}
+                disabled={deleteMut.isPending}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* 새 단계 추가 폼 */}
+      {showAdd && (
+        <div className="mt-3 rounded border bg-background p-3 space-y-2">
+          <div className="grid grid-cols-12 gap-2 items-start">
+            <Input
+              className="col-span-3 h-9"
+              placeholder={t("approval.line.stepName")}
+              value={newStep.stepName}
+              onChange={(e) => setNewStep({ ...newStep, stepName: e.target.value })}
+            />
+            <select
+              className="col-span-2 h-9 rounded-md border bg-surface px-2 text-sm"
+              value={newStep.targetDepartmentType}
+              onChange={(e) =>
+                setNewStep({
+                  ...newStep,
+                  targetDepartmentType: e.target.value as NewStep["targetDepartmentType"],
+                  targetDepartmentId: null,
+                  targetUserId: null,
+                  targetUserName: null,
+                })
+              }
+            >
+              <option value="REQUEST">{t("approval.line.typeRequest")}</option>
+              <option value="SUPERVISING">{t("approval.line.typeSupervising")}</option>
+              <option value="CUSTOM">{t("approval.line.typeCustom")}</option>
+              <option value="USER">{t("approval.line.typeUser")}</option>
+            </select>
+
+            {newStep.targetDepartmentType === "CUSTOM" && (
+              <select
+                className="col-span-4 h-9 rounded-md border bg-surface px-2 text-sm"
+                value={newStep.targetDepartmentId ?? ""}
+                onChange={(e) =>
+                  setNewStep({
+                    ...newStep,
+                    targetDepartmentId: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+              >
+                <option value="">—</option>
+                {orgOptions.map((o) => (
+                  <option key={o.orgId} value={o.orgId}>
+                    {"—".repeat(o.depth)} {o.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            {newStep.targetDepartmentType === "USER" && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="col-span-4 h-9 justify-start"
+                onClick={() => setPickUserOpen(true)}
+              >
+                {newStep.targetUserName ?? t("approval.line.pickUser")}
+              </Button>
+            )}
+            {(newStep.targetDepartmentType === "REQUEST" ||
+              newStep.targetDepartmentType === "SUPERVISING") && (
+              <div className="col-span-4 text-xs text-muted-fg self-center">
+                {t("approval.line.autoDept")}
+              </div>
+            )}
+
+            <label className="col-span-2 flex items-center gap-1.5 text-xs self-center">
+              <input
+                type="checkbox"
+                checked={newStep.groupApprovalYn}
+                onChange={(e) => setNewStep({ ...newStep, groupApprovalYn: e.target.checked })}
+              />{" "}
+              {t("approval.line.groupApproval")}
+            </label>
+
+            <div className="col-span-1 flex gap-1 justify-end">
+              <Button
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={() => {
+                  setShowAdd(false);
+                  setNewStep(initialNewStep);
+                }}
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button size="sm" disabled={!canSubmit || addMut.isPending} onClick={() => addMut.mutate()}>
+              {addMut.isPending ? t("common.saving") : t("approval.def.addRequiredStep")}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <UserPickerDialog
+        open={pickUserOpen}
+        onClose={() => setPickUserOpen(false)}
+        onSelect={(u) => {
+          setNewStep({ ...newStep, targetUserId: u.userId, targetUserName: u.name });
+          setPickUserOpen(false);
+        }}
+        selectedUserId={newStep.targetUserId}
+      />
+    </div>
+  );
 }

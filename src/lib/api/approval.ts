@@ -21,6 +21,23 @@ export type DefinitionListRow = {
 export type DefinitionDetail = DefinitionListRow & {
   remark?: string;
   authorityRules: AuthorityRuleRow[];
+  /** 정책 필수 단계 — 사용자 결재선 뒤에 강제로 붙음 */
+  requiredSteps?: RequiredStepRow[];
+};
+
+export type RequiredStepRow = {
+  requiredStepId: number;
+  definitionId: number;
+  stepOrder: number;
+  stepName: string;
+  approvalType?: string;
+  targetDepartmentType: "REQUEST" | "SUPERVISING" | "CUSTOM" | "USER";
+  targetDepartmentId?: number | null;
+  targetDepartmentName?: string | null;
+  targetRoleKey?: string | null;
+  targetUserId?: number | null;
+  targetUserName?: string | null;
+  groupApprovalYn: boolean;
 };
 
 export type AuthorityRuleRow = {
@@ -122,6 +139,8 @@ export type PopupInitResponse = {
   defaultTemplate?: TemplateDetail | null;
   templates: TemplateListRow[];
   previewSteps: TemplateStep[];
+  /** 정책에 등록된 필수 단계 — 사용자 단계 뒤에 자동 추가됨 */
+  requiredSteps?: RequiredStepRow[];
 };
 
 export const approvalApi = {
@@ -171,6 +190,36 @@ export const approvalApi = {
   adminAuthorityRuleDelete: (ruleId: number, tenantId?: number | null) => {
     const q = tenantId != null ? `?tenantId=${tenantId}` : "";
     return apiRequest<void>("DELETE", `/api/admin/approval/definitions/authorities/${ruleId}${q}`);
+  },
+
+  // --- 정책 필수 단계 (관리자) ---
+  adminRequiredStepAdd: (
+    definitionId: number,
+    payload: {
+      stepOrder?: number | null;
+      stepName: string;
+      approvalType?: string;
+      targetDepartmentType: "REQUEST" | "SUPERVISING" | "CUSTOM" | "USER";
+      targetDepartmentId?: number | null;
+      targetRoleKey?: string | null;
+      targetUserId?: number | null;
+      groupApprovalYn?: boolean;
+    },
+    tenantId?: number | null,
+  ) => {
+    const q = tenantId != null ? `?tenantId=${tenantId}` : "";
+    return apiRequest<void>(
+      "POST",
+      `/api/admin/approval/definitions/${definitionId}/required-steps${q}`,
+      payload,
+    );
+  },
+  adminRequiredStepDelete: (definitionId: number, requiredStepId: number, tenantId?: number | null) => {
+    const q = tenantId != null ? `?tenantId=${tenantId}` : "";
+    return apiRequest<void>(
+      "DELETE",
+      `/api/admin/approval/definitions/${definitionId}/required-steps/${requiredStepId}${q}`,
+    );
   },
 
   // --- 결재 정책 (사용자 조회용) ---
