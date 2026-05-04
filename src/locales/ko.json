@@ -656,5 +656,17 @@
     "searchPlaceholder": "이름 또는 아이디로 검색",
     "allDepts": "전체 부서",
     "noResults": "검색 결과가 없습니다."
+  },
+  "workflow": {
+    "currentState": "현재 상태",
+    "assignee": "담당자",
+    "pendingApproval": "결재 대기",
+    "history": "이력",
+    "transitioned": "상태가 변경되었습니다.",
+    "noActionsAvailable": "현재 가능한 작업이 없습니다.",
+    "completed": "완료된 워크플로우입니다.",
+    "comment": "의견",
+    "commentPlaceholder": "의견을 입력하세요 (선택)",
+    "approvalRequired": "이 작업은 결재 후에 적용됩니다."
   }
 }

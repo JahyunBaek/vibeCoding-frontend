@@ -656,5 +656,17 @@
     "searchPlaceholder": "Search by name or ID",
     "allDepts": "All departments",
     "noResults": "No results found."
+  },
+  "workflow": {
+    "currentState": "Current State",
+    "assignee": "Assignee",
+    "pendingApproval": "Pending Approval",
+    "history": "History",
+    "transitioned": "State transitioned successfully.",
+    "noActionsAvailable": "No available actions in current state.",
+    "completed": "Workflow completed.",
+    "comment": "Comment",
+    "commentPlaceholder": "Enter comment (optional)",
+    "approvalRequired": "This action will be applied after approval."
   }
 }

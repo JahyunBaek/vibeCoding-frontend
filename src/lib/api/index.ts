@@ -9,6 +9,7 @@ import { notificationApi } from "./notification";
 import { sampleApi } from "./sample";
 import { agentApi } from "./agent";
 import { approvalApi } from "./approval";
+import { workflowApi } from "./workflow";
 
 export const api = {
   ...authApi,
@@ -19,4 +20,5 @@ export const api = {
   ...sampleApi,
   ...agentApi,
   ...approvalApi,
+  ...workflowApi,
 };
