@@ -208,11 +208,7 @@ export const approvalApi = {
     tenantId?: number | null,
   ) => {
     const q = tenantId != null ? `?tenantId=${tenantId}` : "";
-    return apiRequest<void>(
-      "POST",
-      `/api/admin/approval/definitions/${definitionId}/required-steps${q}`,
-      payload,
-    );
+    return apiRequest<void>("POST", `/api/admin/approval/definitions/${definitionId}/required-steps${q}`, payload);
   },
   adminRequiredStepDelete: (definitionId: number, requiredStepId: number, tenantId?: number | null) => {
     const q = tenantId != null ? `?tenantId=${tenantId}` : "";

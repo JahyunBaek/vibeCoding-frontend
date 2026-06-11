@@ -274,13 +274,7 @@ export default function AdminApprovalDefinitionsPage() {
             </div>
 
             {/* 편집 모드(=이미 저장된 정책)에서만 필수 단계 관리 */}
-            {editId && (
-              <RequiredStepsSection
-                definitionId={editId}
-                tenantId={tenantId}
-                orgOptions={orgOptions}
-              />
-            )}
+            {editId && <RequiredStepsSection definitionId={editId} tenantId={tenantId} orgOptions={orgOptions} />}
           </div>
         )}
 
@@ -442,8 +436,7 @@ function RequiredStepsSection({
         {
           stepName: newStep.stepName,
           targetDepartmentType: newStep.targetDepartmentType,
-          targetDepartmentId:
-            newStep.targetDepartmentType === "CUSTOM" ? newStep.targetDepartmentId : null,
+          targetDepartmentId: newStep.targetDepartmentType === "CUSTOM" ? newStep.targetDepartmentId : null,
           targetUserId: newStep.targetDepartmentType === "USER" ? newStep.targetUserId : null,
           groupApprovalYn: newStep.groupApprovalYn,
         },
@@ -460,8 +453,7 @@ function RequiredStepsSection({
   });
 
   const deleteMut = useMutation({
-    mutationFn: (requiredStepId: number) =>
-      api.adminRequiredStepDelete(definitionId, requiredStepId, tenantId),
+    mutationFn: (requiredStepId: number) => api.adminRequiredStepDelete(definitionId, requiredStepId, tenantId),
     onSuccess: () => {
       toast.success(t("approval.def.requiredStepDeleted"));
       refetch();
@@ -588,11 +580,8 @@ function RequiredStepsSection({
                 {newStep.targetUserName ?? t("approval.line.pickUser")}
               </Button>
             )}
-            {(newStep.targetDepartmentType === "REQUEST" ||
-              newStep.targetDepartmentType === "SUPERVISING") && (
-              <div className="col-span-4 text-xs text-muted-fg self-center">
-                {t("approval.line.autoDept")}
-              </div>
+            {(newStep.targetDepartmentType === "REQUEST" || newStep.targetDepartmentType === "SUPERVISING") && (
+              <div className="col-span-4 text-xs text-muted-fg self-center">{t("approval.line.autoDept")}</div>
             )}
 
             <label className="col-span-2 flex items-center gap-1.5 text-xs self-center">

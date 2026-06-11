@@ -9,7 +9,7 @@ import { notificationApi } from "./notification";
 import { sampleApi } from "./sample";
 import { agentApi } from "./agent";
 import { approvalApi } from "./approval";
-import { genomicsApi } from "./genomics";
+import { workflowApi } from "./workflow";
 
 export const api = {
   ...authApi,
@@ -20,5 +20,5 @@ export const api = {
   ...sampleApi,
   ...agentApi,
   ...approvalApi,
-  ...genomicsApi,
+  ...workflowApi,
 };
